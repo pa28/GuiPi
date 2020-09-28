@@ -7,6 +7,9 @@
 #include <tuple>
 #include <functional>
 #include <thread>
+#include <iostream>
+#include <sys/time.h>
+#include <stdio.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_pixels.h>
@@ -182,8 +185,15 @@ namespace sdlgui {
         PntRect clip = getAbsoluteCliprect();
         SDL_Rect clipRect = pntrect2srect(clip);
 
-        if (mMapsDirty)
+        struct timeval  start;
+        struct timeval  stop;
+
+        if (mMapsDirty) {
+            gettimeofday(&start, nullptr);
             generateMapSurfaces(renderer);
+            gettimeofday(&stop, nullptr);
+            printf("Maps Dirty: %10ld.%06ld - %10ld.%06ld\n", start.tv_sec, start.tv_usec, stop.tv_sec, stop.tv_usec);
+        }
 
         if (mDayMap) {
             Vector2i p = Vector2i(0, 0);
@@ -208,6 +218,7 @@ namespace sdlgui {
             }
 
             if (mTextureDirty) {
+                gettimeofday(&start, nullptr);
                 Surface tran_day_map;
                 tran_day_map.reset(SDL_CreateRGBSurface(0, mDayMap->w, mDayMap->h, 32, rmask, gmask, bmask, amask));
                 if (mAzimuthalDisplay) {
@@ -265,6 +276,8 @@ namespace sdlgui {
                     mForeground.name = "*autogen*";
                 }
                 mTextureDirty = false;
+                gettimeofday(&stop, nullptr);
+                printf("Texs Dirty: %10ld.%06ld - %10ld.%06ld\n", start.tv_sec, start.tv_usec, stop.tv_sec, stop.tv_usec);
             }
 
             auto offset = computeOffset();
@@ -307,34 +320,11 @@ namespace sdlgui {
         mDayAzMap.reset(SDL_CreateRGBSurface(0, EARTH_BIG_W, EARTH_BIG_H, 32, rmask, gmask, bmask, amask));
         mNightAzMap.reset(SDL_CreateRGBSurface(0, EARTH_BIG_W, EARTH_BIG_H, 32, rmask, gmask, bmask, amask));
 
-
-#if USE_COMPILED_MAPS
-
-        auto offx = computOffset();
-
-        for (int x = 0; x < EARTH_BIG_W; ++x) {
-            for (int y = 0; y < EARTH_BIG_H; ++y) {
-                auto xMap = (x + offx) % EARTH_BIG_W;
-                {
-                    auto pixels = (uint32_t *) mDayMap->pixels;
-                    auto[r, g, b] = Adafruit_RA8875::get_RGB_separate(x, y, Adafruit_RA8875::DAY_MAP);
-                    pixels[(y * EARTH_BIG_W) + xMap] = SDL_MapRGBA(mDayMap->format, r, g, b, 255);
-                }
-                {
-                    auto pixels = (uint32_t *) mNightMap->pixels;
-                    auto[r, g, b] = Adafruit_RA8875::get_RGB_separate(x, y, Adafruit_RA8875::NIGHT_MAP);
-                    pixels[(y * EARTH_BIG_W) + xMap] = SDL_MapRGBA(mNightMap->format, r, g, b, 255);
-                }
-            }
-
-        }
-#else
         Surface pngFile;
         pngFile.reset(IMG_Load(mForeground.path.c_str()));
         SDL_BlitSurface(pngFile.get(), nullptr, mDayMap.get(), nullptr);
         pngFile.reset(IMG_Load(mBackground.path.c_str()));
         SDL_BlitSurface(pngFile.get(), nullptr, mNightMap.get(), nullptr);
-#endif
 
         for (int y = 0; y < mDayMap->h; y += 1) {
             for (int x = 0; x < mDayMap->w; x += 1) {
@@ -349,24 +339,13 @@ namespace sdlgui {
                     mDayAzMap.pixel(x, y) = mDayMap.pixel(xx, yy);
                     mNightAzMap.pixel(x, y) = mNightMap.pixel(xx, yy);
                 }
-
-//                auto lonE = (double) (x - mDayMap->w / 2) * M_PI / (double) (mDayMap->w / 2);
-//                auto latE = (double) (mDayMap->h / 2 - y) * M_PI_2 / (double) (mDayMap->h / 2);
             }
         }
-
-//        if (mBackground.tex)
-//            SDL_DestroyTexture(mBackground.tex);
 
         mBackground.set(SDL_CreateTextureFromSurface(renderer, mNightMap.get()));
         mBackground.w = EARTH_BIG_W;
         mBackground.h = EARTH_BIG_H;
         mBackground.name = "*auto_gen*";
-
-//        mForegroundAz.set(SDL_CreateTextureFromSurface(renderer, mDayAzMap.get()));
-//        mForegroundAz.w = EARTH_BIG_W;
-//        mForegroundAz.h = EARTH_BIG_H;
-//        mForegroundAz.name = "*auto_gen*";
 
         mBackgroundAz.set(SDL_CreateTextureFromSurface(renderer, mNightAzMap.get()));
         mBackgroundAz.w = EARTH_BIG_W;
@@ -396,9 +375,6 @@ namespace sdlgui {
         double RA = 180 / M_PI * atan2(cos(M_PI / 180 * e) * sin(M_PI / 180 * L), cos(M_PI / 180 * L));
         auto lat = asin(sin(M_PI / 180 * e) * sin(M_PI / 180 * L));
         auto lat_d = rad2deg(lat);
-#ifdef LINIX_STANDALONE_TEST
-        printf ("Solar RA %g hours, Dec %g degrees\n", RA/15, 180/M_PI*ll.lat);
-#endif // LINIX_STANDALONE_TEST
         double GMST = fmod(15 * (18.697374558 + 24.06570982441908 * D), 360.0);
         auto lng_d = fmod(RA - GMST + 36000.0 + 180.0, 360.0) - 180.0;
         auto lng = deg2rad(lng_d);
