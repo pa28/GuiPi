@@ -192,7 +192,13 @@ namespace sdlgui {
             gettimeofday(&start, nullptr);
             generateMapSurfaces(renderer);
             gettimeofday(&stop, nullptr);
-            printf("Maps Dirty: %10ld.%06ld - %10ld.%06ld\n", start.tv_sec, start.tv_usec, stop.tv_sec, stop.tv_usec);
+            long diffs = stop.tv_sec - start.tv_sec;
+            long diffu = stop.tv_usec - start.tv_usec;
+            if (diffu < 0) {
+                diffs--;
+                diffu += 1000000;
+            }
+            printf("Maps Dirty: %ld.%06ld\n", diffs, diffu);
         }
 
         if (mDayMap) {
@@ -277,7 +283,13 @@ namespace sdlgui {
                 }
                 mTextureDirty = false;
                 gettimeofday(&stop, nullptr);
-                printf("Texs Dirty: %10ld.%06ld - %10ld.%06ld\n", start.tv_sec, start.tv_usec, stop.tv_sec, stop.tv_usec);
+                long diffs = stop.tv_sec - start.tv_sec;
+                long diffu = stop.tv_usec - start.tv_usec;
+                if (diffu < 0) {
+                    diffs--;
+                    diffu += 1000000;
+                }
+                printf("Texs Dirty: %ld.%06ld\n", diffs, diffu);
             }
 
             auto offset = computeOffset();
