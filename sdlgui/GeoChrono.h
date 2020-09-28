@@ -195,7 +195,7 @@ namespace sdlgui {
 
         void setAzmuthalDisplay(bool azmuthal) {
             mAzimuthalDisplay = azmuthal;
-            mMapsDirty = true;
+            mTextureDirty = true;
         }
 
         ref<GeoChrono> withAzmuthalDisplay(bool azumthal) { setAzmuthalDisplay(azumthal); return this; }
