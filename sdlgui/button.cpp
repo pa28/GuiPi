@@ -86,7 +86,7 @@ Button::Button(Widget *parent, const std::string &caption, int icon)
 Vector2i Button::preferredSize(SDL_Renderer *ctx) const
 {
     int fontSize = mFontSize == -1 ? mTheme->mButtonFontSize : mFontSize;
-    float tw = const_cast<Button*>(this)->mTheme->getTextWidth("sans-bold", fontSize, mCaption.c_str());
+    float tw = const_cast<Button*>(this)->mTheme->getTextWidth(mTheme->mBoldFont.c_str(), fontSize, mCaption.c_str());
     float iw = 0.0f, ih = fontSize;
 
     if (mIcon) 
@@ -293,7 +293,7 @@ void Button::draw(SDL_Renderer* renderer)
     if (!mEnabled)
       sdlTextColor = mTheme->mDisabledTextColor;
 
-    mTheme->getTexAndRectUtf8(renderer, _captionTex, 0, 0, mCaption.c_str(), "sans-bold", fontSize, sdlTextColor);
+    mTheme->getTexAndRectUtf8(renderer, _captionTex, 0, 0, mCaption.c_str(), mTheme->mBoldFont.c_str(), fontSize, sdlTextColor);
   }
 
   Vector2f center(ap.x + width() * 0.5f, ap.y + height() * 0.5f);

@@ -27,7 +27,7 @@ class  Label : public Widget
 {
 public:
     Label(Widget *parent, const std::string &caption,
-          const std::string &font = "sans", int fontSize = -1);
+          const std::string &font = "", int fontSize = -1);
 
     /// Get the label's text caption
     const std::string &caption() const { return mCaption; }

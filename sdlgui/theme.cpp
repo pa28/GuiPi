@@ -125,9 +125,9 @@ NAMESPACE_BEGIN(sdlgui)
         // Compose a font name including the size as a key for caching
         std::string shortFontName = fontname;
         if (shortFontName == "sans")
-            shortFontName = "FreeSans";
+            shortFontName = theme.mStandardFont;
         else if (shortFontName == "sans-bold")
-            shortFontName = "FreeSansBold";
+            shortFontName = theme.mBoldFont;
 
         std::string fullFontName = shortFontName;
         fullFontName += "_";

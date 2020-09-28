@@ -98,6 +98,10 @@ namespace sdlgui {
 #endif
         }
 
+        struct AsyncTexture;
+        typedef std::shared_ptr<AsyncTexture> AsyncTexturePtr;
+        std::vector<AsyncTexturePtr> _txs;
+
     public:
         /**
          * (Constructor)
@@ -197,6 +201,8 @@ namespace sdlgui {
         ref<GeoChrono> withAzmuthalDisplay(bool azumthal) { setAzmuthalDisplay(azumthal); return this; }
 
         bool azmuthalDisplay() const { return mAzimuthalDisplay; }
+
+        void renderBodyTexture(NVGcontext *&ctx, int &realw, int &realh);
 
     };
 

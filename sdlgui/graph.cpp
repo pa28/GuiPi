@@ -128,13 +128,13 @@ void Graph::draw(SDL_Renderer *renderer)
     }
 
     if (_captionTex.dirty)
-      mTheme->getTexAndRectUtf8(renderer, _captionTex, 0, 0, mCaption.c_str(), "sans", 14, mTextColor);
+      mTheme->getTexAndRectUtf8(renderer, _captionTex, 0, 0, mCaption.c_str(), mTheme->mStandardFont.c_str(), 14, mTextColor);
 
     if (_headerTex.dirty)
-      mTheme->getTexAndRectUtf8(renderer, _headerTex, 0, 0, mHeader.c_str(), "sans", 18, mTextColor);
+      mTheme->getTexAndRectUtf8(renderer, _headerTex, 0, 0, mHeader.c_str(), mTheme->mStandardFont.c_str(), 18, mTextColor);
 
     if (_footerTex.dirty)
-      mTheme->getTexAndRectUtf8(renderer, _footerTex, 0, 0, mFooter.c_str(), "sans", 15, mTextColor);
+      mTheme->getTexAndRectUtf8(renderer, _footerTex, 0, 0, mFooter.c_str(), mTheme->mStandardFont.c_str(), 15, mTextColor);
 
     SDL_RenderCopy(renderer, _captionTex, ap + Vector2i(3,1) );
     SDL_RenderCopy(renderer, _headerTex, ap + Vector2i(mSize.x - 3 - _headerTex.w(), 1));

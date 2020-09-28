@@ -181,7 +181,8 @@ Vector2i TextBox::preferredSize(SDL_Renderer *ctx) const
     }
     else if (!mUnits.empty()) 
     {
-        uw = const_cast<TextBox*>(this)->mTheme->getUtf8Width("sans", fontSize(), mUnits.c_str());
+        uw = const_cast<TextBox*>(this)->mTheme->getUtf8Width(const_cast<TextBox*>(this)->mTheme->mStandardFont.c_str(),
+                                                              fontSize(), mUnits.c_str());
     }
     float sw = 0;
     if (mSpinnable) 
@@ -189,7 +190,8 @@ Vector2i TextBox::preferredSize(SDL_Renderer *ctx) const
         sw = 14.f;
     }
 
-    float ts = const_cast<TextBox*>(this)->mTheme->getUtf8Width("sans", fontSize(), mValue.c_str());
+    float ts = const_cast<TextBox*>(this)->mTheme->getUtf8Width(const_cast<TextBox*>(this)->mTheme->mStandardFont.c_str(),
+                                                                fontSize(), mValue.c_str());
     size.x = size.y + ts + uw + sw;
     return size;
 }
@@ -249,7 +251,8 @@ void TextBox::draw(SDL_Renderer* renderer)
     else if (!mUnits.empty()) 
     {
       if (_unitsTex.dirty)
-        mTheme->getTexAndRectUtf8(renderer, _unitsTex, 0, 0, mUnits.c_str(), "sans", fontSize(), Color(255, mEnabled ? 64 : 32));
+        mTheme->getTexAndRectUtf8(renderer, _unitsTex, 0, 0, mUnits.c_str(), mTheme->mStandardFont.c_str(),
+                                  fontSize(), Color(255, mEnabled ? 64 : 32));
 
       unitWidth = _unitsTex.w()+2;
       SDL_RenderCopy(renderer, _unitsTex, absolutePosition() + Vector2i(mSize.x - unitWidth, (mSize.y - _unitsTex.h()) * 0.5f));
@@ -287,7 +290,7 @@ void TextBox::draw(SDL_Renderer* renderer)
         }
 
         nvgFontSize(ctx, fontSize());
-        nvgFontFace(ctx, "sans");
+        nvgFontFace(ctx, mTheme->mStandardFont.c_str());
     }
     */
 
@@ -319,7 +322,8 @@ void TextBox::draw(SDL_Renderer* renderer)
     drawPos.y += (mSize.y - _captionTex.h()) / 2;
 
     if (_captionTex.dirty)
-      mTheme->getTexAndRectUtf8(renderer, _captionTex, 0, 0, mValue.c_str(), "sans", fontSize(), mEnabled ? mTheme->mTextColor : mTheme->mDisabledTextColor);
+      mTheme->getTexAndRectUtf8(renderer, _captionTex, 0, 0, mValue.c_str(), mTheme->mStandardFont.c_str(),
+                                fontSize(), mEnabled ? mTheme->mTextColor : mTheme->mDisabledTextColor);
 
     if (mCommitted) 
     {
@@ -328,7 +332,7 @@ void TextBox::draw(SDL_Renderer* renderer)
     else 
     {
       int w, h;
-      mTheme->getUtf8Bounds("sans", fontSize(), mValueTemp.c_str(), &w, &h);
+      mTheme->getUtf8Bounds(mTheme->mStandardFont.c_str(), fontSize(), mValueTemp.c_str(), &w, &h);
       float textBound[4] = {drawPos.x, drawPos.y, drawPos.x + w, drawPos.y + h};
       float lineh = textBound[3] - textBound[1];
 
@@ -349,7 +353,8 @@ void TextBox::draw(SDL_Renderer* renderer)
         //drawPos.x() = oldDrawPos.x() + mTextOffset;
 
         if (_tempTex.dirty)
-          mTheme->getTexAndRectUtf8(renderer, _tempTex, 0, 0, mValueTemp.c_str(), "sans", fontSize(), mTheme->mTextColor);
+          mTheme->getTexAndRectUtf8(renderer, _tempTex, 0, 0, mValueTemp.c_str(), mTheme->mStandardFont.c_str(),
+                                    fontSize(), mTheme->mTextColor);
        
         // draw text with offset
         SDL_RenderCopy(renderer, _tempTex, oldDrawPos);
@@ -786,7 +791,7 @@ float TextBox::cursorIndex2Position(int index, float lastx, const std::string& s
     if (index >= str.size())
         pos = _tempTex.w(); // last character
     else
-        pos = mTheme->getUtf8Width("sans", fontSize(), str.substr(0, index).c_str());;
+        pos = mTheme->getUtf8Width(mTheme->mStandardFont.c_str(), fontSize(), str.substr(0, index).c_str());;
 
     return pos;
 }
@@ -794,14 +799,14 @@ float TextBox::cursorIndex2Position(int index, float lastx, const std::string& s
 int TextBox::position2CursorIndex(float posx, float lastx, const std::string& str) 
 {
     int mCursorId = 0;
-    float caretx = mTheme->getUtf8Width("sans", fontSize(), str.substr(0, mCursorId).c_str());
+    float caretx = mTheme->getUtf8Width(mTheme->mStandardFont.c_str(), fontSize(), str.substr(0, mCursorId).c_str());
     for (int j = 1; j <= str.size(); j++) 
     {
-      int glposx = mTheme->getUtf8Width("sans", fontSize(), str.substr(0, j).c_str());
+      int glposx = mTheme->getUtf8Width(mTheme->mStandardFont.c_str(), fontSize(), str.substr(0, j).c_str());
         if (std::abs(caretx - posx) > std::abs(glposx - posx)) 
         {
             mCursorId = j;
-            caretx = mTheme->getUtf8Width("sans", fontSize(), str.substr(0, mCursorId).c_str()); 
+            caretx = mTheme->getUtf8Width(mTheme->mStandardFont.c_str(), fontSize(), str.substr(0, mCursorId).c_str());
         }
     }
     if (std::abs(caretx - posx) > std::abs(lastx - posx))

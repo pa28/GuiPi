@@ -30,7 +30,7 @@ NAMESPACE_BEGIN(sdlgui)
 class  TabHeader : public Widget 
 {
 public:
-    TabHeader(Widget *parent, const std::string &font = "sans-bold");
+    TabHeader(Widget *parent, const std::string &font = "");
 
     void setFont(const std::string& font) { mFont = font; }
     const std::string& font() const { return mFont; }

@@ -170,7 +170,7 @@ Vector2i SwitchBox::preferredSize(SDL_Renderer *renderer) const
         return mFixedSize;
 
     int w, h;
-    const_cast<SwitchBox*>(this)->theme()->getUtf8Bounds("sans", fontSize(), mCaption.c_str(), &w, &h);
+    const_cast<SwitchBox*>(this)->theme()->getUtf8Bounds(mTheme->mStandardFont.c_str(), fontSize(), mCaption.c_str(), &w, &h);
     int knobW = 1.8f * fontSize();
     knobW = std::max<int>(knobW / 32, 1) * 32;
 
@@ -262,7 +262,7 @@ void SwitchBox::draw(SDL_Renderer *renderer)
   drawKnob(renderer);
 /*
   nvgFontSize(ctx, fontSize());
-  nvgFontFace(ctx, "sans");
+  nvgFontFace(ctx, mTheme->mStandardFont.c_str());
   nvgFillColor(ctx, mEnabled ? mTheme->mTextColor : mTheme->mDisabledTextColor);
   nvgTextAlign(ctx, NVG_ALIGN_LEFT | NVG_ALIGN_MIDDLE);
   nvgText(ctx, mPos.x() + 1.6f * fontSize(), mPos.y() + mSize.y() * 0.5f, mCaption.c_str(), nullptr);

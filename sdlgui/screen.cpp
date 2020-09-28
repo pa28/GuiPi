@@ -175,7 +175,8 @@ void Screen::drawWidgets()
             if (_lastTooltip != widget->tooltip())
             {
               _lastTooltip = widget->tooltip();
-              mTheme->getTexAndRectUtf8(renderer, _tooltipTex, 0, 0, _lastTooltip.c_str(), "sans", 15, Color(1.f, 1.f));
+              mTheme->getTexAndRectUtf8(renderer, _tooltipTex, 0, 0, _lastTooltip.c_str(),
+                                        mTheme->mStandardFont.c_str(), 15, Color(1.f, 1.f));
             }
 
             if (_tooltipTex.tex)

@@ -20,10 +20,13 @@ Label::Label(Widget *parent, const std::string &caption, const std::string &font
     {
         mFontSize = mTheme->mStandardFontSize;
         mColor = mTheme->mTextColor;
+        mFont = mTheme->mStandardFont;
     }
     
     if (fontSize >= 0) 
       mFontSize = fontSize;
+    if (!font.empty())
+        mFont = font;
 
     _texture.dirty = true;
 }

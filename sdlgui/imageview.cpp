@@ -424,7 +424,7 @@ void ImageView::drawPixelInfo(SDL_Renderer* renderer, const float stride) const
     nvgBeginPath(ctx);
     nvgFontSize(ctx, fontSize);
     nvgTextAlign(ctx, NVG_ALIGN_CENTER | NVG_ALIGN_TOP);
-    nvgFontFace(ctx, "sans");
+    nvgFontFace(ctx, mTheme->mStandardFont.c_str());
     while (currentPixel.y() != lastPixel.y()) 
     {
         while (currentPixel.x() != lastPixel.x()) 

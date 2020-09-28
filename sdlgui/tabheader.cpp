@@ -35,7 +35,7 @@ Vector2i TabHeader::TabButton::preferredSize(SDL_Renderer *ctx) const
     // No need to call nvg font related functions since this is done by the tab header implementation
     int w, h;
     auto theme = const_cast<TabButton*>(this)->mHeader->theme();
-    theme->getUtf8Bounds("sans", mHeader->fontSize(), mLabel.c_str(), &w, &h);
+    theme->getUtf8Bounds(theme->mStandardFont.c_str(), mHeader->fontSize(), mLabel.c_str(), &w, &h);
    
     int buttonWidth = w + 2 * mHeader->theme()->mTabButtonHorizontalPadding;
     int buttonHeight = h + 2 * mHeader->theme()->mTabButtonVerticalPadding;
@@ -45,16 +45,16 @@ Vector2i TabHeader::TabButton::preferredSize(SDL_Renderer *ctx) const
 void TabHeader::TabButton::calculateVisibleString(SDL_Renderer *renderer) 
 {
     // The size must have been set in by the enclosing tab header.
-    std::string displayedText =  mHeader->theme()->breakText(renderer, mLabel.c_str(), 
-                                                             "sans", mHeader->fontSize(), mSize.x-10);
+    std::string displayedText =  mHeader->theme()->breakText(renderer, mLabel.c_str(),
+                                                             mHeader->theme()->mStandardFont.c_str(), mHeader->fontSize(), mSize.x-10);
 
     mVisibleText.first = mLabel.c_str();
 
     // Check to see if the text need to be truncated.
     if (displayedText.size() != mLabel.size()) 
     {
-      int truncatedWidth = mHeader->theme()->getTextWidth("sans", mHeader->fontSize(), displayedText.c_str());
-      int dotsWidth = mHeader->theme()->getTextWidth("sans", mHeader->fontSize(), dots);
+      int truncatedWidth = mHeader->theme()->getTextWidth(mHeader->theme()->mStandardFont.c_str(), mHeader->fontSize(), displayedText.c_str());
+      int dotsWidth = mHeader->theme()->getTextWidth(mHeader->theme()->mStandardFont.c_str(), mHeader->fontSize(), dots);
       
       // Remember the truncated width to know where to display the dots.
       mVisibleWidth = truncatedWidth;
@@ -132,7 +132,7 @@ void TabHeader::TabButton::drawAtPosition(SDL_Renderer *renderer, const Vector2i
 
       if (mVisibleText.last != nullptr)
         lb += dots;
-      mHeader->theme()->getTexAndRectUtf8(renderer, _labelTex, 0, 0, lb.c_str(), "sans", mHeader->fontSize(), mHeader->theme()->mTextColor);
+      mHeader->theme()->getTexAndRectUtf8(renderer, _labelTex, 0, 0, lb.c_str(), mHeader->theme()->mStandardFont.c_str(), mHeader->fontSize(), mHeader->theme()->mTextColor);
     }
 
     if (_labelTex.tex)
@@ -175,8 +175,13 @@ void TabHeader::TabButton::drawInactiveBorderAt(SDL_Renderer *renderer, const Ve
 
 
 TabHeader::TabHeader(Widget* parent, const std::string& font)
-    : Widget(parent), mFont(font) 
+    : Widget(parent)
 {
+    if (mTheme)
+        mFont = mTheme->mBoldFont;
+
+    if (!font.empty())
+        mFont = font;
 }
 
 void TabHeader::setActiveTab(int tabIndex) 

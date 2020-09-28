@@ -2,12 +2,11 @@
 // Created by richard on 2020-09-12.
 //
 
-#include <iostream>
 #include <cstdint>
-#include <iomanip>
 #include <cmath>
 #include <tuple>
 #include <functional>
+#include <thread>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_pixels.h>
@@ -15,7 +14,58 @@
 #include <sdlgui/Image.h>
 #include "GeoChrono.h"
 
+#include "nanovg.h"
+#define NANOVG_RT_IMPLEMENTATION
+#define NANORT_IMPLEMENTATION
+#include "nanovg_rt.h"
+
 namespace sdlgui {
+    struct GeoChrono::AsyncTexture
+    {
+        int id;
+        Texture tex;
+        NVGcontext* ctx = nullptr;
+
+        AsyncTexture(int _id) : id(_id) {};
+
+        void load(GeoChrono* ptr)
+        {
+            GeoChrono* geoChrono = ptr;
+            AsyncTexture* self = this;
+            std::thread tgr([=]() {
+                std::lock_guard<std::mutex> guard(geoChrono->theme()->loadMutex);
+
+                NVGcontext *ctx = nullptr;
+                int realw, realh;
+                geoChrono->renderBodyTexture(ctx, realw, realh);
+                self->tex.rrect = { 0, 0, realw, realh };
+                self->ctx = ctx;
+            });
+
+            tgr.detach();
+        }
+
+        void perform(SDL_Renderer* renderer)
+        {
+            if (!ctx)
+                return;
+
+            unsigned char *rgba = nvgReadPixelsRT(ctx);
+
+            tex.tex = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ABGR8888, SDL_TEXTUREACCESS_STREAMING, tex.w(), tex.h());
+
+            int pitch;
+            uint8_t *pixels;
+            int ok = SDL_LockTexture(tex.tex, nullptr, (void **)&pixels, &pitch);
+            memcpy(pixels, rgba, sizeof(uint32_t) * tex.w() * tex.h());
+            SDL_SetTextureBlendMode(tex.tex, SDL_BLENDMODE_BLEND);
+            SDL_UnlockTexture(tex.tex);
+
+            nvgDeleteRT(ctx);
+            ctx = nullptr;
+        }
+    };
+
     bool GeoChrono::mouseMotionEvent(const Vector2i &p, const Vector2i &rel, int button,
                                      int modifiers) {
         if (button) {
@@ -354,5 +404,72 @@ namespace sdlgui {
         auto lng = deg2rad(lng_d);
 
         return std::make_tuple(lat, lng);
+    }
+
+    void GeoChrono::renderBodyTexture(NVGcontext* &ctx, int &realw, int &realh)
+    {
+#if 0
+        int ww = width();
+        int hh = height();
+        ctx = nvgCreateRT(NVG_DEBUG, ww + 2, hh + 2, 0);
+
+        float pxRatio = 1.0f;
+        realw = ww + 2;
+        realh = hh + 2;
+        nvgBeginFrame(ctx, realw, realh, pxRatio);
+
+        NVGcolor gradTop = mTheme->mButtonGradientTopUnfocused.toNvgColor();
+        NVGcolor gradBot = mTheme->mButtonGradientBotUnfocused.toNvgColor();
+
+        if (mPushed)
+        {
+            gradTop = mTheme->mButtonGradientTopPushed.toNvgColor();
+            gradBot = mTheme->mButtonGradientBotPushed.toNvgColor();
+        }
+        else if (mMouseFocus && mEnabled)
+        {
+            gradTop = mTheme->mButtonGradientTopFocused.toNvgColor();
+            gradBot = mTheme->mButtonGradientBotFocused.toNvgColor();
+        }
+
+        nvgBeginPath(ctx);
+
+        nvgRoundedRect(ctx, 1, 1.0f, ww - 2, hh - 2, mTheme->mButtonCornerRadius - 1);
+
+        if (mBackgroundColor.a() != 0)
+        {
+            Color rgb = mBackgroundColor.rgb();
+            rgb.setAlpha(1.f);
+            nvgFillColor(ctx, rgb.toNvgColor());
+            nvgFill(ctx);
+            if (mPushed)
+            {
+                gradTop.a = gradBot.a = 0.8f;
+            }
+            else
+            {
+                double v = 1 - mBackgroundColor.a();
+                gradTop.a = gradBot.a = mEnabled ? v : v * .5f + .5f;
+            }
+        }
+
+        NVGpaint bg = nvgLinearGradient(ctx, 0, 0, 0, hh, gradTop, gradBot);
+
+        nvgFillPaint(ctx, bg);
+        nvgFill(ctx);
+
+        nvgBeginPath(ctx);
+        nvgStrokeWidth(ctx, 1.0f);
+        nvgRoundedRect(ctx, 0.5f, (mPushed ? 0.5f : 1.5f), ww - 1, hh - 1 - (mPushed ? 0.0f : 1.0f), mTheme->mButtonCornerRadius);
+        nvgStrokeColor(ctx, mTheme->mBorderLight.toNvgColor());
+        nvgStroke(ctx);
+
+        nvgBeginPath(ctx);
+        nvgRoundedRect(ctx, 0.5f, 0.5f, ww - 1, hh - 2, mTheme->mButtonCornerRadius);
+        nvgStrokeColor(ctx, mTheme->mBorderDark.toNvgColor());
+        nvgStroke(ctx);
+
+        nvgEndFrame(ctx);
+#endif
     }
 }

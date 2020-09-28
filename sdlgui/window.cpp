@@ -165,7 +165,7 @@ NAMESPACE_BEGIN(sdlgui)
                 mButtonPanel->setVisible(true);
 
             int w, h;
-            const_cast<Window *>(this)->mTheme->getTextBounds("sans-bold", 18.0, mTitle.c_str(), &w, &h);
+            const_cast<Window *>(this)->mTheme->getTextBounds(const_cast<Window *>(this)->mTheme->mStandardFont.c_str(), 18.0, mTitle.c_str(), &w, &h);
 
             return result.cmax(Vector2i(w + 20, h));
         } else {
@@ -293,7 +293,7 @@ NAMESPACE_BEGIN(sdlgui)
         if (!mBlank) {
             if (_titleTex.dirty) {
                 Color titleTextColor = (mFocused ? mTheme->mWindowTitleFocused : mTheme->mWindowTitleUnfocused);
-                mTheme->getTexAndRectUtf8(renderer, _titleTex, 0, 0, mTitle.c_str(), "sans-bold", 18, titleTextColor);
+                mTheme->getTexAndRectUtf8(renderer, _titleTex, 0, 0, mTitle.c_str(), mTheme->mBoldFont.c_str(), 18, titleTextColor);
             }
 
             if (!mTitle.empty() && _titleTex.tex) {
