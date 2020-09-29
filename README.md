@@ -31,7 +31,7 @@ those features for Pi users.
 
 ![Image Repeater](https://raw.githubusercontent.com/pa28/GuiPi/porting/ScreenShots/ScreenshotRepeater.png)
 
-## [Porting to modern C++.](https://github.com/pa28/HamChrono/blob/main/LanguageFeatures.md)
+## [Porting to modern C++.](https://github.com/pa28/GuiPi/blob/porting/LanguageFeatures.md)
 
 The following are the things that I sought to do
 better on the Raspberry Pi:
