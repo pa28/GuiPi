@@ -163,14 +163,16 @@ namespace sdlgui {
                     cerr << "Complete" << endl;
                 });
                 return;
-            } else if (mTransparentMutex.try_lock()) {
-
+            } else {
                 if (mAzimuthalDisplay) {
-
-                    mForegroundAz.set(SDL_CreateTextureFromSurface(renderer, mTransparentMap.get()));
-                    mForegroundAz.h = mTransparentMap->h;
-                    mForegroundAz.w = mTransparentMap->w;
-                    mForegroundAz.name = "*autogen*";
+                    if (mTransparentReady) {
+                        lock_guard<mutex> lockGuard(mTransparentMutex);
+                        mForegroundAz.set(SDL_CreateTextureFromSurface(renderer, mTransparentMap.get()));
+                        mForegroundAz.h = mTransparentMap->h;
+                        mForegroundAz.w = mTransparentMap->w;
+                        mForegroundAz.name = "*autogen*";
+                        mTransparentReady = false;
+                    }
 
                     SDL_BlendMode mode;
                     SDL_GetTextureBlendMode(mForegroundAz.get(), &mode);
@@ -184,10 +186,14 @@ namespace sdlgui {
                 } else {
                     auto offset = computeOffset();
 
-                    mForeground.set(SDL_CreateTextureFromSurface(renderer, mTransparentMap.get()));
-                    mForeground.h = mTransparentMap->h;
-                    mForeground.w = mTransparentMap->w;
-                    mForeground.name = "*autogen*";
+                    if (mTransparentReady) {
+                        lock_guard<mutex> lockGuard(mTransparentMutex);
+                        mForeground.set(SDL_CreateTextureFromSurface(renderer, mTransparentMap.get()));
+                        mForeground.h = mTransparentMap->h;
+                        mForeground.w = mTransparentMap->w;
+                        mForeground.name = "*autogen*";
+                        mTransparentReady = false;
+                    }
 
                     SDL_BlendMode mode;
                     SDL_GetTextureBlendMode(mForeground.get(), &mode);
@@ -335,6 +341,7 @@ namespace sdlgui {
             }
         }
 
+        mTransparentReady = true;
         mTextureDirty = false;
         gettimeofday(&stop, nullptr);
         long diffs = stop.tv_sec - start.tv_sec;

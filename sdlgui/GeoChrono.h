@@ -59,6 +59,7 @@ namespace sdlgui {
 
         mutex mTransparentMutex;
         thread mTransparentThread;
+        atomic<bool> mTransparentReady{false};
         ImageData mForeground;      //< The foreground image
         ImageData mBackground;      //< The background image
         ImageData mForegroundAz;
