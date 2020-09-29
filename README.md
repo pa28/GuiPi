@@ -1,5 +1,7 @@
 # HamChrono - HamClock reimagined for the RaspberryPi 
 
+![Mercator Projection](https://raw.githubusercontent.com/pa28/GuiPi/porting/ScreenShots/ScreenshotMercator.png)
+
 I have started this project mainly to bring my
 personal desires to the great features available
 from [HamClock](https://www.clearskyinstitute.com/ham/HamClock/).
@@ -8,6 +10,8 @@ my design goals to see if this project may provide
 some benefit to you. I am not here to criticize HamClock,
 only to bring a slightly different vision to packaging
 the features.
+
+![Azimuthal Projection](https://raw.githubusercontent.com/pa28/GuiPi/porting/ScreenShots/ScreenshotAzimuthal.png)
 
 [HamClock](https://www.clearskyinstitute.com/ham/HamClock/)
 by Elwood Downey WB0OEW is an
