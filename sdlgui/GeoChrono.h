@@ -70,7 +70,7 @@ namespace sdlgui {
         Surface mNightMap;          //< The surface holding the night map
         Surface mDayAzMap;          //< The surface holding the generated day Azmuthal map
         Surface mNightAzMap;        //< The surface holding the generated night Azuthal map
-        bool mAzimuthalDisplay{true};
+        bool mAzimuthalDisplay{false};
         bool mTextureDirty{true};   //< True when the image needs to be re-drawn
         bool mMapsDirty{true};      //< True when the map surfaces need to be re-drawn
 
@@ -97,12 +97,7 @@ namespace sdlgui {
         void generateMapSurfaces(SDL_Renderer *renderer);
 
         [[nodiscard]] auto computeOffset() const {
-#if USER_SET_CENTRE_LONG
-            return ((unsigned long) round((mStationLocation.x
-                                           * (double) EARTH_BIG_W) + (double) EARTH_BIG_W / 2)) % EARTH_BIG_W;
-#else
-            return 0;
-#endif
+            return (int)round((2.*M_PI - mStationLocation.x) * ((float)EARTH_BIG_W / (2.f * M_PI))) % EARTH_BIG_W;
         }
 
         struct AsyncTexture;
