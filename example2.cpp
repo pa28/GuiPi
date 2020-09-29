@@ -114,6 +114,7 @@ public:
 
     static constexpr string_view map_path = "maps/";
     static constexpr string_view image_path = "images/";
+    static constexpr string_view background_path = "backgrounds/";
     static constexpr string_view day_map = "day_earth_660x330.png";
     static constexpr string_view night_map = "night_earth_660x330.png";
     static constexpr string_view backdrop = "NASA_Nebula.png";
@@ -266,7 +267,7 @@ public:
                 ->withStationCoordinates(qthLatLon)
                 ->withBackgroundFile(string(map_path) + string(night_map))
                 ->withForegroundFile(string(map_path) + string(day_map))
-                ->withBackdropFile(string(image_path) + string(backdrop))
+                ->withBackdropFile(string(background_path) + string(backdrop))
                 ->withFixedSize(Vector2i(EARTH_BIG_W, EARTH_BIG_H));
 
         controlBar->add<ToolButton>(ENTYPO_ICON_CAMERA, Button::Flags::ToggleButton)->_and()
