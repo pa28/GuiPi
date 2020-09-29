@@ -111,6 +111,11 @@ protected:
     sdlgui::ref<Window> mPopupWindow;
 
 public:
+    ~TestWindow() override {
+        cout << __PRETTY_FUNCTION__ << '\n';
+        disposeWindow(mMainWindow.get());
+    }
+
     template<typename T>
     constexpr T deg2rad(T deg) { return deg * M_PI / 180.; }
 
@@ -300,9 +305,6 @@ public:
         performLayout(mSDL_Renderer);
     }
 
-    ~TestWindow() {
-    }
-
     virtual bool keyboardEvent(int key, int scancode, int action, int modifiers) {
         if (Screen::keyboardEvent(key, scancode, action, modifiers))
             return true;
@@ -381,7 +383,7 @@ int main(int /* argc */, char ** /* argv */) {
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-    TestWindow *screen = new TestWindow(window, winWidth, winHeight);
+    sdlgui::ref<TestWindow> screen = new TestWindow(window, winWidth, winHeight);
 
 #if 1
     screen->eventLoop();
@@ -422,5 +424,6 @@ int main(int /* argc */, char ** /* argv */) {
         return -1;
     }
 #endif
+    SDL_DestroyRenderer(renderer);
     return 0;
 }
