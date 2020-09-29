@@ -104,6 +104,7 @@ namespace sdlgui {
             }
 #endif
         }
+        closedir(dp);
         return result;
     }
 
