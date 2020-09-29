@@ -8,8 +8,6 @@
 #include <functional>
 #include <thread>
 #include <iostream>
-#include <sys/time.h>
-#include <stdio.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_pixels.h>
@@ -26,6 +24,14 @@
 
 namespace sdlgui {
 
+    /**
+     * Handle mouse motion events
+     * @param p postion of the mouse
+     * @param rel the relative motion since the last event
+     * @param button which button was actioned (it must be down)
+     * @param modifiers keyboard modifiers
+     * @return true if processed.
+     */
     bool GeoChrono::mouseMotionEvent(const Vector2i &p, const Vector2i &rel, int button,
                                      int modifiers) {
         if (button) {
@@ -40,6 +46,14 @@ namespace sdlgui {
         return Widget::mouseMotionEvent(p, rel, button, modifiers);
     }
 
+    /**
+     * Handle mouse button events
+     * @param p postion of the mouse
+     * @param button which button was actioned
+     * @param down true if the button is down
+     * @param modifiers keyboard modifiers
+     * @return true if processed.
+     */
     bool GeoChrono::mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers) {
         if (button) {
             if (down) {
@@ -112,6 +126,17 @@ namespace sdlgui {
         Bp = B;
     }
 
+    /**
+     * Transform a Mercator map pixel into an Azimuthal map latitude and longitude in radians
+     * @param x The map x pixel location 0 on the left
+     * @param y The map y pixel location 0 at the top
+     * @param mapSize the width (x) and height (y) of the map in pixels
+     * @param location the longitude (x) and latitude (y) of the center of the projection
+     * @param siny pre-computed sine of the latitude
+     * @param cosy pre-computed cosine of the latitude
+     * @return [valid, latitude, longitude ], valid if the pixel is on the Earth,
+     * latitude -PI..+PI West to East, longitude +PI/2..-PI/2 North to South
+     */
     tuple<bool, float, float>
     xyToAzLatLong(int x, int y, const Vector2i &mapSize, const Vector2f &location, float siny, float cosy) {
         bool onAntipode = x > mapSize.x / 2;
@@ -135,6 +160,10 @@ namespace sdlgui {
         return tuple<bool, float, float>{false, 0, 0};
     }
 
+    /**
+     * Draw the Geographic Chronograph
+     * @param renderer
+     */
     void GeoChrono::draw(SDL_Renderer *renderer) {
         int ax = getAbsoluteLeft();
         int ay = getAbsoluteTop();
@@ -142,31 +171,40 @@ namespace sdlgui {
         PntRect clip = getAbsoluteCliprect();
         SDL_Rect clipRect = pntrect2srect(clip);
 
+        /**
+         * Maps are dirty when the base images have changed, or been loaded.
+         */
         if (mMapsDirty) {
             generateMapSurfaces(renderer);
         }
 
-        if (mDayMap) {
+        // Ensure all the maps are here
+        if (mDayMap && mNightMap && mDayAzMap and mNightAzMap) {
             Vector2i p = Vector2i(0, 0);
             p += Vector2i(ax, ay);
             int imgw = mForeground.w;
             int imgh = mForeground.h;
 
+            // If the asynchronous drawing thread is done, join it.
             if (mTransparentThread.joinable()) {
                 mTransparentThread.join();
             }
 
+            // Textures are dirty when there is an event that makes them out of date with the
+            // desired display state. Periodically for the sun illumination foot print.
+            // Spawn up a thread to get things back in sync in the background.
             if (mTextureDirty) {
-                mTextureDirty = false;
                 mTransparentThread = thread([this, renderer]() {
-                    cerr << "Thread starting" << endl;
                     lock_guard<mutex> lockGuard(mTransparentMutex);
                     transparentForeground();
+                    mTextureDirty = false;
                 });
             }
 
+            // Regardless of the current state carry on using the old textures until new ones are ready.
+
+            // If they are ready, replace the old ones.
             if (mTransparentReady) {
-                cerr << "Getting new" << endl;
                 lock_guard<mutex> lockGuard(mTransparentMutex);
 
                 mForegroundAz.set(SDL_CreateTextureFromSurface(renderer, mTransparentMapAz.get()));
@@ -183,6 +221,8 @@ namespace sdlgui {
                 mTransparentReady = false;
             }
 
+            // Display the map with solar illumination by stacking the day map (transparent where it is dark)
+            // on top of the night map.
             if (mAzimuthalDisplay) {
                 SDL_BlendMode mode;
                 SDL_GetTextureBlendMode(mForegroundAz.get(), &mode);
@@ -216,8 +256,13 @@ namespace sdlgui {
         Widget::draw(renderer);
     }
 
+    /**
+     * Generate Mercator and Azimuthal maps from a set of Mercator maps which are images on disk.
+     * @param renderer
+     */
     void GeoChrono::generateMapSurfaces(SDL_Renderer *renderer) {
 
+        // Initialize surfaces for each layer of each map including transparent versions of the day map
         mTransparentMap.reset(SDL_CreateRGBSurface(0, EARTH_BIG_W, EARTH_BIG_H, 32, rmask, gmask, bmask, amask));
         mTransparentMapAz.reset(SDL_CreateRGBSurface(0, EARTH_BIG_W, EARTH_BIG_H, 32, rmask, gmask, bmask, amask));
         mDayMap.reset(SDL_CreateRGBSurface(0, EARTH_BIG_W, EARTH_BIG_H, 32, rmask, gmask, bmask, amask));
@@ -225,12 +270,15 @@ namespace sdlgui {
         mDayAzMap.reset(SDL_CreateRGBSurface(0, EARTH_BIG_W, EARTH_BIG_H, 32, rmask, gmask, bmask, amask));
         mNightAzMap.reset(SDL_CreateRGBSurface(0, EARTH_BIG_W, EARTH_BIG_H, 32, rmask, gmask, bmask, amask));
 
+        // Use a temporary surface to load the maps and BLIT them onto the Mercator surfaces.
+        // This corrects for any size anomalies
         Surface pngFile;
         pngFile.reset(IMG_Load(mForeground.path.c_str()));
         SDL_BlitSurface(pngFile.get(), nullptr, mDayMap.get(), nullptr);
         pngFile.reset(IMG_Load(mBackground.path.c_str()));
         SDL_BlitSurface(pngFile.get(), nullptr, mNightMap.get(), nullptr);
 
+        // Compute Azmuthal maps from the Mercator maps
         float siny = sin(mStationLocation.y);
         float cosy = cos(mStationLocation.y);
         for (int y = 0; y < mDayMap->h; y += 1) {
@@ -250,6 +298,7 @@ namespace sdlgui {
             }
         }
 
+        // The background (night) maps are good the way they are so save them for later.
         mBackground.set(SDL_CreateTextureFromSurface(renderer, mNightMap.get()));
         mBackground.w = EARTH_BIG_W;
         mBackground.h = EARTH_BIG_H;
@@ -260,15 +309,26 @@ namespace sdlgui {
         mBackgroundAz.h = EARTH_BIG_H;
         mBackgroundAz.name = "*auto_gen*";
 
+        // The maps are good, but not current for the situation.
         mMapsDirty = false;
         mTextureDirty = true;
     }
 
+    /**
+     * The callback stub for the timer that invalidates the textures at regular intervals
+     * so the solar illumination can be kept in time with real life.
+     * @param interval
+     * @return
+     */
     Uint32 GeoChrono::timerCallback(Uint32 interval) {
         mTextureDirty = true;
         return interval;
     }
 
+    /**
+     * Compute the sub-solar geographic coordinates, used in plotting the solar ilumination.
+     * @return a tuple with the latitude, longitude in radians
+     */
     std::tuple<double, double> subSolar() {
         using namespace std::chrono;
         auto epoch = system_clock::now();
@@ -290,11 +350,10 @@ namespace sdlgui {
         return std::make_tuple(lat, lng);
     }
 
+    /**
+     * Plot the solar illumination area in the Alpha channel of the daytime map for Mercator and Azimuthal.
+     */
     void GeoChrono::transparentForeground() {
-        struct timeval start;
-        struct timeval stop;
-
-        gettimeofday(&start, nullptr);
 
         mTransparentMap.reset(SDL_CreateRGBSurface(0, mDayMap->w, mDayMap->h, 32, rmask, gmask, bmask, amask));
         mTransparentMapAz.reset(SDL_CreateRGBSurface(0, mDayMap->w, mDayMap->h, 32, rmask, gmask, bmask, amask));
@@ -308,6 +367,10 @@ namespace sdlgui {
         auto[latS, lonS] = subSolar();
         float siny = sin(mStationLocation.y);
         float cosy = cos(mStationLocation.y);
+
+        // Three loops for: Longitude, Latitude, and map form (Mercator, Azimuthal).
+        // This lets us use the common calculations without repeating them, easier than
+        // debugging two areas with the same computation.
         for (int x = 0; x < mTransparentMap->w; x += 1) {
             for (int y = 0; y < mTransparentMap->h; y += 1) {
                 for (int az = 0; az < 2; ++az) {
@@ -316,12 +379,14 @@ namespace sdlgui {
                     float latE;
                     float lonE;
                     if (az == 1) {
+                        // The Azimuthal coordinates that correspond to a map pixel
                         auto tuple = xyToAzLatLong(x, y, Vector2i(EARTH_BIG_W, EARTH_BIG_H),
                                                    mStationLocation, siny, cosy);
                         valid = get<0>(tuple);
                         latE = get<1>(tuple);
                         lonE = get<2>(tuple);
                     } else {
+                        // The Mercator coordinates for the same map pixel
                         valid = true;
                         lonE = (float) ((float) x - (float) mTransparentMap->w / 2.f) * (float) M_PI /
                                (float) ((float) mTransparentMap->w / 2.);
@@ -329,6 +394,9 @@ namespace sdlgui {
                                (float) ((float) mTransparentMap->h / 2.);
                     }
                     if (valid) {
+                        // Compute the amont of solar illumination and use it to compute the pixel alpha value
+                        // GrayLineCos sets the interior angle between the sub-solar point and the location.
+                        // GrayLinePower sets how fast it gets dark.
                         auto cosDeltaSigma = sin(latS) * sin(latE) + cos(latS) * cos(latE) * cos(abs(lonS - lonE));
                         double fract_day;
                         if (cosDeltaSigma < 0) {
@@ -336,9 +404,11 @@ namespace sdlgui {
                                 fract_day = 1.0 - pow(cosDeltaSigma / GrayLineCos, GrayLinePow);
                                 alpha = (uint32_t) (fract_day * 247.0) + 8;
                             } else
-                                alpha = 8;
+                                alpha = 8;  // Set the minimun alpha to keep some daytime colour on the night side
                         }
                     }
+
+                    // Set the alpha channel in the appropriate map.
                     if (az == 1) {
                         auto pixel = set_a_value(mTransparentMapAz.pixel(x, y), alpha);
                         mTransparentMapAz.pixel(x, y) = pixel;
@@ -350,14 +420,7 @@ namespace sdlgui {
             }
         }
 
+        // They're ready!
         mTransparentReady = true;
-        gettimeofday(&stop, nullptr);
-        long diffs = stop.tv_sec - start.tv_sec;
-        long diffu = stop.tv_usec - start.tv_usec;
-        if (diffu < 0) {
-            diffs--;
-            diffu += 1000000;
-        }
-        fprintf(stderr, "Texs Dirty: %ld.%06ld\n", diffs, diffu);
     }
 }
