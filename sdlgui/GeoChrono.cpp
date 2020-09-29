@@ -178,6 +178,14 @@ namespace sdlgui {
             generateMapSurfaces(renderer);
         }
 
+        if (mBackdropDirty) {
+            mBackdropDirty = false;
+            mBackdropImage.reset(IMG_Load(mBackdropTex.path.c_str()));
+            if (mBackdropImage) {
+                mBackdropTex.set(SDL_CreateTextureFromSurface(renderer, mBackdropImage.get()));
+            }
+        }
+
         // Ensure all the maps are here
         if (mDayMap && mNightMap && mDayAzMap and mNightAzMap) {
             Vector2i p = Vector2i(0, 0);
@@ -231,6 +239,8 @@ namespace sdlgui {
 
                 SDL_Rect src{0, 0, mForegroundAz.w, mForegroundAz.h};
                 SDL_Rect dst{p.x, p.y, mForegroundAz.w, mForegroundAz.h};
+                if (mBackdropTex)
+                    SDL_RenderCopy(renderer, mBackdropTex.get(), &src, &dst);
                 SDL_RenderCopy(renderer, mBackgroundAz.get(), &src, &dst);
                 SDL_RenderCopy(renderer, mForegroundAz.get(), &src, &dst);
             } else {
@@ -406,7 +416,8 @@ namespace sdlgui {
                             } else
                                 alpha = 8;  // Set the minimun alpha to keep some daytime colour on the night side
                         }
-                    }
+                    } else
+                        alpha = 0;
 
                     // Set the alpha channel in the appropriate map.
                     if (az == 1) {

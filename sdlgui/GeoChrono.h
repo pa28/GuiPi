@@ -64,12 +64,15 @@ namespace sdlgui {
         ImageData mBackground;      //< The background image
         ImageData mForegroundAz;
         ImageData mBackgroundAz;
+        ImageData mBackdropTex;
         Surface mTransparentMap;    //< The surface holding the day map with transparency
         Surface mTransparentMapAz;  //< The surface holding the day azmuthal map with transparency
         Surface mDayMap;            //< The surface holding the day map
         Surface mNightMap;          //< The surface holding the night map
         Surface mDayAzMap;          //< The surface holding the generated day Azmuthal map
         Surface mNightAzMap;        //< The surface holding the generated night Azuthal map
+        Surface mBackdropImage;
+        bool mBackdropDirty;
         bool mAzimuthalDisplay{false};
         bool mTextureDirty{true};   //< True when the image needs to be re-drawn
         bool mMapsDirty{true};      //< True when the map surfaces need to be re-drawn
@@ -136,6 +139,12 @@ namespace sdlgui {
         ref<GeoChrono> withForegroundFile(const string &filePath) {
             mForeground.path = filePath;
             mMapsDirty = true;
+            return this;
+        }
+
+        ref<GeoChrono> withBackdropFile(const string &filePath) {
+            mBackdropTex.path = filePath;
+            mBackdropDirty = true;
             return this;
         }
 
