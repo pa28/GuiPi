@@ -18,8 +18,10 @@
 #include "GeoChrono.h"
 
 #include "nanovg.h"
+
 #define NANOVG_RT_IMPLEMENTATION
 #define NANORT_IMPLEMENTATION
+
 #include "nanovg_rt.h"
 
 namespace sdlgui {
@@ -115,7 +117,7 @@ namespace sdlgui {
         bool onAntipode = x > mapSize.x / 2;
         auto w2 = (mapSize.y / 2) * (mapSize.y / 2);
         auto dx = onAntipode ? x - (3 * mapSize.x) / 4 : x - mapSize.x / 4;
-        auto dy = mapSize.y/2 - y;
+        auto dy = mapSize.y / 2 - y;
         auto r2 = dx * dx + dy * dy;    // radius squared
 
         if (r2 <= w2) {
@@ -152,67 +154,62 @@ namespace sdlgui {
 
             if (mTransparentThread.joinable()) {
                 mTransparentThread.join();
-                cerr << "Thread joined" << endl;
             }
 
             if (mTextureDirty) {
                 mTextureDirty = false;
-                lock_guard<mutex> lockGuard(mTransparentMutex);
-                cerr << "Thread Started" << endl;
-                mTransparentThread = thread([this,renderer](){
-                    transparentForeground();
-                    cerr << "Complete" << endl;
-                });
-                return;
-            } else {
-                if (mTransparentReady) {
-                    cerr << "Getting new" << endl;
+                mTransparentThread = thread([this, renderer]() {
+                    cerr << "Thread starting" << endl;
                     lock_guard<mutex> lockGuard(mTransparentMutex);
-                    if (mAzimuthalDisplay) {
-                        mForegroundAz.set(SDL_CreateTextureFromSurface(renderer, mTransparentMap.get()));
-                        mForegroundAz.h = mTransparentMap->h;
-                        mForegroundAz.w = mTransparentMap->w;
-                        mForegroundAz.name = "*autogen*";
-                    } else {
-                        mForeground.set(SDL_CreateTextureFromSurface(renderer, mTransparentMap.get()));
-                        mForeground.h = mTransparentMap->h;
-                        mForeground.w = mTransparentMap->w;
-                        mForeground.name = "*autogen*";
-                        mTransparentReady = false;
-                    }
-                    mTransparentReady = false;
-                } else
-                    cerr << "using old" << endl;
+                    transparentForeground();
+                });
+            }
 
+            if (mTransparentReady) {
+                cerr << "Getting new" << endl;
+                lock_guard<mutex> lockGuard(mTransparentMutex);
                 if (mAzimuthalDisplay) {
-                    SDL_BlendMode mode;
-                    SDL_GetTextureBlendMode(mForegroundAz.get(), &mode);
-                    SDL_SetTextureBlendMode(mForegroundAz.get(), SDL_BLENDMODE_BLEND);
-                    SDL_SetTextureBlendMode(mBackgroundAz.get(), SDL_BLENDMODE_BLEND);
-
-                    SDL_Rect src{0, 0, mForegroundAz.w, mForegroundAz.h};
-                    SDL_Rect dst{p.x, p.y, mForegroundAz.w, mForegroundAz.h};
-                    SDL_RenderCopy(renderer, mBackgroundAz.get(), &src, &dst);
-                    SDL_RenderCopy(renderer, mForegroundAz.get(), &src, &dst);
+                    mForegroundAz.set(SDL_CreateTextureFromSurface(renderer, mTransparentMap.get()));
+                    mForegroundAz.h = mTransparentMap->h;
+                    mForegroundAz.w = mTransparentMap->w;
+                    mForegroundAz.name = "*autogen*";
                 } else {
-                    auto offset = computeOffset();
-
-                    SDL_BlendMode mode;
-                    SDL_GetTextureBlendMode(mForeground.get(), &mode);
-                    SDL_SetTextureBlendMode(mForeground.get(), SDL_BLENDMODE_BLEND);
-                    SDL_SetTextureBlendMode(mBackground.get(), SDL_BLENDMODE_BLEND);
-
-                    SDL_Rect src0{mForeground.w - (int) offset, 0, (int) offset, imgh};
-                    SDL_Rect dst0{p.x, p.y, (int) offset, imgh};
-                    SDL_RenderCopy(renderer, mBackground.get(), &src0, &dst0);
-                    SDL_RenderCopy(renderer, mForeground.get(), &src0, &dst0);
-
-                    SDL_Rect src1{0, 0, mForeground.w - (int) offset, imgh};
-                    SDL_Rect dst1{p.x + (int) offset, p.y, mForeground.w - (int) offset, imgh};
-                    SDL_RenderCopy(renderer, mBackground.get(), &src1, &dst1);
-                    SDL_RenderCopy(renderer, mForeground.get(), &src1, &dst1);
+                    mForeground.set(SDL_CreateTextureFromSurface(renderer, mTransparentMap.get()));
+                    mForeground.h = mTransparentMap->h;
+                    mForeground.w = mTransparentMap->w;
+                    mForeground.name = "*autogen*";
+                    mTransparentReady = false;
                 }
-                mTransparentMutex.unlock();
+                mTransparentReady = false;
+            }
+
+            if (mAzimuthalDisplay) {
+                SDL_BlendMode mode;
+                SDL_GetTextureBlendMode(mForegroundAz.get(), &mode);
+                SDL_SetTextureBlendMode(mForegroundAz.get(), SDL_BLENDMODE_BLEND);
+                SDL_SetTextureBlendMode(mBackgroundAz.get(), SDL_BLENDMODE_BLEND);
+
+                SDL_Rect src{0, 0, mForegroundAz.w, mForegroundAz.h};
+                SDL_Rect dst{p.x, p.y, mForegroundAz.w, mForegroundAz.h};
+                SDL_RenderCopy(renderer, mBackgroundAz.get(), &src, &dst);
+                SDL_RenderCopy(renderer, mForegroundAz.get(), &src, &dst);
+            } else {
+                auto offset = computeOffset();
+
+                SDL_BlendMode mode;
+                SDL_GetTextureBlendMode(mForeground.get(), &mode);
+                SDL_SetTextureBlendMode(mForeground.get(), SDL_BLENDMODE_BLEND);
+                SDL_SetTextureBlendMode(mBackground.get(), SDL_BLENDMODE_BLEND);
+
+                SDL_Rect src0{mForeground.w - (int) offset, 0, (int) offset, imgh};
+                SDL_Rect dst0{p.x, p.y, (int) offset, imgh};
+                SDL_RenderCopy(renderer, mBackground.get(), &src0, &dst0);
+                SDL_RenderCopy(renderer, mForeground.get(), &src0, &dst0);
+
+                SDL_Rect src1{0, 0, mForeground.w - (int) offset, imgh};
+                SDL_Rect dst1{p.x + (int) offset, p.y, mForeground.w - (int) offset, imgh};
+                SDL_RenderCopy(renderer, mBackground.get(), &src1, &dst1);
+                SDL_RenderCopy(renderer, mForeground.get(), &src1, &dst1);
             }
         }
 
@@ -238,13 +235,14 @@ namespace sdlgui {
         for (int y = 0; y < mDayMap->h; y += 1) {
             for (int x = 0; x < mDayMap->w; x += 1) {
                 // Radius from centre of the hempishpere
-                auto[valid, lat, lon] = xyToAzLatLong(x, y, Vector2i(EARTH_BIG_W, EARTH_BIG_H), mStationLocation, siny, cosy);
+                auto[valid, lat, lon] = xyToAzLatLong(x, y, Vector2i(EARTH_BIG_W, EARTH_BIG_H), mStationLocation, siny,
+                                                      cosy);
                 auto lat_d = rad2deg(lat);
                 auto lon_d = rad2deg(lon);
 
                 if (valid) {
-                    auto xx = min(EARTH_BIG_W-1,(int) round((float) EARTH_BIG_W * ((lon + M_PI) / (2 * M_PI))));
-                    auto yy = min(EARTH_BIG_H-1,(int) round((float) EARTH_BIG_H * ((M_PI_2 - lat) / M_PI)));
+                    auto xx = min(EARTH_BIG_W - 1, (int) round((float) EARTH_BIG_W * ((lon + M_PI) / (2 * M_PI))));
+                    auto yy = min(EARTH_BIG_H - 1, (int) round((float) EARTH_BIG_H * ((M_PI_2 - lat) / M_PI)));
                     mDayAzMap.pixel(x, y) = mDayMap.pixel(xx, yy);
                     mNightAzMap.pixel(x, y) = mNightMap.pixel(xx, yy);
                 }
@@ -291,10 +289,9 @@ namespace sdlgui {
         return std::make_tuple(lat, lng);
     }
 
-    void GeoChrono::transparentForeground()
-    {
-        struct timeval  start;
-        struct timeval  stop;
+    void GeoChrono::transparentForeground() {
+        struct timeval start;
+        struct timeval stop;
 
         gettimeofday(&start, nullptr);
 
@@ -324,8 +321,10 @@ namespace sdlgui {
                     lonE = get<2>(tuple);
                 } else {
                     valid = true;
-                    lonE = (float) ((float)x - (float)mTransparentMap->w / 2.f) * (float)M_PI / (float) ((float)mTransparentMap->w / 2.);
-                    latE = (float) ((float)mTransparentMap->h / 2.f - (float)y) * (float)M_PI_2 / (float) ((float)mTransparentMap->h / 2.);
+                    lonE = (float) ((float) x - (float) mTransparentMap->w / 2.f) * (float) M_PI /
+                           (float) ((float) mTransparentMap->w / 2.);
+                    latE = (float) ((float) mTransparentMap->h / 2.f - (float) y) * (float) M_PI_2 /
+                           (float) ((float) mTransparentMap->h / 2.);
                 }
                 if (valid) {
                     auto cosDeltaSigma = sin(latS) * sin(latE) + cos(latS) * cos(latE) * cos(abs(lonS - lonE));
@@ -344,7 +343,6 @@ namespace sdlgui {
         }
 
         mTransparentReady = true;
-        mTextureDirty = false;
         gettimeofday(&stop, nullptr);
         long diffs = stop.tv_sec - start.tv_sec;
         long diffu = stop.tv_usec - start.tv_usec;
@@ -352,6 +350,6 @@ namespace sdlgui {
             diffs--;
             diffu += 1000000;
         }
-        fprintf( stderr, "Texs Dirty: %ld.%06ld\n", diffs, diffu);
+        fprintf(stderr, "Texs Dirty: %ld.%06ld\n", diffs, diffu);
     }
 }
