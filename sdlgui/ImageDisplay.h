@@ -32,7 +32,7 @@ namespace sdlgui {
          * Set the texture to be repeated
          * @param texture
          */
-        void setTexture(SDL_Texture *texture);
+        void setTexture(SDL_Texture *texture, const string &caption);
 
     public:
         ImageRepeater() = delete;
@@ -181,7 +181,10 @@ namespace sdlgui {
         void repeatImage() {
             if (mImageRepeater && !mImages.empty()) {
                 mImageIndex %= mImages.size();
-                mImageRepeater->setTexture(mImages[mImageIndex].get());
+                auto p = mImages[mImageIndex].name.find_last_of(".");
+                auto caption = p ? mImages[mImageIndex].name.substr(0, p) : mImages[mImageIndex].name;
+
+                mImageRepeater->setTexture(mImages[mImageIndex].get(), caption);
             }
         }
 

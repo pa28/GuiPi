@@ -246,7 +246,7 @@ public:
         auto sun_images = loadImageDataDirectory(mSDL_Renderer, string(image_path));
 
         // Create an image repeater to use with the image display.
-        auto imageRepeater = add<ImageRepeater>(Vector2i(0, 0), Vector2i(440, 440));
+        auto imageRepeater = add<ImageRepeater>(Vector2i(210, 0), Vector2i(450, 450));
         topArea->add<ImageDisplay>()->withImages(sun_images)
                 ->withRepeater(imageRepeater)
                 ->setCallback([=](ImageDisplay &w, ImageDisplay::EventType e) {

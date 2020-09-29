@@ -192,11 +192,11 @@ NAMESPACE_BEGIN(sdlgui)
                 mButtonPanel->setVisible(false);
                 Widget::performLayout(ctx);
                 for (auto w : mButtonPanel->children()) {
-                    w->setFixedSize({22, 22});
-                    w->setFontSize(15);
+                    w->setFixedSize({35, 35});
+                    w->setFontSize(35);
                 }
                 mButtonPanel->setVisible(true);
-                mButtonPanel->setSize({width(), 22});
+                mButtonPanel->setSize({width(), 35});
                 mButtonPanel->setPosition({width() - (mButtonPanel->preferredSize(ctx).x + 5), 3});
                 mButtonPanel->performLayout(ctx);
             }
