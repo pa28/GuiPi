@@ -34,7 +34,7 @@ those features for Pi users.
 The following are the things that I sought to do
 better on the Raspberry Pi:
 * HamClock, like most Arduino programs (including
-my own) is based on an endless loop with limited or
+my own), is based on an endless loop with limited or
 no event driven architecture. This is an appropriate
 design for Arduino, but on a pre-emptive multi-taksing
 operating system it leads to programs that run flat out
