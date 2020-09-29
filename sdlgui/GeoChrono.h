@@ -8,6 +8,8 @@
 
 #include <utility>
 #include <chrono>
+#include <mutex>
+#include <thread>
 #include <sdlgui/widget.h>
 #include <sdlgui/TimeBox.h>
 #include <sdlgui/Image.h>
@@ -55,10 +57,13 @@ namespace sdlgui {
             }
         };
 
+        mutex mTransparentMutex;
+        thread mTransparentThread;
         ImageData mForeground;      //< The foreground image
         ImageData mBackground;      //< The background image
         ImageData mForegroundAz;
         ImageData mBackgroundAz;
+        Surface mTransparentMap;    //< The surface holding the day map with transparency
         Surface mDayMap;            //< The surface holding the day map
         Surface mNightMap;          //< The surface holding the night map
         Surface mDayAzMap;          //< The surface holding the generated day Azmuthal map
@@ -109,7 +114,7 @@ namespace sdlgui {
          * @param parent
          */
         explicit GeoChrono(Widget *parent) : Widget(parent), mTimer(*this, &GeoChrono::timerCallback, 60000),
-                               mDayMap{nullptr}, mNightMap{nullptr}, mStationLocation{0} {}
+                               mDayMap{nullptr}, mNightMap{nullptr}, mTransparentMap{nullptr}, mStationLocation{0} {}
 
         bool mouseMotionEvent(const Vector2i &p, const Vector2i &rel, int button, int modifiers) override;
 
@@ -202,7 +207,7 @@ namespace sdlgui {
 
         bool azmuthalDisplay() const { return mAzimuthalDisplay; }
 
-        void renderBodyTexture(NVGcontext *&ctx, int &realw, int &realh);
+        void transparentForeground();
 
     };
 
