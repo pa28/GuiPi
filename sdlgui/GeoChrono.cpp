@@ -156,6 +156,7 @@ namespace sdlgui {
             }
 
             if (mTextureDirty) {
+                mTextureDirty = false;
                 lock_guard<mutex> lockGuard(mTransparentMutex);
                 cerr << "Thread Started" << endl;
                 mTransparentThread = thread([this,renderer](){
@@ -164,16 +165,26 @@ namespace sdlgui {
                 });
                 return;
             } else {
-                if (mAzimuthalDisplay) {
-                    if (mTransparentReady) {
-                        lock_guard<mutex> lockGuard(mTransparentMutex);
+                if (mTransparentReady) {
+                    cerr << "Getting new" << endl;
+                    lock_guard<mutex> lockGuard(mTransparentMutex);
+                    if (mAzimuthalDisplay) {
                         mForegroundAz.set(SDL_CreateTextureFromSurface(renderer, mTransparentMap.get()));
                         mForegroundAz.h = mTransparentMap->h;
                         mForegroundAz.w = mTransparentMap->w;
                         mForegroundAz.name = "*autogen*";
+                    } else {
+                        mForeground.set(SDL_CreateTextureFromSurface(renderer, mTransparentMap.get()));
+                        mForeground.h = mTransparentMap->h;
+                        mForeground.w = mTransparentMap->w;
+                        mForeground.name = "*autogen*";
                         mTransparentReady = false;
                     }
+                    mTransparentReady = false;
+                } else
+                    cerr << "using old" << endl;
 
+                if (mAzimuthalDisplay) {
                     SDL_BlendMode mode;
                     SDL_GetTextureBlendMode(mForegroundAz.get(), &mode);
                     SDL_SetTextureBlendMode(mForegroundAz.get(), SDL_BLENDMODE_BLEND);
@@ -185,15 +196,6 @@ namespace sdlgui {
                     SDL_RenderCopy(renderer, mForegroundAz.get(), &src, &dst);
                 } else {
                     auto offset = computeOffset();
-
-                    if (mTransparentReady) {
-                        lock_guard<mutex> lockGuard(mTransparentMutex);
-                        mForeground.set(SDL_CreateTextureFromSurface(renderer, mTransparentMap.get()));
-                        mForeground.h = mTransparentMap->h;
-                        mForeground.w = mTransparentMap->w;
-                        mForeground.name = "*autogen*";
-                        mTransparentReady = false;
-                    }
 
                     SDL_BlendMode mode;
                     SDL_GetTextureBlendMode(mForeground.get(), &mode);
