@@ -4,20 +4,51 @@
 
 #pragma onece
 
+#include <SDL.h>
 #include <sdlgui/common.h>
 #include <sdlgui/widget.h>
 #include <sdlgui/Image.h>
+#include <sdlgui/window.h>
 #include <functional>
 #include <utility>
+#include "screen.h"
 
 namespace sdlgui {
 
+    class ImageDisplay;
+
+    /**
+     * A class to repeat display an image, usually in a larger size.
+     */
+    class ImageRepeater : public Window {
+        friend class ImageDisplay;
+
+    private:
+
+        sdlgui::ref<ImageDisplay> mImageDisplay;        //< Local image display, the repeater
+        sdlgui::ref<ImageDisplay> mParentImageDisplay;  //< Parent image display, source of the image
+
+        /**
+         * Set the texture to be repeated
+         * @param texture
+         */
+        void setTexture(SDL_Texture *texture);
+
+    public:
+        ImageRepeater() = delete;
+
+        ~ImageRepeater() override = default;
+
+        ImageRepeater(Widget *parent, const Vector2i &position, const Vector2i &fixedSize);
+    };
 
     /**
      * @class ImageDisplay
      * A minimalist Image display widget capable of resizing and displaying one image on an ImageList
      */
     class ImageDisplay : public Widget {
+        friend class ImageRepeater;
+
     public:
         enum EventType {
             UP_EVENT, LEFT_EVENT, DOWN_EVENT, RIGHT_EVENT, CLICK_EVENT
@@ -34,16 +65,27 @@ namespace sdlgui {
         Vector2i mMotionStart{};    //< The starting point of the motion;
         Vector2i mMotionEnd{};      //< The ending point of the motion;
 
+        SDL_Texture *mRepeatedTexture{nullptr};
+        ref<ImageRepeater> mImageRepeater;
+
         std::function<void(ImageDisplay &, EventType)> mCallback;
+
+        void setTexture(SDL_Texture *texture) {
+            mRepeatedTexture = texture;
+            mTextureDirty = true;
+            dynamic_cast<Screen*>(window()->parent())->moveWindowToFront(window());
+            window()->setVisible(true);
+        }
 
     public:
         ImageDisplay() = delete;
+
         /**
          * (Constructor)
          * Construct an empty ImageDisplay
          * @param parent the parent widget
          */
-        ImageDisplay(Widget *parent) : Widget(parent) {}
+        explicit ImageDisplay(Widget *parent) : Widget(parent) {}
 
         /**
          * (Constructor)
@@ -97,6 +139,9 @@ namespace sdlgui {
          */
         void draw(SDL_Renderer *renderer) override;
 
+        /// Compute the preferred size of the widget
+        Vector2i preferredSize(SDL_Renderer *ctx) const override;
+
         /**
          * Building help, add a List of Images
          * @param listImages
@@ -117,6 +162,27 @@ namespace sdlgui {
         ref<ImageDisplay> withImageIndex(const long idx) {
             mImageIndex = idx % (long)mImages.size();
             return this;
+        }
+
+        /**
+         * Add an ImageRepater to this display
+         * @param repeater the repeater
+         * @return a reference to this ImageDisplay
+         */
+        ref<ImageDisplay> withRepeater(ref<ImageRepeater> repeater) {
+            mImageRepeater = std::move(repeater);
+            mImageRepeater->mParentImageDisplay = ref<ImageDisplay>{this};
+            return this;
+        }
+
+        /**
+         * Repeate the currently selected image on an ImageRepeater if one has been configured.
+         */
+        void repeatImage() {
+            if (mImageRepeater && !mImages.empty()) {
+                mImageIndex %= mImages.size();
+                mImageRepeater->setTexture(mImages[mImageIndex].get());
+            }
         }
 
         /**
@@ -145,6 +211,10 @@ namespace sdlgui {
         ref<ImageDisplay> setCallback(const std::function<void(ImageDisplay &, EventType)> &callback) {
             mCallback = callback;
             return this;
+        }
+
+        const string &getImageTitle() const {
+            return mImages[mImageIndex].name;
         }
 
     };

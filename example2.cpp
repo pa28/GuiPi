@@ -107,6 +107,8 @@ protected:
 
     sdlgui::ref<GeoChrono> mGeoChrono;
     sdlgui::ref<ToolButton> mAzmuthalButton;
+    sdlgui::ref<Window> mMainWindow;
+    sdlgui::ref<Window> mPopupWindow;
 
 public:
     template<typename T>
@@ -204,16 +206,16 @@ public:
         Vector2i botAreaSize(mScreenSize.x, mScreenSize.y - topAreaSize.y);
         Vector2i sideBarSize(mScreenSize.x - mapAreaSize.x, mapAreaSize.y);
 
-        auto nwindow = add<Window>("", Vector2i::Zero())->withBlank(true)
+        mMainWindow = add<Window>("", Vector2i::Zero())->withBlank(true)
                 ->withFixedSize(mScreenSize)
                 ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 0, 0);
 
-        auto topArea = nwindow->add<Widget>()
+        auto topArea = mMainWindow->add<Widget>()
                 ->withFixedSize(topAreaSize)
                 ->withId("topArea")
                 ->withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 0, 0);
 
-        auto botArea = nwindow->add<Widget>()
+        auto botArea = mMainWindow->add<Widget>()
                 ->withFixedSize(botAreaSize)
                 ->withId("botArea")
                 ->withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 0, 0);
@@ -241,10 +243,13 @@ public:
 
         sideBar->add<TimeBox>(true, true)->withId("localtime");
 
-        ImageDataList sun_images = loadImageDataDirectory(mSDL_Renderer, string(image_path));
+        auto sun_images = loadImageDataDirectory(mSDL_Renderer, string(image_path));
 
+        // Create an image repeater to use with the image display.
+        auto imageRepeater = add<ImageRepeater>(Vector2i(0, 0), Vector2i(440, 440));
         topArea->add<ImageDisplay>()->withImages(sun_images)
-                ->setCallback([](ImageDisplay &w, ImageDisplay::EventType e) {
+                ->withRepeater(imageRepeater)
+                ->setCallback([=](ImageDisplay &w, ImageDisplay::EventType e) {
                     switch (e) {
                         case ImageDisplay::RIGHT_EVENT:
                         case ImageDisplay::DOWN_EVENT:
@@ -254,11 +259,14 @@ public:
                         case ImageDisplay::UP_EVENT:
                             w.setImageIndex(w.getImageIndex() - 1);
                             break;
-                        default:
+                        case ImageDisplay::CLICK_EVENT:
+                            w.repeatImage();
                             break;
                     }
                 })
-                ->withFixedSize(Vector2i(topAreaSize.y, topAreaSize.y));
+                ->withFixedWidth(topAreaSize.y)
+                ->withFixedHeight(topAreaSize.y)
+                ->withId("smallimages");
 
         auto mapArea = botArea->add<Widget>()->withFixedSize(mapAreaSize)->withId("mapArea")
                 ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 0, 0);

@@ -56,7 +56,7 @@ namespace sdlgui {
 
     void ImageDisplay::draw(SDL_Renderer *renderer) {
         int ax = getAbsoluteLeft();
-        int ay = getAbsoluteTop();
+        int ay = getAbsoluteTop();;
 
         PntRect clip = getAbsoluteCliprect();
         SDL_Rect clipRect = pntrect2srect(clip);
@@ -86,20 +86,79 @@ namespace sdlgui {
 
             SDL_Rect imgPaintRect{p.x + (int) ix, p.y + (int) iy, (int) iw, (int) ih};
             SDL_Rect imgSrcRect{0, 0, imgw, imgh};
-//            PntRect imgrect = clip_rects(srect2pntrect(imgPaintRect), clip);
-//            imgPaintRect.w = imgrect.x2 - imgrect.x1;
-//            imgPaintRect.h = imgrect.y2 - imgrect.y1;
-//            if (imgPaintRect.y < clip.y1) {
-//                imgPaintRect.y = clip.y1;
-//                imgSrcRect.h = (int) (((float) imgPaintRect.h / (float) ih) * (float) imgh);
-//                imgSrcRect.y = (int) ((1 - ((float) imgPaintRect.h / (float) ih)) * (float) imgh);
-//            } else if (imgPaintRect.h < (int) ih) {
-//                imgSrcRect.h = (int) (((float) imgPaintRect.h / ih) * (float) imgh);
-//            }
+            PntRect imgrect = clip_rects(srect2pntrect(imgPaintRect), clip);
+            imgPaintRect.w = imgrect.x2 - imgrect.x1;
+            imgPaintRect.h = imgrect.y2 - imgrect.y1;
+            if (imgPaintRect.y < clip.y1) {
+                imgPaintRect.y = clip.y1;
+                imgSrcRect.h = (int) (((float) imgPaintRect.h / (float) ih) * (float) imgh);
+                imgSrcRect.y = (int) ((1 - ((float) imgPaintRect.h / (float) ih)) * (float) imgh);
+            } else if (imgPaintRect.h < (int) ih) {
+                imgSrcRect.h = (int) (((float) imgPaintRect.h / ih) * (float) imgh);
+            }
 
             SDL_RenderCopy(renderer, mImages[mImageIndex].get(), &imgSrcRect, &imgPaintRect);
+        } else if (mRepeatedTexture) {
+            Vector2i p = Vector2i(mMargin, mMargin);
+            p += Vector2i(ax, ay);
+            int imgw;
+            int imgh;
+            SDL_QueryTexture(mRepeatedTexture, nullptr, nullptr, &imgw, &imgh);
+
+            float iw, ih, ix, iy;
+            int thumbSize;
+            if (imgw < imgh) {
+                thumbSize = fixedWidth() != 0 ? fixedWidth() : width();
+                iw = (float) thumbSize;
+                ih = iw * (float) imgh / (float) imgw;
+                ix = 0;
+                iy = 0;
+            } else {
+                thumbSize = fixedHeight() != 0 ? fixedHeight() : height();
+                ih = (float) thumbSize;
+                iw = ih * (float) imgw / (float) imgh;
+                ix = 0;
+                iy = 0;
+            }
+
+            SDL_Rect imgPaintRect{p.x + (int) ix, p.y + (int) iy, (int) iw, (int) ih};
+            SDL_Rect imgSrcRect{0, 0, imgw, imgh};
+            PntRect imgrect = clip_rects(srect2pntrect(imgPaintRect), clip);
+            imgPaintRect.w = imgrect.x2 - imgrect.x1;
+            imgPaintRect.h = imgrect.y2 - imgrect.y1;
+            if (imgPaintRect.y < clip.y1) {
+                imgPaintRect.y = clip.y1;
+                imgSrcRect.h = (int) (((float) imgPaintRect.h / (float) ih) * (float) imgh);
+                imgSrcRect.y = (int) ((1 - ((float) imgPaintRect.h / (float) ih)) * (float) imgh);
+            } else if (imgPaintRect.h < (int) ih) {
+                imgSrcRect.h = (int) (((float) imgPaintRect.h / ih) * (float) imgh);
+            }
+
+            SDL_RenderCopy(renderer, mRepeatedTexture, &imgSrcRect, &imgPaintRect);
         }
 
         Widget::draw(renderer);
+    }
+
+    Vector2i ImageDisplay::preferredSize(SDL_Renderer *ctx) const {
+        if (mImages.empty()) {
+            int w;
+            int h;
+            SDL_QueryTexture(mRepeatedTexture, nullptr, nullptr, &w, &h);
+            return Vector2i(w, h);
+        }
+        return Vector2i(mImages[mImageIndex].w, mImages[mImageIndex].h);
+    }
+
+    ImageRepeater::ImageRepeater(Widget *parent,
+                                 const Vector2i &position, const Vector2i &fixedSize)
+                                 : Window(parent, "Repeater", position) {
+        withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 0, 0);
+        mImageDisplay = add<ImageDisplay>()->withFixedSize(fixedSize);
+        setVisible(false);
+    }
+
+    void ImageRepeater::setTexture(SDL_Texture *texture) {
+        mImageDisplay->setTexture(texture);
     }
 }
