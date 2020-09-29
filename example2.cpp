@@ -268,6 +268,10 @@ public:
                 ->withFixedHeight(topAreaSize.y)
                 ->withId("smallimages");
 
+        topArea->add<Widget>()->withFixedSize(Vector2i(topAreaSize.y,topAreaSize.y));
+
+        topArea->add<Widget>()->withFixedSize(Vector2i(topAreaSize.y,topAreaSize.y));
+
         auto mapArea = botArea->add<Widget>()->withFixedSize(mapAreaSize)->withId("mapArea")
                 ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 0, 0);
 
@@ -278,16 +282,20 @@ public:
                 ->withBackdropFile(string(background_path) + string(backdrop))
                 ->withFixedSize(Vector2i(EARTH_BIG_W, EARTH_BIG_H));
 
-        controlBar->add<ToolButton>(ENTYPO_ICON_CAMERA, Button::Flags::ToggleButton)->_and()
-                ->add<ToolButton>(ENTYPO_ICON_FF, Button::Flags::ToggleButton)->_and()
-                ->add<ToolButton>(ENTYPO_ICON_COMPASS, Button::Flags::ToggleButton)->_and()
-                ->add<ToolButton>(ENTYPO_ICON_INSTALL, Button::Flags::ToggleButton)->_and()
-                ->add<ToolButton>(ENTYPO_ICON_MOON, Button::Flags::ToggleButton);
-        mAzmuthalButton = controlBar->add<ToolButton>(ENTYPO_ICON_GLOBE, Button::Flags::ToggleButton)
-                ->withPushed(mGeoChrono->azmuthalDisplay())
-                ->withChangeCallback([&](bool state) {
-                    mGeoChrono->setAzmuthalDisplay(state);
-                });
+        topArea->add<Widget>()->withPosition(Vector2i(620, 0))
+                ->withFixedSize(Vector2i(40, topAreaSize.y))
+                ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 5, 5)
+                ->add<ToolButton>(ENTYPO_ICON_NETWORK, Button::Flags::ToggleButton)
+                        ->withFixedSize(Vector2i(32, 32))->_and()
+                ->add<ToolButton>(ENTYPO_ICON_COMPASS, Button::Flags::ToggleButton)
+                        ->withFixedSize(Vector2i(32, 32))->_and()
+                ->add<ToolButton>(ENTYPO_ICON_MOON, Button::Flags::ToggleButton)
+                        ->withFixedSize(Vector2i(32, 32))->_and()
+                ->add<ToolButton>(ENTYPO_ICON_GLOBE, Button::Flags::ToggleButton)
+                        ->withPushed(mGeoChrono->azmuthalDisplay())
+                        ->withChangeCallback([=](bool state) { mGeoChrono->setAzmuthalDisplay(state); })
+                        ->withFixedSize(Vector2i(32, 32));
+
 
         performLayout(mSDL_Renderer);
     }
