@@ -65,6 +65,7 @@ namespace sdlgui {
         ImageData mForegroundAz;
         ImageData mBackgroundAz;
         Surface mTransparentMap;    //< The surface holding the day map with transparency
+        Surface mTransparentMapAz;  //< The surface holding the day azmuthal map with transparency
         Surface mDayMap;            //< The surface holding the day map
         Surface mNightMap;          //< The surface holding the night map
         Surface mDayAzMap;          //< The surface holding the generated day Azmuthal map

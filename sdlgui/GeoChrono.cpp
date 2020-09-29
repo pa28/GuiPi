@@ -168,18 +168,18 @@ namespace sdlgui {
             if (mTransparentReady) {
                 cerr << "Getting new" << endl;
                 lock_guard<mutex> lockGuard(mTransparentMutex);
-                if (mAzimuthalDisplay) {
-                    mForegroundAz.set(SDL_CreateTextureFromSurface(renderer, mTransparentMap.get()));
-                    mForegroundAz.h = mTransparentMap->h;
-                    mForegroundAz.w = mTransparentMap->w;
-                    mForegroundAz.name = "*autogen*";
-                } else {
-                    mForeground.set(SDL_CreateTextureFromSurface(renderer, mTransparentMap.get()));
-                    mForeground.h = mTransparentMap->h;
-                    mForeground.w = mTransparentMap->w;
-                    mForeground.name = "*autogen*";
-                    mTransparentReady = false;
-                }
+
+                mForegroundAz.set(SDL_CreateTextureFromSurface(renderer, mTransparentMapAz.get()));
+                mForegroundAz.h = mTransparentMapAz->h;
+                mForegroundAz.w = mTransparentMapAz->w;
+                mForegroundAz.name = "*autogen*";
+
+                mForeground.set(SDL_CreateTextureFromSurface(renderer, mTransparentMap.get()));
+                mForeground.h = mTransparentMap->h;
+                mForeground.w = mTransparentMap->w;
+                mForeground.name = "*autogen*";
+                mTransparentReady = false;
+
                 mTransparentReady = false;
             }
 
@@ -219,6 +219,7 @@ namespace sdlgui {
     void GeoChrono::generateMapSurfaces(SDL_Renderer *renderer) {
 
         mTransparentMap.reset(SDL_CreateRGBSurface(0, EARTH_BIG_W, EARTH_BIG_H, 32, rmask, gmask, bmask, amask));
+        mTransparentMapAz.reset(SDL_CreateRGBSurface(0, EARTH_BIG_W, EARTH_BIG_H, 32, rmask, gmask, bmask, amask));
         mDayMap.reset(SDL_CreateRGBSurface(0, EARTH_BIG_W, EARTH_BIG_H, 32, rmask, gmask, bmask, amask));
         mNightMap.reset(SDL_CreateRGBSurface(0, EARTH_BIG_W, EARTH_BIG_H, 32, rmask, gmask, bmask, amask));
         mDayAzMap.reset(SDL_CreateRGBSurface(0, EARTH_BIG_W, EARTH_BIG_H, 32, rmask, gmask, bmask, amask));
@@ -296,49 +297,56 @@ namespace sdlgui {
         gettimeofday(&start, nullptr);
 
         mTransparentMap.reset(SDL_CreateRGBSurface(0, mDayMap->w, mDayMap->h, 32, rmask, gmask, bmask, amask));
-        if (mAzimuthalDisplay) {
-            SDL_SetSurfaceBlendMode(mDayAzMap.get(), SDL_BLENDMODE_BLEND);
-            SDL_BlitSurface(mDayAzMap.get(), nullptr, mTransparentMap.get(), nullptr);
-        } else {
-            SDL_SetSurfaceBlendMode(mDayMap.get(), SDL_BLENDMODE_BLEND);
-            SDL_BlitSurface(mDayMap.get(), nullptr, mTransparentMap.get(), nullptr);
-        }
+        mTransparentMapAz.reset(SDL_CreateRGBSurface(0, mDayMap->w, mDayMap->h, 32, rmask, gmask, bmask, amask));
+
+        SDL_SetSurfaceBlendMode(mDayAzMap.get(), SDL_BLENDMODE_BLEND);
+        SDL_BlitSurface(mDayAzMap.get(), nullptr, mTransparentMapAz.get(), nullptr);
+
+        SDL_SetSurfaceBlendMode(mDayMap.get(), SDL_BLENDMODE_BLEND);
+        SDL_BlitSurface(mDayMap.get(), nullptr, mTransparentMap.get(), nullptr);
 
         auto[latS, lonS] = subSolar();
         float siny = sin(mStationLocation.y);
         float cosy = cos(mStationLocation.y);
         for (int x = 0; x < mTransparentMap->w; x += 1) {
             for (int y = 0; y < mTransparentMap->h; y += 1) {
-                uint32_t alpha = 255;
-                bool valid;
-                float latE;
-                float lonE;
-                if (mAzimuthalDisplay) {
-                    auto tuple = xyToAzLatLong(x, y, Vector2i(EARTH_BIG_W, EARTH_BIG_H),
-                                               mStationLocation, siny, cosy);
-                    valid = get<0>(tuple);
-                    latE = get<1>(tuple);
-                    lonE = get<2>(tuple);
-                } else {
-                    valid = true;
-                    lonE = (float) ((float) x - (float) mTransparentMap->w / 2.f) * (float) M_PI /
-                           (float) ((float) mTransparentMap->w / 2.);
-                    latE = (float) ((float) mTransparentMap->h / 2.f - (float) y) * (float) M_PI_2 /
-                           (float) ((float) mTransparentMap->h / 2.);
-                }
-                if (valid) {
-                    auto cosDeltaSigma = sin(latS) * sin(latE) + cos(latS) * cos(latE) * cos(abs(lonS - lonE));
-                    double fract_day;
-                    if (cosDeltaSigma < 0) {
-                        if (cosDeltaSigma > GrayLineCos) {
-                            fract_day = 1.0 - pow(cosDeltaSigma / GrayLineCos, GrayLinePow);
-                            alpha = (uint32_t) (fract_day * 247.0) + 8;
-                        } else
-                            alpha = 8;
+                for (int az = 0; az < 2; ++az) {
+                    uint32_t alpha = 255;
+                    bool valid;
+                    float latE;
+                    float lonE;
+                    if (az == 1) {
+                        auto tuple = xyToAzLatLong(x, y, Vector2i(EARTH_BIG_W, EARTH_BIG_H),
+                                                   mStationLocation, siny, cosy);
+                        valid = get<0>(tuple);
+                        latE = get<1>(tuple);
+                        lonE = get<2>(tuple);
+                    } else {
+                        valid = true;
+                        lonE = (float) ((float) x - (float) mTransparentMap->w / 2.f) * (float) M_PI /
+                               (float) ((float) mTransparentMap->w / 2.);
+                        latE = (float) ((float) mTransparentMap->h / 2.f - (float) y) * (float) M_PI_2 /
+                               (float) ((float) mTransparentMap->h / 2.);
+                    }
+                    if (valid) {
+                        auto cosDeltaSigma = sin(latS) * sin(latE) + cos(latS) * cos(latE) * cos(abs(lonS - lonE));
+                        double fract_day;
+                        if (cosDeltaSigma < 0) {
+                            if (cosDeltaSigma > GrayLineCos) {
+                                fract_day = 1.0 - pow(cosDeltaSigma / GrayLineCos, GrayLinePow);
+                                alpha = (uint32_t) (fract_day * 247.0) + 8;
+                            } else
+                                alpha = 8;
+                        }
+                    }
+                    if (az == 1) {
+                        auto pixel = set_a_value(mTransparentMapAz.pixel(x, y), alpha);
+                        mTransparentMapAz.pixel(x, y) = pixel;
+                    } else {
+                        auto pixel = set_a_value(mTransparentMap.pixel(x, y), alpha);
+                        mTransparentMap.pixel(x, y) = pixel;
                     }
                 }
-                auto pixel = set_a_value(mTransparentMap.pixel(x, y), alpha);
-                mTransparentMap.pixel(x, y) = pixel;
             }
         }
 
