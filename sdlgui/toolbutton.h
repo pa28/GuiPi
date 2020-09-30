@@ -22,13 +22,15 @@ public:
         : Button(parent, caption, icon)
     {
         setFlags(Flags::RadioButton | Flags::ToggleButton);
-        setFixedSize(Vector2i(25, 25));
+        setFixedSize(Vector2i(mTheme->mToolButtonSize, mTheme->mToolButtonSize));
+        setIconFontSize(mTheme->mIconFontSize);
     }
 
-    ToolButton(Widget *parent, int icon, Flags flagMask, const std::string &caption = "")
+    ToolButton(Widget *parent, int icon, Flags flags, const std::string &caption = "")
         : Button(parent, caption, icon) {
-        setFlags( flagMask & (Flags::RadioButton | Flags::ToggleButton));
-        setFixedSize( Vector2i( 25, 25));
+        setFlags(flags );
+        setFixedSize( Vector2i( mTheme->mToolButtonSize, mTheme->mToolButtonSize));
+        setIconFontSize(mTheme->mIconFontSize);
     }
 };
 

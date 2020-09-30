@@ -47,6 +47,7 @@ public:
 
     /* Spacing-related parameters */
     int mStandardFontSize;
+    int mIconFontSize;
     int mButtonFontSize;
     int mTextBoxFontSize;
     int mTooltipFontSize;
@@ -56,6 +57,7 @@ public:
     int mTimeBoxSmallHoursMinFontSize;
     int mTimeBoxSmallSecFontSize;
     int mTimeBoxSmallDateFontSize;
+    int mToolButtonSize;
     int mWindowCornerRadius;
     int mWindowHeaderHeight;
     int mWindowDropShadowSize;

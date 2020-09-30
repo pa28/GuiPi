@@ -4,7 +4,7 @@
 
 #include <iostream>
 #include <SDL2/SDL.h>
-#include <sdlgui/button.h>
+#include <sdlgui/toolbutton.h>
 #include <sdlgui/entypo.h>
 #include "ImageDisplay.h"
 
@@ -158,11 +158,10 @@ namespace sdlgui {
         withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 0, 0);
         buttonPanel()->withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 0, 0)
                 ->withFixedHeight(35)
-                ->add<Button>("", ENTYPO_ICON_SQUARED_CROSS)
+                ->add<ToolButton>(ENTYPO_ICON_SQUARED_CROSS, Button::Flags::NormalButton)
                         ->withCallback([=]() {
                             window()->setVisible(false);
-                        })
-                        ->withFixedSize(Vector2i(30,30));
+                        });
         mImageDisplay = add<ImageDisplay>()->withFixedSize(fixedSize);
         setVisible(false);
     }

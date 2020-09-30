@@ -211,10 +211,13 @@ public:
 
     /// Return current font size. If not set the default of the current theme will be returned
     int fontSize() const;
+    int iconFontSize() const { return mIconFontSize; }
     /// Set the font size of this widget
     virtual void setFontSize(int fontSize) { mFontSize = fontSize; }
+    void setIconFontSize(int fontSize) { mIconFontSize = fontSize; }
     /// Return whether the font size is explicitly specified for this widget
     bool hasFontSize() const { return mFontSize > 0; }
+    bool hasIconFontSize() const { return mIconFontSize > 0; }
 
     /// Return a pointer to the cursor of the widget
     Cursor cursor() const { return mCursor; }
@@ -291,6 +294,7 @@ public:
     
     ref<Widget> withPosition( const Vector2i& pos ) { setPosition( pos); return this; }
     ref<Widget> withFontSize(int size) { setFontSize(size); return this; }
+    ref<Widget> withIconFontSize(int size) { setIconFontSize(size); return this;}
     ref<Widget> withFixedSize(const Vector2i& size) { setFixedSize(size); return this; }
     ref<Widget> withTooltip(const std::string& text) { setTooltip(text); return this; }
 
@@ -332,6 +336,7 @@ protected:
     bool mFocused, mMouseFocus;
     std::string mTooltip;
     int mFontSize;
+    int mIconFontSize;
     Cursor mCursor;
 };
 

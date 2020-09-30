@@ -230,6 +230,7 @@ public:
                 ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 5, 5);
 
         auto qthButton = timeSet->add<Button>("VE3YSH", ENTYPO_ICON_COG)
+                ->withIconFontSize(50)
                 ->withFontSize(40);
 
         timeSet->add<TimeBox>()
@@ -289,17 +290,13 @@ public:
 
         topArea->add<Widget>()->withPosition(Vector2i(620, 0))
                 ->withFixedSize(Vector2i(40, topAreaSize.y))
-                ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 5, 5)
-                ->add<ToolButton>(ENTYPO_ICON_NETWORK, Button::Flags::ToggleButton)
-                        ->withFixedSize(Vector2i(32, 32))->_and()
-                ->add<ToolButton>(ENTYPO_ICON_COMPASS, Button::Flags::ToggleButton)
-                        ->withFixedSize(Vector2i(32, 32))->_and()
-                ->add<ToolButton>(ENTYPO_ICON_MOON, Button::Flags::ToggleButton)
-                        ->withFixedSize(Vector2i(32, 32))->_and()
+                ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 5, 2)
+                ->add<ToolButton>(ENTYPO_ICON_NETWORK, Button::Flags::ToggleButton)->_and()
+                ->add<ToolButton>(ENTYPO_ICON_COMPASS, Button::Flags::ToggleButton)->_and()
+                ->add<ToolButton>(ENTYPO_ICON_MOON, Button::Flags::ToggleButton)->_and()
                 ->add<ToolButton>(ENTYPO_ICON_GLOBE, Button::Flags::ToggleButton)
                         ->withPushed(mGeoChrono->azmuthalDisplay())
-                        ->withChangeCallback([=](bool state) { mGeoChrono->setAzmuthalDisplay(state); })
-                        ->withFixedSize(Vector2i(32, 32));
+                        ->withChangeCallback([=](bool state) { mGeoChrono->setAzmuthalDisplay(state); });
 
 
         performLayout(mSDL_Renderer);

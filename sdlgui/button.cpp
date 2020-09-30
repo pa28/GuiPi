@@ -81,6 +81,8 @@ Button::Button(Widget *parent, const std::string &caption, int icon)
 {
   _captionTex.dirty = true;
   _iconTex.dirty = true;
+  if (mIconFontSize == 0)
+      mIconFontSize = mTheme->mIconFontSize;
 }
 
 Vector2i Button::preferredSize(SDL_Renderer *ctx) const
@@ -313,7 +315,7 @@ void Button::draw(SDL_Renderer* renderer)
       if (nvgIsFontIcon(mIcon))
       {
         ih *= 1.5f;
-        mTheme->getTexAndRectUtf8(renderer, _iconTex, 0, 0, icon.data(), "icons", ih, sdlTextColor);
+        mTheme->getTexAndRectUtf8(renderer, _iconTex, 0, 0, icon.data(), "icons", mIconFontSize, sdlTextColor);
         iw = _iconTex.w();
       }
       else

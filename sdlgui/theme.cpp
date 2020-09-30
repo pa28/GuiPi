@@ -36,6 +36,7 @@ NAMESPACE_BEGIN(sdlgui)
 
     Theme::Theme(SDL_Renderer *ctx) {
         mStandardFontSize = 16;
+        mIconFontSize = 50;
         mButtonFontSize = 20;
         mTooltipFontSize = 15;
         mTextBoxFontSize = 20;
@@ -45,6 +46,7 @@ NAMESPACE_BEGIN(sdlgui)
         mTimeBoxSmallHoursMinFontSize = 30;
         mTimeBoxSmallSecFontSize = 20;
         mTimeBoxSmallDateFontSize = 20;
+        mToolButtonSize = 35;
         mWindowCornerRadius = 2;
         mWindowHeaderHeight = 30;
         mWindowDropShadowSize = 10;
