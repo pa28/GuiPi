@@ -61,6 +61,97 @@ the minimalist system for portability, low power or other
 reasons, then HamClock the way Elwood wrote it is what you
 want.
 
+This started off as a simple exercise to port HamClock to
+using the full capabilities available on a Raspberry Pi;
+but it has quickly become an parallel effort of that, and
+porting and extending NanoGui-SDL to work well, not just on
+a Raspberry Pi, but on the 7 inch touch display from
+Raspberry Pi. I will document the porting progress of each
+below.
+
+### Porting NanoGui-SDL
+
+My work here is centering around making the library more
+targeted towards using in a 7 inch touch screen environment.
+
+1. **Supporting the Touch Screen** I have provided basic
+support by transcoding finger touch, release and motion events
+to equivalent mouse events. This works, but there may be
+better solutions to investigate.
+
+1. **GUI Presentation** In a touch environment, the active
+elements must be sized large enough and separated well 
+enough to be easy to activate by a finger without a frustrating
+number of mistakes. NanoGui-SDL has a built in Theme system
+that can be used to set different program wide default values.
+There are also a large number of hard code values. As I identify
+the purpose of each I am replacing them with a Theme value.
+
+1. **Font Support** The library supports True Type Fonts (TTF),
+but comes with three fonts bundled which are loaded in an inflexible
+way. I am migrating this system to one capable of using any True
+Type font loaded onto the system. This will be easier when
+Raspberry Pi OS fully supports C++17 with `filesystem`.
+
+1. **Smart Pointers** NanoGui-SDL comes with a very nice reference
+counting shared pointer system wich is much better suited to a
+hierarchical object model than `std::shared_ptr`. Unfortunately
+it is not used as widely or consistently as I'd like; so I am
+extending its use where it is well suited and using `std::unique_ptr`
+and `std::shared_ptr` in other areas.
+
+1. **Memory Leaks** The library isn't really leaky, but it does have
+the rather unfortunate structure that many C programmers employ:
+the program exit will free all remaining allocated memory. This is
+true, but it limits the ability of code quality tools, like Valgrind,
+from easily finding more important leaks. Even a small, on-going 
+memory leak can be catastrophic to a program intended to run for very
+long periods of time. So I'm cleaning up everything I can track down.
+
+### Porting HamClock
+
+1. **Satellite Ephemeris** Loading ephemeris from the back end is ported.
+Computing satellite position and predicting passes is also ported.
+
+1. **Geo Chron Display** This has also been ported using Mercator projection
+maps loaded from image files on the file system rather than compiling map
+data into the binary. This latter was a very creative solution to support
+HamClock on an ESP device. This method is much more flexible. The day-night
+display is implemented by manipulating the alpha channel of the day map and
+drawing it on top of the night map. When computng the Azimuthal projection
+any image co-ordinate not "on" the earth are made transparent on both day
+and night maps so an interesting background may be seen "behind" the Earth.
+Most of the heavy lifting is done by the Graphics Co-processor and threaded
+which results in a very responsive program, even on a Pi 3B.
+
+1. **Full Sized Sun Images** As a side benefit of using a capbable GUI library
+and the Graphics Co-processor the program isn't limited to displaying pre-sized
+thumb nails. The new program downloads the original images from the NASA
+website and can display them in nearly full size in a pop-up window.
+
+### New Widgets
+
+Writing any program on top of a general purpose GUI library will eventually
+lead to writing new Widgets. These are the ones I have written for HamChrono.
+
+1. **TimeBox** A widget to display the time and date. It is two binary mode
+settings (giving four separate modes):
+    1. *Time Zone* Either GMT or the system local time zone with official Daylight
+    Savings Time.
+    2. *Large or Small* Either full time with seconds and date with the year, or
+    abbrieviated by omitting the seconds and year. 
+
+1. **ImageDisplay** Display one of a set of images loaded from the files system
+(or, eventually, downloaded directly) to a thumb nail area. Touch semantics
+for selecting an image from the set.
+
+1. **ImageRepeater** Repeat the display of an image in a larger windows. Tied
+to an `ImageDisplay`.
+
+1. **ImageServer** *Proposed* A non-drawing object that will maintian the set
+of images and allow any `ImageDisplay` or `ImageRepeater` to render the image
+at a specified location and size.
+
 # Dependencies
 
 ## Libraries
