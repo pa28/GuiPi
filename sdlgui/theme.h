@@ -13,6 +13,7 @@
 
 #pragma once
 
+#include <iostream>
 #include <sdlgui/common.h>
 #include <mutex>
 
@@ -145,7 +146,7 @@ public:
     void getTexAndRectUtf8(SDL_Renderer *renderer, Texture& tx, int x, int y, const char *text,
                            const char* fontname, size_t ptsize, const Color& textColor);
 
-    virtual ~Theme() { };
+    virtual ~Theme();
 };
 
 NAMESPACE_END(sdlgui)

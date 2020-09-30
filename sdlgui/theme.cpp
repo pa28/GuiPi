@@ -28,6 +28,12 @@ NAMESPACE_BEGIN(sdlgui)
         std::map<std::string, TTF_Font *> fonts;
     }
 
+    Theme::~Theme() {
+        for( auto font : internal::fonts ) {
+            TTF_CloseFont(font.second);
+        }
+    }
+
     Theme::Theme(SDL_Renderer *ctx) {
         mStandardFontSize = 16;
         mButtonFontSize = 20;
