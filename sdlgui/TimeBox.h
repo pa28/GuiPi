@@ -64,7 +64,7 @@ namespace sdlgui {
          * Remove the SDLTimer when destroyed.
          */
         ~Timer() {
-            //SDL_RemoveTimer(sdlTimerId);
+            SDL_RemoveTimer(sdlTimerId);
         }
     };
 
