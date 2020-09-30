@@ -154,7 +154,7 @@ namespace sdlgui {
 
     ImageRepeater::ImageRepeater(Widget *parent,
                                  const Vector2i &position, const Vector2i &fixedSize)
-                                 : Window(parent, "", position) {
+                                 : Window(parent, "Repeater", position) {
         withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 0, 0);
         buttonPanel()->withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 0, 0)
                 ->withFixedHeight(35)
