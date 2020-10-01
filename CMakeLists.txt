@@ -125,6 +125,7 @@ list(APPEND NNGUI_BASIC_SOURCE
         sdlgui/TimeBox.cpp
         sdlgui/Image.cpp
         sdlgui/ImageDisplay.cpp
+        sdlgui/ImageRepository.cpp
         sdlgui/GeoChrono.cpp
         )
 
