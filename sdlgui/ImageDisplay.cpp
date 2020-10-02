@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <utility>
 #include <SDL2/SDL.h>
 #include <sdlgui/toolbutton.h>
 #include <sdlgui/entypo.h>
@@ -36,19 +37,19 @@ namespace sdlgui {
                     if (mMotion && d.x * d.x + d.y * d.y > 25) {
                         if (abs(d.y) >= abs(d.x)) {
                             if (d.y > 0)
-                                mCallback(*this, DOWN_EVENT);
+                                mCallback(*this, ImageRepository::DOWN_EVENT);
                             else
-                                mCallback(*this, UP_EVENT);
+                                mCallback(*this, ImageRepository::UP_EVENT);
                         } else {
                             if (d.x > 0)
-                                mCallback(*this, RIGHT_EVENT);
+                                mCallback(*this, ImageRepository::RIGHT_EVENT);
                             else
-                                mCallback(*this, LEFT_EVENT);
+                                mCallback(*this, ImageRepository::LEFT_EVENT);
                         }
                         mMotionStart = mMotionEnd = Vector2i(0, 0);
                         mMotion = mButton = false;
                     } else {
-                        mCallback(*this, CLICK_EVENT);
+                        mCallback(*this, ImageRepository::CLICK_EVENT);
                     }
                 }
             }
@@ -63,12 +64,13 @@ namespace sdlgui {
         PntRect clip = getAbsoluteCliprect();
         SDL_Rect clipRect = pntrect2srect(clip);
 
-        if (!mImages.empty()) {
-            mImageIndex = mImageIndex % (long) mImages.size();
+        if (mImageRepository) {
+//            mImageIndex = mImageIndex % (long) mImages.size();
             Vector2i p = Vector2i(mMargin, mMargin);
             p += Vector2i(ax, ay);
-            int imgw = mImages[mImageIndex].w;
-            int imgh = mImages[mImageIndex].h;
+            auto imageSize = mImageRepository->imageSize(mImageStoreIndex);
+            int imgw = imageSize.x;
+            int imgh = imageSize.y;
 
             float iw, ih, ix, iy;
             int thumbSize;
@@ -99,7 +101,7 @@ namespace sdlgui {
                 imgSrcRect.h = (int) (((float) imgPaintRect.h / ih) * (float) imgh);
             }
 
-            SDL_RenderCopy(renderer, mImages[mImageIndex].get(), &imgSrcRect, &imgPaintRect);
+            mImageRepository->renderCopy(renderer, mImageStoreIndex, imgSrcRect, imgPaintRect);
         } else if (mRepeatedTexture) {
             Vector2i p = Vector2i(mMargin, mMargin);
             p += Vector2i(ax, ay);
@@ -149,7 +151,8 @@ namespace sdlgui {
             SDL_QueryTexture(mRepeatedTexture, nullptr, nullptr, &w, &h);
             return Vector2i(w, h);
         }
-        return Vector2i(mImages[mImageIndex].w, mImages[mImageIndex].h);
+
+        return Vector2i(mImageRepository->imageSize(mImageStoreIndex));
     }
 
     ImageRepeater::ImageRepeater(Widget *parent,
@@ -159,15 +162,24 @@ namespace sdlgui {
         buttonPanel()->withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 0, 0)
                 ->withFixedHeight(35)
                 ->add<ToolButton>(ENTYPO_ICON_SQUARED_CROSS, Button::Flags::NormalButton)
-                        ->withCallback([=]() {
+                        ->withCallback([&]() {
                             window()->setVisible(false);
                         });
         mImageDisplay = add<ImageDisplay>()->withFixedSize(fixedSize);
         setVisible(false);
     }
 
-    void ImageRepeater::setTexture(SDL_Texture *texture, const string &caption) {
-        mImageDisplay->setTexture(texture);
-        window()->setTitle(caption);
+//    void ImageRepeater::setTexture(SDL_Texture *texture, const string &caption) {
+//        mImageDisplay->setTexture(texture);
+//        window()->setTitle(caption);
+//    }
+
+    void ImageRepeater::repeateFromRepository(const ref<ImageDisplay>& imageDisplay, ref<ImageRepository> imageRepository,
+                                              ImageRepository::ImageStoreIndex imageStoreIndex) {
+        mImageDisplay->mImageRepository = std::move(imageRepository);
+        mImageDisplay->mImageStoreIndex = imageStoreIndex;
+        mImageDisplay->mTextureDirty = true;
+        dynamic_cast<Screen*>(window()->parent())->moveWindowToFront(window());
+        window()->setVisible(true);
     }
 }

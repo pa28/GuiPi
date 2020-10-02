@@ -22,31 +22,97 @@
 
 #pragma once
 
+#include <map>
 #include <vector>
 #include <sdlgui/common.h>
+#include <sdlgui/widget.h>
 #include <sdlgui/Image.h>
 
 namespace sdlgui {
     using namespace std;
     class ImageRepository : public Object {
-    private:
+    public:
         typedef vector<ImageDataList> ImageStore;
+        typedef pair<ImageDataList::size_type, ImageStore::size_type> ImageStoreIndex;
+        typedef std::function<void(ImageRepository &, ImageStoreIndex)> ImageChangedCallback;
+        typedef map<ref<Widget>, ImageChangedCallback> ImageChangedCallbackList;
+
+        map<ImageStoreIndex, ImageChangedCallbackList> mImageCallbackMap;
 
         ImageStore mImageStore;
+
+        enum EventType {
+            UP_EVENT, LEFT_EVENT, DOWN_EVENT, RIGHT_EVENT, CLICK_EVENT
+        };
 
     public:
 
         ImageRepository() = default;
         ~ImageRepository() override = default;
 
-        auto push_back(ImageStore::size_type index, ImageData imageData) {
+        auto actionEvent(EventType event, ImageStoreIndex index) {
+            switch (event) {
+                case LEFT_EVENT:
+                    index.first = (index.first - 1) % mImageStore.size();
+                    index.second %= mImageStore.at(index.first).size();
+                    break;
+                case RIGHT_EVENT:
+                    index.first = (index.first + 1) % mImageStore.size();
+                    index.second %= mImageStore.at(index.first).size();
+                    break;
+                case UP_EVENT:
+                    index.second = (index.second - 1) % mImageStore.at(index.first).size();
+                    break;
+                case DOWN_EVENT:
+                    index.second = (index.second + 1) % mImageStore.at(index.first).size();
+                    break;
+                default:
+                    break;
+            }
+            return index;
+        }
+
+        Vector2i imageSize(ImageStoreIndex imageStoreIndex) const {
+            return Vector2i(mImageStore.at(imageStoreIndex.first).at(imageStoreIndex.second).w,
+                            mImageStore.at(imageStoreIndex.first).at(imageStoreIndex.second).h);
+        }
+
+        void renderCopy(SDL_Renderer *renderer, ImageStoreIndex index, SDL_Rect &imgSrcRect, SDL_Rect &imgPaintRect) {
+            SDL_RenderCopy(renderer, mImageStore.at(index.first).at(index.second).get(), &imgSrcRect, &imgPaintRect);
+        }
+
+        void push_back(ImageStore::size_type index, ImageData imageData) {
             mImageStore[index].push_back(move(imageData));
         }
 
-        auto setImage(ImageStore::size_type idx0, ImageDataList::size_type idx1, ImageData imageData) {
-            mImageStore.at(idx0).at(idx1) = move(imageData);
-            // TODO: call callbacks.
+        void addImageList(ImageDataList imageDataList) {
+            mImageStore.push_back(move(imageDataList));
         }
+
+        bool empty() const { return mImageStore.empty(); }
+
+        bool empty(ImageStore::size_type idx) const { return mImageStore.at(idx).empty(); }
+
+        auto size() const { return mImageStore.size(); }
+
+        auto size(ImageStore::size_type idx) const { return mImageStore.at(idx).size(); }
+
+        void addImangeChangeCallback(ImageStoreIndex index, const ref<Widget>& widget, const ImageChangedCallback& callback) {
+            mImageCallbackMap[index][widget] = callback;
+        }
+
+        void removeImangeChangeCallback(ImageStoreIndex index, const ref<Widget>& widget) {
+            mImageCallbackMap[index].erase(widget);
+        }
+
+        void setImage(ImageStoreIndex index, ImageData imageData) {
+            mImageStore.at(index.first).at(index.second) = move(imageData);
+            for (const auto& callback : mImageCallbackMap.at(index)) {
+                (callback.second)(*this, index);
+            }
+        }
+
+
     };
 }
 

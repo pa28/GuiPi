@@ -148,9 +148,11 @@ for selecting an image from the set.
 1. **ImageRepeater** Repeat the display of an image in a larger windows. Tied
 to an `ImageDisplay`.
 
-1. **ImageRepository** *Proposed* A non-drawing object that will maintian the set
+1. **ImageRepository** A non-drawing object that will maintain the set
 of images and allow any `ImageDisplay` or `ImageRepeater` to render the image
-at a specified location and size.
+at a specified location and size. The Model-View-Controller pattern with the
+`ImageRepository` providing the model, and the `ImageDisplay`/`Image Repeater`
+providing the display and controller.
 
 # Dependencies
 

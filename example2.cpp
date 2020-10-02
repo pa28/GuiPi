@@ -38,6 +38,7 @@
 #include <sdlgui/TimeBox.h>
 #include <sdlgui/ImageDisplay.h>
 #include <sdlgui/GeoChrono.h>
+#include <sdlgui/ImageRepository.h>
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -109,6 +110,7 @@ protected:
     sdlgui::ref<ToolButton> mAzmuthalButton;
     sdlgui::ref<Window> mMainWindow;
     sdlgui::ref<Window> mPopupWindow;
+    sdlgui::ref<ImageRepository> mImageRepository;
 
 public:
     ~TestWindow() override {
@@ -249,23 +251,25 @@ public:
 
         sideBar->add<TimeBox>(true, true)->withId("localtime");
 
-        auto sun_images = loadImageDataDirectory(mSDL_Renderer, string(image_path));
+        mImageRepository = new ImageRepository();
+        mImageRepository->addImageList(loadImageDataDirectory(mSDL_Renderer, string(image_path)));
 
         // Create an image repeater to use with the image display.
         sdlgui::ref<ImageRepeater> imageRepeater = add<ImageRepeater>(Vector2i(210, 0), Vector2i(450, 450));
-        topArea->add<ImageDisplay>()->withImages(sun_images)
+        topArea->add<ImageDisplay>()->withImageRepository(mImageRepository)
                 ->withRepeater(imageRepeater)
-                ->setCallback([=](ImageDisplay &w, ImageDisplay::EventType e) {
+                ->setCallback([=](ImageDisplay &w, ImageRepository::EventType e) {
+                    auto index = w.getImageIndex();
+                    auto size0 = w.imageRepository()->size();
+                    auto size1 = w.imageRepository()->size(index.first);
                     switch (e) {
-                        case ImageDisplay::RIGHT_EVENT:
-                        case ImageDisplay::DOWN_EVENT:
-                            w.setImageIndex(w.getImageIndex() + 1);
+                        case ImageRepository::RIGHT_EVENT:
+                        case ImageRepository::DOWN_EVENT:
+                        case ImageRepository::LEFT_EVENT:
+                        case ImageRepository::UP_EVENT:
+                            w.setImageIndex(w.imageRepository()->actionEvent(e, w.getImageIndex()));
                             break;
-                        case ImageDisplay::LEFT_EVENT:
-                        case ImageDisplay::UP_EVENT:
-                            w.setImageIndex(w.getImageIndex() - 1);
-                            break;
-                        case ImageDisplay::CLICK_EVENT:
+                        case ImageRepository::CLICK_EVENT:
                             w.repeatImage();
                             break;
                     }
@@ -297,9 +301,6 @@ public:
                 ->add<ToolButton>(ENTYPO_ICON_GLOBE, Button::Flags::ToggleButton)
                         ->withPushed(mGeoChrono->azmuthalDisplay())
                         ->withChangeCallback([=](bool state) { mGeoChrono->setAzmuthalDisplay(state); });
-
-
-        performLayout(mSDL_Renderer);
     }
 
     virtual bool keyboardEvent(int key, int scancode, int action, int modifiers) {
@@ -381,6 +382,8 @@ int main(int /* argc */, char ** /* argv */) {
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
     sdlgui::ref<TestWindow> screen = new TestWindow(window, winWidth, winHeight);
+
+    screen->performLayout(screen->sdlRenderer());
 
 #if 1
     screen->eventLoop();
