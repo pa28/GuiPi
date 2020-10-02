@@ -155,7 +155,7 @@ namespace guipi {
                     ->withFixedSize(Vector2i(40, topAreaSize.y))
                     ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 10, 12)
                     ->add<ToolButton>(ENTYPO_ICON_THREE_DOTS, Button::Flags::ToggleButton)->_and()
-                    ->add<ToolButton>(ENTYPO_ICON_LIGHT_UP, Button::Flags::ToggleButton)->_and()
+                    ->add<ToolButton>(ENTYPO_ICON_LIGHT_DOWN, Button::Flags::ToggleButton)->_and()
                     ->add<ToolButton>(ENTYPO_ICON_HAIR_CROSS, Button::Flags::ToggleButton);
         }
 

@@ -107,6 +107,8 @@ namespace sdlgui {
         typedef std::shared_ptr<AsyncTexture> AsyncTexturePtr;
         std::vector<AsyncTexturePtr> _txs;
 
+        ImageData mSunIcon;
+
     public:
         /**
          * (Constructor)

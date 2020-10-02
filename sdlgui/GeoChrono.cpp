@@ -11,6 +11,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_pixels.h>
+#include <sdlgui/entypo.h>
 #include <sdlgui/screen.h>
 #include <sdlgui/Image.h>
 #include "GeoChrono.h"
@@ -261,6 +262,10 @@ namespace sdlgui {
                 SDL_RenderCopy(renderer, mBackground.get(), &src1, &dst1);
                 SDL_RenderCopy(renderer, mForeground.get(), &src1, &dst1);
             }
+
+            SDL_Rect src{0, 0, mSunIcon.w, mSunIcon.h};
+            SDL_Rect dst{p.x + 330, p.y + 165, mSunIcon.w, mSunIcon.h};
+            SDL_RenderCopy(renderer, mSunIcon.get(), &src, &dst );
         }
 
         Widget::draw(renderer);
@@ -271,6 +276,14 @@ namespace sdlgui {
      * @param renderer
      */
     void GeoChrono::generateMapSurfaces(SDL_Renderer *renderer) {
+
+        auto icon = utf8(ENTYPO_ICON_LIGHT_UP);
+        Texture _iconTex;
+        Color sdlTextColor{255, 255, 0, 255};
+        mTheme->getTexAndRectUtf8(renderer, _iconTex, 0, 0, icon.data(), "icons", 50, sdlTextColor);
+        mSunIcon.set(_iconTex.tex);
+        mSunIcon.w = _iconTex.w();
+        mSunIcon.h = _iconTex.h();
 
         // Initialize surfaces for each layer of each map including transparent versions of the day map
         mTransparentMap.reset(SDL_CreateRGBSurface(0, EARTH_BIG_W, EARTH_BIG_H, 32, rmask, gmask, bmask, amask));
