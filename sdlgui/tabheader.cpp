@@ -169,7 +169,8 @@ void TabHeader::TabButton::drawInactiveBorderAt(SDL_Renderer *renderer, const Ve
 
     SDL_Color c = color.toSdlColor();
     SDL_SetRenderDrawColor(renderer, c.r, c.g, c.b, c.a);
-    SDL_Rect r{ xPos + offset, yPos + offset, width - offset, height - offset };
+    SDL_Rect r{ xPos + roundToInt(offset), yPos + roundToInt(offset), width - roundToInt(offset),
+                height - roundToInt(offset) };
     SDL_RenderDrawRect(renderer, &r);
 }
 

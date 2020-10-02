@@ -2,14 +2,16 @@
 #ifndef SDLGUI_HEADER_INCLUDE
 #define SDLGUI_HEADER_INCLUDE
 
+#include <type_traits>
+#include <limits>
 #include <unordered_map>
 #include <sstream>
 #include <algorithm>
 #include <functional>
 #include <atomic>
 #include <vector>
-#include <math.h>
-#include <assert.h>
+#include <cmath>
+#include <cassert>
 #include <istream>
 
 #if defined(_WIN32)
@@ -60,7 +62,20 @@ struct NVGcontext;
 //#pragma warning(disable : 4714) // warning C4714: funtion X marked as __forceinline not inlined
 #endif
 
-NAMESPACE_BEGIN(sdlgui)
+namespace sdlgui {
+
+    template<typename T>
+    int roundToInt(T value) {
+        static_assert(std::is_floating_point_v<T>, "value must be floating point." );
+        return (int) round(value);
+    }
+
+    template<typename R, typename V>
+    R roundTo(V value) {
+        static_assert(std::is_unsigned_v<R>, "return value must be an unsigned type.");
+        static_assert(std::is_floating_point_v<V>, "value must be floating point." );
+        return (R) round(value) & std::numeric_limits<R>::max();
+    }
 
     struct ImageInfo {
         SDL_Texture *tex = nullptr;
@@ -179,7 +194,7 @@ NAMESPACE_BEGIN(sdlgui)
         /// dynamically cast to this type.
         template<typename O>
         ref &operator=(const ref<O> &r) noexcept {
-            T *t_ptr = const_cast<T*>(dynamic_cast<const T*>(r.get()));
+            T *t_ptr = const_cast<T *>(dynamic_cast<const T *>(r.get()));
             if (m_ptr != t_ptr) {
                 if (t_ptr)
                     ((Object *) t_ptr)->incRef();
@@ -300,29 +315,29 @@ NAMESPACE_BEGIN(sdlgui)
         float &r() { return _d.r; }
 
         /// Return a reference to the red channel (const version)
-        const float &r() const { return _d.r; }
+        [[nodiscard]] const float &r() const { return _d.r; }
 
         /// Return a reference to the green channel
         float &g() { return _d.g; }
 
         /// Return a reference to the green channel (const version)
-        const float &g() const { return _d.g; }
+        [[nodiscard]] const float &g() const { return _d.g; }
 
         /// Return a reference to the blue channel
         float &b() { return _d.b; }
 
         /// Return a reference to the blue channel (const version)
-        const float &b() const { return _d.b; }
+        [[nodiscard]] const float &b() const { return _d.b; }
 
         float &a() { return _d.a; }
 
-        const float &a() const { return _d.a; }
+        [[nodiscard]] const float &a() const { return _d.a; }
 
-        Color rgb() const { return Color(_d.r, _d.g, _d.b, 0.f); }
+        [[nodiscard]] Color rgb() const { return Color(_d.r, _d.g, _d.b, 0.f); }
 
         void setAlpha(float a) { _d.a = a; }
 
-        Color withAlpha(float a) const {
+        [[nodiscard]] Color withAlpha(float a) const {
             Color c = *this;
             c._d.a = a;
             return c;
@@ -332,7 +347,7 @@ NAMESPACE_BEGIN(sdlgui)
             return !(c.a() == a() && c.r() == r() && c.g() == g() && c.b() == b());
         }
 
-        Color contrastingColor() const {
+        [[nodiscard]] Color contrastingColor() const {
             float luminance = r() * 0.299f + g() * 0.587f + b() * 0.144f;
             return Color(luminance < 0.5f ? 1.f : 0.f, 1.f);
         }
@@ -345,9 +360,9 @@ NAMESPACE_BEGIN(sdlgui)
             return Color(r() + c.r(), g() + c.g(), b() + c.b(), a() + c.a());
         }
 
-        SDL_Color toSdlColor() const;
+        [[nodiscard]] SDL_Color toSdlColor() const;
 
-        NVGcolor toNvgColor() const;
+        [[nodiscard]] NVGcolor toNvgColor() const;
 
     private:
         struct _Data {
@@ -792,6 +807,6 @@ NAMESPACE_BEGIN(sdlgui)
 /// Determine whether an icon ID is a font-based icon (e.g. from the entypo.ttf font)
     inline bool nvgIsFontIcon(int value) { return value >= 1024; }
 
-NAMESPACE_END(sdlgui)
+}
 
 #endif

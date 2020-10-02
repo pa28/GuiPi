@@ -84,7 +84,7 @@ void VScrollPanel::draw(SDL_Renderer *renderer)
 
     Widget *child = mChildren[0];
     mChildPreferredHeight = child->preferredSize(nullptr).y;
-    float scrollh = height() * std::min(1.0f, height() / (float) mChildPreferredHeight);
+    float scrollh = (float)height() * std::min(1.0f, (float)height() / (float) mChildPreferredHeight);
 
     SDL_Point ap = getAbsolutePos();
     SDL_Rect brect{ ap.x, ap.y, width(), height() };
@@ -96,7 +96,7 @@ void VScrollPanel::draw(SDL_Renderer *renderer)
     {
       const Vector2i savepos = child->position();
       Vector2i npos = savepos;
-      mDOffset = -mScroll*(mChildPreferredHeight - mSize.y);
+      mDOffset = roundToInt(-mScroll*(float)(mChildPreferredHeight - mSize.y));
       npos.y += mDOffset;
       child->setPosition(npos);
       child->draw(renderer);
@@ -110,7 +110,9 @@ void VScrollPanel::draw(SDL_Renderer *renderer)
     SDL_RenderFillRect(renderer, &srect);
       
     SDL_Color ss = mTheme->mBorderLight.toSdlColor();
-    SDL_Rect drect{ ap.x + mSize.x - 12 + 1, ap.y + 4 + (mSize.y - 8 - scrollh) * mScroll + 1, 6, scrollh - 1 };
+    SDL_Rect drect{ ap.x + mSize.x - 12 + 1,
+                    ap.y + 4 + roundToInt(((float)mSize.y - 8 - scrollh) * mScroll) + 1, 6,
+                    roundToInt(scrollh) - 1 };
 
     SDL_SetRenderDrawColor(renderer, ss.r, ss.g, ss.b, ss.a);
     SDL_RenderFillRect(renderer, &drect);

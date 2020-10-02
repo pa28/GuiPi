@@ -111,7 +111,7 @@ void ImagePanel::draw(SDL_Renderer* renderer)
           SDL_RenderFillRect(renderer, &shadowPaintRect);
         }
 
-        SDL_Rect imgPaintRect{ p.x + ix, p.y + iy, iw, ih };
+        SDL_Rect imgPaintRect{ p.x + roundToInt(ix), p.y + roundToInt(iy), roundToInt(iw), roundToInt(ih) };
         SDL_Rect imgSrcRect{ 0, 0, imgw, imgh };
         PntRect imgrect = clip_rects(srect2pntrect(imgPaintRect), clip);
         imgPaintRect.w = imgrect.x2 - imgrect.x1;
