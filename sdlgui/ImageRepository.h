@@ -24,6 +24,7 @@
 
 #include <map>
 #include <vector>
+#include <type_traits>
 #include <sdlgui/common.h>
 #include <sdlgui/widget.h>
 #include <sdlgui/Image.h>
@@ -50,21 +51,30 @@ namespace sdlgui {
         ImageRepository() = default;
         ~ImageRepository() override = default;
 
+        template<typename T>
+        T incMod(T value, make_signed_t<T> increment, T modulus) {
+            if (increment >= 0)
+                return (value + static_cast<make_unsigned_t<T>>(increment)) % modulus;
+            else {
+                return (value + modulus - static_cast<make_unsigned_t<T>>(-increment)) % modulus;
+            }
+        }
+
         auto actionEvent(EventType event, ImageStoreIndex index) {
             switch (event) {
                 case LEFT_EVENT:
-                    index.first = (index.first - 1) % mImageStore.size();
+                    index.first = incMod(index.first, -1, mImageStore.size());
                     index.second %= mImageStore.at(index.first).size();
                     break;
                 case RIGHT_EVENT:
-                    index.first = (index.first + 1) % mImageStore.size();
+                    index.first = incMod(index.first, 1, mImageStore.size());
                     index.second %= mImageStore.at(index.first).size();
                     break;
                 case UP_EVENT:
-                    index.second = (index.second - 1) % mImageStore.at(index.first).size();
+                    index.second = incMod(index.second, -1, mImageStore.at(index.first).size());
                     break;
                 case DOWN_EVENT:
-                    index.second = (index.second + 1) % mImageStore.at(index.first).size();
+                    index.second = incMod(index.second, 1, mImageStore.at(index.first).size());
                     break;
                 default:
                     break;

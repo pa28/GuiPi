@@ -255,7 +255,7 @@ public:
         mImageRepository->addImageList(loadImageDataDirectory(mSDL_Renderer, string(image_path)));
 
         // Create an image repeater to use with the image display.
-        sdlgui::ref<ImageRepeater> imageRepeater = add<ImageRepeater>(Vector2i(210, 0), Vector2i(450, 450));
+        auto imageRepeater = add<ImageRepeater>(Vector2i(210, 0), Vector2i(450, 450));
         topArea->add<ImageDisplay>()->withImageRepository(mImageRepository)
                 ->withRepeater(imageRepeater)
                 ->setCallback([=](ImageDisplay &w, ImageRepository::EventType e) {
@@ -336,7 +336,7 @@ int main(int /* argc */, char ** /* argv */) {
     char rendername[256] = {0};
     SDL_RendererInfo info;
 
-    SDL_Init(SDL_INIT_VIDEO);   // Initialize SDL2
+    SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER);   // Initialize SDL2
 
     SDL_Window *window;        // Declare a pointer to an SDL_Window
 
