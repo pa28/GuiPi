@@ -179,8 +179,8 @@ int main(int /* argc */, char ** /* argv */) {
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-    int winWidth = 1024;
-    int winHeight = 768;
+    int winWidth = 800;
+    int winHeight = 480;
 
     // Create an application window with the following settings:
     window = SDL_CreateWindow(
@@ -212,11 +212,12 @@ int main(int /* argc */, char ** /* argv */) {
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-    sdlgui::ref<HamChrono> screen = new HamChrono(window, winWidth, winHeight);
+    sdlgui::ref<HamChrono> app = new HamChrono(window, winWidth, winHeight);
 
-    screen->performLayout(screen->sdlRenderer());
+    app->performLayout(app->sdlRenderer());
 
-    screen->eventLoop();
+    app->eventLoop();
+
     SDL_DestroyRenderer(renderer);
     return 0;
 }
