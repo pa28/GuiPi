@@ -347,8 +347,8 @@ int main(int /* argc */, char ** /* argv */) {
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
     SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-    int winWidth = 1024;
-    int winHeight = 768;
+    int winWidth = 800;
+    int winHeight = 480;
 
     // Create an application window with the following settings:
     window = SDL_CreateWindow(
