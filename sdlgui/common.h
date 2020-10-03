@@ -217,6 +217,11 @@ NAMESPACE_BEGIN(sdlgui)
         /// Compare this reference with a pointer
         bool operator!=(const T *ptr) const { return m_ptr != ptr; }
 
+        /// Less than comparator
+        bool operator<(const ref &r) const { return m_ptr < r.m_ptr; }
+
+        bool operator<(const T *ptr) const { return m_ptr < ptr; }
+
         /// Access the object referenced by this reference
         T *operator->() { return m_ptr; }
 
