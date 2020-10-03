@@ -65,10 +65,12 @@ set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 find_package(SDL2 REQUIRED)
 find_package(SDL2IMAGE REQUIRED)
 find_package(SDL2TTF REQUIRED)
+find_package(CURLPP REQUIRED)
 
 include_directories(${SDL2_INCLUDE_DIR})
 include_directories(${SDL2TTF_INCLUDE_DIR})
 include_directories(${SDL2_IMAGE_INCLUDE_DIR})
+include_directories(${CURLPP_INCLUDE_DIR})
 
 # Required core libraries on various platforms
 if (WIN32)
@@ -137,11 +139,11 @@ if (NANOGUI_BUILD_EXAMPLE)
 #            VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/build/debug")
 #    target_link_libraries(example1 ${NNGUI_EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2IMAGE_LIBRARY} ${SDL2TTF_LIBRARY})
 
-    add_executable(example2 ${NNGUI_EXTRA_SOURCE} ${NNGUI_BASIC_SOURCE} example2.cpp)
+    add_executable(example2 ${GUIPI_SOURCES} ${NNGUI_EXTRA_SOURCE} ${NNGUI_BASIC_SOURCE} example2.cpp)
     set_target_properties(
             example2 PROPERTIES
             VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/build/debug")
-    target_link_libraries(example2 ${NNGUI_EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2IMAGE_LIBRARY} ${SDL2TTF_LIBRARY})
+    target_link_libraries(example2 ${NNGUI_EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2IMAGE_LIBRARY} ${SDL2TTF_LIBRARY} ${CURLPP_LIBRARIES})
 
     # Copy icons for example application
     if (WIN32)
