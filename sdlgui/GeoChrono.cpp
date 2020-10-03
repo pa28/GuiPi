@@ -293,7 +293,7 @@ namespace sdlgui {
                 SDL_RenderCopy(renderer, mForeground.get(), &src1, &dst1);
             }
 
-            if (mForeground) {
+            if (mForeground && mSunMoonDisplay) {
                 auto[sunx, suny] = latLongToMap(mSubSolarLat, mSubSolarLon);
                 if (sunx < mSunIcon.w / 2) {
                     auto split = mSunIcon.w / 2 - sunx;

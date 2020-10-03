@@ -74,6 +74,7 @@ namespace sdlgui {
         Surface mBackdropImage;
         bool mBackdropDirty;
         bool mAzimuthalDisplay{false};
+        bool mSunMoonDisplay{false};
         bool mTextureDirty{true};   //< True when the image needs to be re-drawn
         bool mMapsDirty{true};      //< True when the map surfaces need to be re-drawn
 
@@ -214,6 +215,12 @@ namespace sdlgui {
         ref<GeoChrono> withAzmuthalDisplay(bool azumthal) { setAzmuthalDisplay(azumthal); return this; }
 
         bool azmuthalDisplay() const { return mAzimuthalDisplay; }
+
+        void setSunMoonDisplay(bool sunMoon) { mSunMoonDisplay = sunMoon; }
+
+        bool sunMoonDisplay() const { return mSunMoonDisplay; }
+
+        ref<GeoChrono> withSunMoonDisplay(bool sunMoon) { setSunMoonDisplay(sunMoon); return this; }
 
         void transparentForeground();
 

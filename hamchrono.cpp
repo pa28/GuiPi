@@ -139,10 +139,13 @@ namespace guipi {
                     ->withFixedSize(Vector2i(40, topAreaSize.y))
                     ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 10, 12)
                     ->add<ToolButton>(ENTYPO_ICON_COMPASS, Button::Flags::ToggleButton)->_and()
-                    ->add<ToolButton>(ENTYPO_ICON_MOON, Button::Flags::ToggleButton)->_and()
+                    ->add<ToolButton>(ENTYPO_ICON_MOON, Button::Flags::ToggleButton)
+                            ->withPushed(mGeoChrono->sunMoonDisplay())
+                            ->withChangeCallback([&](bool state) { mGeoChrono->setSunMoonDisplay(state); })
+                            ->_and()
                     ->add<ToolButton>(ENTYPO_ICON_GLOBE, Button::Flags::ToggleButton)
-                    ->withPushed(mGeoChrono->azmuthalDisplay())
-                    ->withChangeCallback([=](bool state) { mGeoChrono->setAzmuthalDisplay(state); });
+                            ->withPushed(mGeoChrono->azmuthalDisplay())
+                            ->withChangeCallback([&](bool state) { mGeoChrono->setAzmuthalDisplay(state); });
 
             switches->add<Widget>()->withPosition(Vector2i(620, 0))
                     ->withFixedSize(Vector2i(40, topAreaSize.y))
