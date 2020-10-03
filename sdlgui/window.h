@@ -25,7 +25,7 @@ class  Window : public Widget
 {
     friend class Popup;
 public:
-    Window(Widget *parent, const std::string &title = "Untitled");
+    explicit Window(Widget *parent, const std::string &title = "Untitled");
     Window(Widget *parent, const std::string &title, const Vector2i& pos)
       : Window(parent, title) { setPosition(pos); }
 

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include "GuiPi/p13.h"
+#include "guipi/p13.h"
 
 class SatelliteEphemerisFetch {
 

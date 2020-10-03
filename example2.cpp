@@ -10,6 +10,7 @@
 */
 
 #include <fstream>
+#include <guipi/Ephemeris.h>
 #include <sdlgui/common.h>
 #include <sdlgui/screen.h>
 #include <sdlgui/window.h>
@@ -97,7 +98,7 @@ protected:
     static constexpr std::string_view brightnessDevice = "/sys/class/backlight/rpi_backlight/brightness";
 
     std::vector<SDL_Texture *> mImagesData;
-    int mCurrentImage;
+    int mCurrentImage{};
 
     Vector2f qthLatLon;
     Vector2i mScreenSize{800, 480};
@@ -111,10 +112,24 @@ protected:
     sdlgui::ref<Window> mPopupWindow;
     sdlgui::ref<ImageRepository> mImageRepository;
 
+    guipi::Ephemeris mEphemeris;
+//    Timer<TestWindow> mTimer;
+
 public:
     ~TestWindow() override {
         cout << __PRETTY_FUNCTION__ << '\n';
         disposeWindow(mMainWindow.get());
+    }
+
+    /**
+     * The timer callback
+     * @param interval
+     * @return the new interval
+     */
+    Uint32 timerCallback(Uint32 interval) {
+        if (auto moon = mEphemeris.predict("Moon"))
+            mGeoChrono->setMoonCoord(moon.value());
+        return interval;
     }
 
     template<typename T>
@@ -203,7 +218,8 @@ public:
 
 
     TestWindow(SDL_Window *pwindow, int rwidth, int rheight)
-            : Screen(pwindow, Vector2i(rwidth, rheight), "Raspberry Pi") {
+            : Screen(pwindow, Vector2i(rwidth, rheight), "Raspberry Pi")
+            {
 
         qthLatLon = Vector2f(deg2rad(-76.), deg2rad(45.));
 
@@ -211,6 +227,8 @@ public:
         Vector2i topAreaSize(mScreenSize.x, mScreenSize.y - mapAreaSize.y);
         Vector2i botAreaSize(mScreenSize.x, mScreenSize.y - topAreaSize.y);
         Vector2i sideBarSize(mScreenSize.x - mapAreaSize.x, mapAreaSize.y);
+
+        mEphemeris.loadEphemeris();
 
         mMainWindow = add<Window>("", Vector2i::Zero())->withBlank(true)
                 ->withFixedSize(mScreenSize)
@@ -279,6 +297,9 @@ public:
                 ->withForegroundFile(string(map_path) + string(day_map))
                 ->withBackdropFile(string(background_path) + string(backdrop))
                 ->withFixedSize(Vector2i(EARTH_BIG_W, EARTH_BIG_H));
+
+        if (auto moon = mEphemeris.predict("Moon"))
+            mGeoChrono->setMoonCoord(moon.value());
 
         auto switches = topArea->add<Widget>()->withPosition(Vector2i(620, 0))
                 ->withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 0, 0);

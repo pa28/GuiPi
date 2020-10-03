@@ -25,8 +25,8 @@
 #include <string>
 #include <optional>
 #include <sdlgui/common.h>
-#include <GuiPi/p13.h>
-#include <GuiPi/SatelliteEphemerisFetch.h>
+#include <guipi/p13.h>
+#include <guipi/SatelliteEphemerisFetch.h>
 
 namespace guipi {
     using namespace sdlgui;
