@@ -174,7 +174,7 @@ namespace sdlgui {
                 float dx = R*sin(B);
                 float dy = R*cos(B);
                 return make_tuple(mForeground.w/4 + roundToInt(dx),
-                                  mForeground.w/2 + roundToInt(dy));
+                                  mForeground.h/2 - roundToInt(dy));
             } else {
                 float a = M_PI - acos(ca);
                 float R0 = (float)mForeground.w/4 - 1;
