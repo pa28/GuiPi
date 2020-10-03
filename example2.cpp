@@ -288,16 +288,34 @@ public:
                 ->withBackdropFile(string(background_path) + string(backdrop))
                 ->withFixedSize(Vector2i(EARTH_BIG_W, EARTH_BIG_H));
 
-        topArea->add<Widget>()->withPosition(Vector2i(620, 0))
-                ->withFixedSize(Vector2i(40, topAreaSize.y))
-                ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 5, 2)
-                ->add<ToolButton>(ENTYPO_ICON_NETWORK, Button::Flags::ToggleButton)->_and()
-                ->add<ToolButton>(ENTYPO_ICON_COMPASS, Button::Flags::ToggleButton)->_and()
-                ->add<ToolButton>(ENTYPO_ICON_MOON, Button::Flags::ToggleButton)->_and()
-                ->add<ToolButton>(ENTYPO_ICON_GLOBE, Button::Flags::ToggleButton)
-                        ->withPushed(mGeoChrono->azmuthalDisplay())
-                        ->withChangeCallback([=](bool state) { mGeoChrono->setAzmuthalDisplay(state); });
+        auto switches = topArea->add<Widget>()->withPosition(Vector2i(620, 0))
+                ->withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 0, 0);
 
+        switches->add<Widget>()->withPosition(Vector2i(620, 0))
+                ->withFixedSize(Vector2i(40, topAreaSize.y))
+                ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 10, 12)
+                ->add<ToolButton>(ENTYPO_ICON_COMPASS, Button::Flags::ToggleButton)->_and()
+                ->add<ToolButton>(ENTYPO_ICON_MOON, Button::Flags::ToggleButton)
+                ->withPushed(/*mGeoChrono->sunMoonDisplay()*/ false )
+                ->withChangeCallback([&](bool state) {} )
+                ->_and()
+                ->add<ToolButton>(ENTYPO_ICON_GLOBE, Button::Flags::ToggleButton)
+                ->withPushed(mGeoChrono->azmuthalDisplay())
+                ->withChangeCallback([&](bool state) { mGeoChrono->setAzmuthalDisplay(state); });
+
+        switches->add<Widget>()->withPosition(Vector2i(620, 0))
+                ->withFixedSize(Vector2i(40, topAreaSize.y))
+                ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 10, 12)
+                ->add<ToolButton>(ENTYPO_ICON_NETWORK, Button::Flags::ToggleButton)->_and()
+                ->add<ToolButton>(ENTYPO_ICON_LOCATION, Button::Flags::ToggleButton)->_and()
+                ->add<ToolButton>(ENTYPO_ICON_ROCKET, Button::Flags::ToggleButton);
+
+        switches->add<Widget>()->withPosition(Vector2i(620, 0))
+                ->withFixedSize(Vector2i(40, topAreaSize.y))
+                ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 10, 12)
+                ->add<ToolButton>(ENTYPO_ICON_THREE_DOTS, Button::Flags::ToggleButton)->_and()
+                ->add<ToolButton>(ENTYPO_ICON_LIGHT_DOWN, Button::Flags::ToggleButton)->_and()
+                ->add<ToolButton>(ENTYPO_ICON_HAIR_CROSS, Button::Flags::ToggleButton);
 
         performLayout(mSDL_Renderer);
     }
