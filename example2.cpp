@@ -109,6 +109,7 @@ protected:
     sdlgui::ref<ToolButton> mAzmuthalButton;
     sdlgui::ref<Window> mMainWindow;
     sdlgui::ref<Window> mPopupWindow;
+    sdlgui::ref<ImageRepository> mImageRepository;
 
 public:
     ~TestWindow() override {
@@ -247,28 +248,19 @@ public:
                 ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 5, 5)
                 ->withId("sidebar");
 
-        sideBar->add<TimeBox>(true, true)->withId("localtime");
-
-        auto sun_images = loadImageDataDirectory(mSDL_Renderer, string(image_path));
+        mImageRepository = new ImageRepository();
+        mImageRepository->addImageList(loadImageDataDirectory(mSDL_Renderer, string(image_path)));
 
         // Create an image repeater to use with the image display.
-        sdlgui::ref<ImageRepeater> imageRepeater = add<ImageRepeater>(Vector2i(210, 0), Vector2i(450, 450));
-        topArea->add<ImageDisplay>()->withImages(sun_images)
+        auto imageRepeater = add<ImageRepeater>(Vector2i(210, 0), Vector2i(450, 450));
+        topArea->add<ImageDisplay>()->withImageRepository(mImageRepository)
                 ->withRepeater(imageRepeater)
-                ->setCallback([=](ImageDisplay &w, ImageDisplay::EventType e) {
-                    switch (e) {
-                        case ImageDisplay::RIGHT_EVENT:
-                        case ImageDisplay::DOWN_EVENT:
-                            w.setImageIndex(w.getImageIndex() + 1);
-                            break;
-                        case ImageDisplay::LEFT_EVENT:
-                        case ImageDisplay::UP_EVENT:
-                            w.setImageIndex(w.getImageIndex() - 1);
-                            break;
-                        case ImageDisplay::CLICK_EVENT:
-                            w.repeatImage();
-                            break;
-                    }
+                ->setCallback([=](ImageDisplay &w, ImageRepository::EventType e) {
+                    auto index = w.getImageIndex();
+                    if (e == ImageRepository::CLICK_EVENT)
+                        w.repeatImage();
+                    else
+                        w.setImageIndex(w.imageRepository()->actionEvent(e, w.getImageIndex()));
                 })
                 ->withFixedWidth(topAreaSize.y)
                 ->withFixedHeight(topAreaSize.y)

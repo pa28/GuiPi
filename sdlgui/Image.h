@@ -9,6 +9,7 @@
 #include <utility>
 #include <vector>
 #include <SDL.h>
+#include <sdlgui/theme.h>
 
 namespace sdlgui {
     using namespace std;
@@ -76,7 +77,14 @@ namespace sdlgui {
         ImageData &operator=(ImageData &) = delete;
         ImageData &operator=(const ImageData &) = delete;
 
-        ImageData(ImageData &&other)  noexcept {
+        explicit ImageData(Texture &&texture) noexcept {
+            tex = texture.tex;
+            texture.tex = nullptr;
+            w = texture.w();
+            h = texture.h();
+        }
+
+        ImageData(ImageData &&other) noexcept {
             tex = other.tex;
             other.tex = nullptr;
             path = std::move(other.path);
