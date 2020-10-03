@@ -62,6 +62,19 @@ struct NVGcontext;
 
 NAMESPACE_BEGIN(sdlgui)
 
+    template<typename T>
+    int roundToInt(T value) {
+        static_assert(std::is_floating_point_v<T>, "value must be floating point." );
+        return (int) round(value);
+    }
+
+    template<typename R, typename V>
+    R roundTo(V value) {
+        static_assert(std::is_unsigned_v<R>, "return value must be an unsigned type.");
+        static_assert(std::is_floating_point_v<V>, "value must be floating point." );
+        return (R) round(value) & std::numeric_limits<R>::max();
+    }
+
     struct ImageInfo {
         SDL_Texture *tex = nullptr;
         int w, h;
