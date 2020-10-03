@@ -108,6 +108,7 @@ namespace sdlgui {
         std::vector<AsyncTexturePtr> _txs;
 
         ImageData mSunIcon;
+        float mSubSolarLat, mSubSolarLon;
 
     public:
         /**
@@ -216,6 +217,15 @@ namespace sdlgui {
 
         void transparentForeground();
 
+        /**
+         * Convert a latitude longitude in radians to map coordinates.
+         * @param lat latitude
+         * @param lon longitude
+         * @param mapSize the size of the map in pixels
+         * @param location the station location for projection centring
+         * @return a tuple with x and y co-ordinate.
+         */
+        tuple<int, int> latLongToMap(float lat, float lon);
     };
 
 }

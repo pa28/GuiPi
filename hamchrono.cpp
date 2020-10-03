@@ -56,7 +56,7 @@ namespace guipi {
         HamChrono(SDL_Window *pwindow, int rwidth, int rheight)
                 : GuiPiApplication(pwindow, rwidth, rheight, "HamChrono") {
 
-            qthLatLon = Vector2f(deg2rad(-76.), deg2rad(45.));
+            qthLatLon = Vector2f(deg2rad(-77.), deg2rad(45.));
 
             Vector2i mapAreaSize(660, 330);
             Vector2i topAreaSize(mScreenSize.x, mScreenSize.y - mapAreaSize.y);

@@ -161,6 +161,36 @@ namespace sdlgui {
         return tuple<bool, float, float>{false, 0, 0};
     }
 
+    tuple<int, int>
+    GeoChrono::latLongToMap(float lat, float lon) {
+        if (mAzimuthalDisplay) {
+            float ca, B;
+            solveSphere(lon - mStationLocation.x, M_PI_2-lat, sin(mStationLocation.y) , cos(mStationLocation.y), ca, B);
+            if (ca > 0) {
+                float a = acos(ca);
+                float R0 = (float)mForeground.w/4.f - 1.f;
+                float R = a * (float)mForeground.w/(2.f*M_PI);
+                R = min(R, R0);
+                float dx = R*sin(B);
+                float dy = R*cos(B);
+                return make_tuple(mForeground.w/4 + roundToInt(dx),
+                                  mForeground.w/2 + roundToInt(dy));
+            } else {
+                float a = M_PI - acos(ca);
+                float R0 = (float)mForeground.w/4 - 1;
+                float R = a * (float)mForeground.w/(2*M_PI);
+                R = min(R, R0);
+                float dx = -R * sin(B);
+                float dy = R * cos(B);
+                return make_tuple(3*mForeground.w/4 + roundToInt(dx),
+                                  mForeground.h/2 - roundToInt(dy));
+            }
+        } else {
+            return make_tuple(roundToInt(mForeground.w * (lon-mStationLocation.x+M_PI)/(2.*M_PI)) % mForeground.w,
+                                         roundToInt(mForeground.h * (M_PI_2-lat)/M_PI));
+        }
+    }
+
     /**
      * Draw the Geographic Chronograph
      * @param renderer
@@ -263,9 +293,30 @@ namespace sdlgui {
                 SDL_RenderCopy(renderer, mForeground.get(), &src1, &dst1);
             }
 
-            SDL_Rect src{0, 0, mSunIcon.w, mSunIcon.h};
-            SDL_Rect dst{p.x + 330, p.y + 165, mSunIcon.w, mSunIcon.h};
-            SDL_RenderCopy(renderer, mSunIcon.get(), &src, &dst );
+            if (mForeground) {
+                auto[sunx, suny] = latLongToMap(mSubSolarLat, mSubSolarLon);
+                if (sunx < mSunIcon.w / 2) {
+                    auto split = mSunIcon.w / 2 - sunx;
+                    SDL_Rect src{split, 0, mSunIcon.w - split, mSunIcon.h};
+                    SDL_Rect dst{ p.x, p.y + suny - mSunIcon.h / 2, mSunIcon.w - split, mSunIcon.h};
+                    SDL_RenderCopy(renderer, mSunIcon.get(), &src, &dst);
+                    src = SDL_Rect{0, 0, split, mSunIcon.h};
+                    dst = SDL_Rect{p.x + mForeground.w - split, p.y + suny - mSunIcon.h / 2, mSunIcon.w - split, mSunIcon.h};
+                    SDL_RenderCopy(renderer, mSunIcon.get(), &src, &dst);
+                } else if (sunx > mForeground.w - mSunIcon.w / 2) {
+                    auto split = mSunIcon.w + (mForeground.w - mSunIcon.w / 2) - sunx;
+                    SDL_Rect src{split, 0, mSunIcon.w - split, mSunIcon.h};
+                    SDL_Rect dst{ p.x, p.y + suny - mSunIcon.h / 2, mSunIcon.w - split, mSunIcon.h};
+                    SDL_RenderCopy(renderer, mSunIcon.get(), &src, &dst);
+                    src = SDL_Rect{0, 0, split, mSunIcon.h};
+                    dst = SDL_Rect{p.x + mForeground.w - split, p.y + suny - mSunIcon.h / 2, split, mSunIcon.h};
+                    SDL_RenderCopy(renderer, mSunIcon.get(), &src, &dst);
+                } else {
+                    SDL_Rect src{0, 0, mSunIcon.w, mSunIcon.h};
+                    SDL_Rect dst{p.x + sunx - mSunIcon.w / 2, p.y + suny - mSunIcon.h / 2, mSunIcon.w, mSunIcon.h};
+                    SDL_RenderCopy(renderer, mSunIcon.get(), &src, &dst);
+                }
+            }
         }
 
         Widget::draw(renderer);
@@ -388,6 +439,8 @@ namespace sdlgui {
         SDL_BlitSurface(mDayMap.get(), nullptr, mTransparentMap.get(), nullptr);
 
         auto[latS, lonS] = subSolar();
+        mSubSolarLat = latS;
+        mSubSolarLon = lonS;
         float siny = sin(mStationLocation.y);
         float cosy = cos(mStationLocation.y);
 
