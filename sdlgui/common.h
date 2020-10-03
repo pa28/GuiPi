@@ -165,6 +165,9 @@ NAMESPACE_BEGIN(sdlgui)
 
         /// Overwrite this reference with another reference
         ref &operator=(const ref &r) noexcept {
+            if (this == &r)
+                return *this;
+
             if (m_ptr != r.m_ptr) {
                 if (r.m_ptr)
                     ((Object *) r.m_ptr)->incRef();
