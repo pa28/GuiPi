@@ -72,8 +72,9 @@ namespace sdlgui {
         Surface mDayAzMap;          //< The surface holding the generated day Azmuthal map
         Surface mNightAzMap;        //< The surface holding the generated night Azuthal map
         Surface mBackdropImage;
-        bool mBackdropDirty;
+        bool mBackdropDirty{};
         bool mAzimuthalDisplay{false};
+        bool mSunMoonDisplay{false};
         bool mTextureDirty{true};   //< True when the image needs to be re-drawn
         bool mMapsDirty{true};      //< True when the map surfaces need to be re-drawn
 
@@ -106,6 +107,13 @@ namespace sdlgui {
         struct AsyncTexture;
         typedef std::shared_ptr<AsyncTexture> AsyncTexturePtr;
         std::vector<AsyncTexturePtr> _txs;
+
+        ImageData mSunIcon;
+        ImageData mMoonIcon;
+        ImageData mGreenTargetIcon;
+        ImageData mRedTargetIcon;
+        Vector2f mSubSolar{};
+        Vector2f mSubLunar{};
 
     public:
         /**
@@ -212,8 +220,47 @@ namespace sdlgui {
 
         bool azmuthalDisplay() const { return mAzimuthalDisplay; }
 
+        void setSunMoonDisplay(bool sunMoon) { mSunMoonDisplay = sunMoon; }
+
+        bool sunMoonDisplay() const { return mSunMoonDisplay; }
+
+        ref<GeoChrono> withSunMoonDisplay(bool sunMoon) { setSunMoonDisplay(sunMoon); return ref<GeoChrono>{this}; }
+
+        void setMoonCoord(const Vector2f &moonCoord) { mSubLunar = moonCoord; }
+
+        static Vector2f antipode(const Vector2f &location) {
+            return Vector2f {(location.x < 0 ? 1.f : -1.f) * ((float)M_PI - abs(location.x)), -location.y};
+        }
+
         void transparentForeground();
 
+        /**
+         * Render an icon on the map at a given geographic location.
+         * @param renderer
+         * @param mapLocation the coordinates of the top, left corner of the map on the screen
+         * @param geoCoord the geographic coordinate of the icon
+         * @param icon the icon pre-rendered as a texture.
+         */
+        void renderMapIcon(SDL_Renderer *renderer, const Vector2i &mapLocation, const Vector2f &geoCoord, ImageData &icon);
+
+        /**
+         * Create a texture of an icon
+         * @param renderer
+         * @param iconSize the point size of the font generating the icon
+         * @param iconColor
+         * @return
+         */
+        ImageData createMapIcon(SDL_Renderer *renderer, int icon, int iconSize, const Color &iconColor);
+
+        /*
+         * Convert a latitude longitude in radians to map coordinates.
+         * @param lat latitude
+         * @param lon longitude
+         * @param mapSize the size of the map in pixels
+         * @param location the station location for projection centring
+         * @return a tuple with x and y co-ordinate.
+         */
+        tuple<int, int> latLongToMap(float lat, float lon);
     };
 
 }

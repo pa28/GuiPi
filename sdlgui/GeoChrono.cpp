@@ -11,6 +11,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_pixels.h>
+#include <sdlgui/entypo.h>
 #include <sdlgui/screen.h>
 #include <sdlgui/Image.h>
 #include "GeoChrono.h"
@@ -160,6 +161,36 @@ namespace sdlgui {
         return tuple<bool, float, float>{false, 0, 0};
     }
 
+    tuple<int, int>
+    GeoChrono::latLongToMap(float lat, float lon) {
+        if (mAzimuthalDisplay) {
+            float ca, B;
+            solveSphere(lon - mStationLocation.x, M_PI_2-lat, sin(mStationLocation.y) , cos(mStationLocation.y), ca, B);
+            if (ca > 0) {
+                float a = acos(ca);
+                float R0 = (float)mForeground.w/4.f - 1.f;
+                float R = a * (float)mForeground.w/(2.f*M_PI);
+                R = min(R, R0);
+                float dx = R*sin(B);
+                float dy = R*cos(B);
+                return make_tuple(mForeground.w/4 + roundToInt(dx),
+                                  mForeground.h/2 - roundToInt(dy));
+            } else {
+                float a = M_PI - acos(ca);
+                float R0 = (float)mForeground.w/4 - 1;
+                float R = a * (float)mForeground.w/(2*M_PI);
+                R = min(R, R0);
+                float dx = -R * sin(B);
+                float dy = R * cos(B);
+                return make_tuple(3*mForeground.w/4 + roundToInt(dx),
+                                  mForeground.h/2 - roundToInt(dy));
+            }
+        } else {
+            return make_tuple(roundToInt(mForeground.w * (lon-mStationLocation.x+M_PI)/(2.*M_PI)) % mForeground.w,
+                                         roundToInt(mForeground.h * (M_PI_2-lat)/M_PI));
+        }
+    }
+
     /**
      * Draw the Geographic Chronograph
      * @param renderer
@@ -261,9 +292,53 @@ namespace sdlgui {
                 SDL_RenderCopy(renderer, mBackground.get(), &src1, &dst1);
                 SDL_RenderCopy(renderer, mForeground.get(), &src1, &dst1);
             }
+
+            if (mForeground) {
+                renderMapIcon(renderer, p, mStationLocation, mGreenTargetIcon);
+                renderMapIcon(renderer, p, antipode(mStationLocation), mRedTargetIcon);
+                if (mSunMoonDisplay) {
+                    if (mSunIcon)
+                        renderMapIcon(renderer, p, mSubSolar, mSunIcon);
+                    if (mMoonIcon)
+                        renderMapIcon(renderer, p, mSubLunar, mMoonIcon);
+                }
+            }
         }
 
         Widget::draw(renderer);
+    }
+
+    void GeoChrono::renderMapIcon(SDL_Renderer *renderer, const Vector2i &mapLocation, const Vector2f &geoCoord,
+                                  ImageData &icon) {
+        auto[sunx, suny] = latLongToMap(geoCoord.y, geoCoord.x);
+        if (sunx < icon.w / 2) {
+            auto split = icon.w / 2 - sunx;
+            SDL_Rect src{split, 0, icon.w - split, icon.h};
+            SDL_Rect dst{ mapLocation.x, mapLocation.y + suny - icon.h / 2, icon.w - split, icon.h};
+            SDL_RenderCopy(renderer, icon.get(), &src, &dst);
+            src = SDL_Rect{0, 0, split, icon.h};
+            dst = SDL_Rect{mapLocation.x + mForeground.w - split, mapLocation.y + suny - icon.h / 2, icon.w - split, icon.h};
+            SDL_RenderCopy(renderer, icon.get(), &src, &dst);
+        } else if (sunx > mForeground.w - icon.w / 2) {
+            auto split = icon.w + (mForeground.w - icon.w / 2) - sunx;
+            SDL_Rect src{split, 0, icon.w - split, icon.h};
+            SDL_Rect dst{ mapLocation.x, mapLocation.y + suny - icon.h / 2, icon.w - split, icon.h};
+            SDL_RenderCopy(renderer, icon.get(), &src, &dst);
+            src = SDL_Rect{0, 0, split, icon.h};
+            dst = SDL_Rect{mapLocation.x + mForeground.w - split, mapLocation.y + suny - icon.h / 2, split, icon.h};
+            SDL_RenderCopy(renderer, icon.get(), &src, &dst);
+        } else {
+            SDL_Rect src{0, 0, icon.w, icon.h};
+            SDL_Rect dst{mapLocation.x + sunx - icon.w / 2, mapLocation.y + suny - icon.h / 2, icon.w, icon.h};
+            SDL_RenderCopy(renderer, icon.get(), &src, &dst);
+        }
+    }
+
+    ImageData GeoChrono::createMapIcon(SDL_Renderer *renderer, int iconCode, int iconSize, const Color &iconColor) {
+        auto icon = utf8(iconCode);
+        Texture texture;
+        mTheme->getTexAndRectUtf8(renderer, texture, 0, 0, icon.data(), "icons", iconSize, iconColor);
+        return ImageData{move(texture)};
     }
 
     /**
@@ -271,6 +346,11 @@ namespace sdlgui {
      * @param renderer
      */
     void GeoChrono::generateMapSurfaces(SDL_Renderer *renderer) {
+
+        mSunIcon = createMapIcon(renderer, ENTYPO_ICON_LIGHT_UP, 50, Color{ 255, 255, 0, 255});
+        mMoonIcon = createMapIcon(renderer, ENTYPO_ICON_MOON, 50, Color{ 255, 255, 255, 255});
+        mGreenTargetIcon = createMapIcon(renderer, ENTYPO_ICON_HAIR_CROSS, 50, Color{ 0, 255, 0, 255});
+        mRedTargetIcon = createMapIcon(renderer, ENTYPO_ICON_HAIR_CROSS, 50, Color{ 255, 0, 0, 255});
 
         // Initialize surfaces for each layer of each map including transparent versions of the day map
         mTransparentMap.reset(SDL_CreateRGBSurface(0, EARTH_BIG_W, EARTH_BIG_H, 32, rmask, gmask, bmask, amask));
@@ -375,6 +455,8 @@ namespace sdlgui {
         SDL_BlitSurface(mDayMap.get(), nullptr, mTransparentMap.get(), nullptr);
 
         auto[latS, lonS] = subSolar();
+        mSubSolar.y = latS;
+        mSubSolar.x = lonS;
         float siny = sin(mStationLocation.y);
         float cosy = cos(mStationLocation.y);
 
