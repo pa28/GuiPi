@@ -31,7 +31,7 @@ Label::Label(Widget *parent, const std::string &caption, const std::string &font
     _texture.dirty = true;
 }
 
-void Label::setTheme(Theme *theme) 
+void Label::setTheme(ref <Theme> theme)
 {
     Widget::setTheme(theme);
     if (mTheme) 

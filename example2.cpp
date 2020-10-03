@@ -380,7 +380,7 @@ int main(int /* argc */, char ** /* argv */) {
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-    sdlgui::ref<TestWindow> screen = new TestWindow(window, winWidth, winHeight);
+    sdlgui::ref<TestWindow> screen = sdlgui::ref<TestWindow>(new TestWindow(window, winWidth, winHeight));
 
 #if 1
     screen->eventLoop();

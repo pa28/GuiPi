@@ -45,7 +45,7 @@ public:
     void setColor(const Color& color) { mColor = color; }
 
     /// Set the \ref Theme used to draw this widget
-    virtual void setTheme(Theme *theme) override;
+    virtual void setTheme(ref <Theme> theme) override;
 
     /// Compute the size needed to fully display the label
     virtual Vector2i preferredSize(SDL_Renderer *ctx) const override;
@@ -54,7 +54,7 @@ public:
     void draw(SDL_Renderer *renderer) override;
     void setFontSize(int fontSize) override;
 
-    ref<Label> withFont(const std::string &font) { mFont = font; return this; }
+    ref<Label> withFont(const std::string &font) { mFont = font; return ref<Label>{this}; }
 
 protected:
     std::string mCaption;

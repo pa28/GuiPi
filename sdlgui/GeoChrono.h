@@ -133,19 +133,19 @@ namespace sdlgui {
          */
         ref<GeoChrono> withForeground(ImageData &foreground) {
             mForeground = std::move(foreground);
-            return this;
+            return ref<GeoChrono>{this};
         }
 
         ref<GeoChrono> withForegroundFile(const string &filePath) {
             mForeground.path = filePath;
             mMapsDirty = true;
-            return this;
+            return ref<GeoChrono>{this};
         }
 
         ref<GeoChrono> withBackdropFile(const string &filePath) {
             mBackdropTex.path = filePath;
             mBackdropDirty = true;
-            return this;
+            return ref<GeoChrono>{this};
         }
 
         /**
@@ -155,13 +155,13 @@ namespace sdlgui {
          */
         ref<GeoChrono> withBackground(ImageData &background) {
             mBackground = std::move(background);
-            return this;
+            return ref<GeoChrono>{this};
         }
 
         ref<GeoChrono> withBackgroundFile(const string &filePath) {
             mBackground.path = filePath;
             mMapsDirty = true;
-            return this;
+            return ref<GeoChrono>{this};
         }
 
         /**
@@ -173,7 +173,7 @@ namespace sdlgui {
             mStationLocation = stationLocation;
             mMapsDirty = true;
             mTextureDirty = true;
-            return this;
+            return ref<GeoChrono>{this};
         }
 
         /**
@@ -208,7 +208,7 @@ namespace sdlgui {
             mAzimuthalDisplay = azmuthal;
         }
 
-        ref<GeoChrono> withAzmuthalDisplay(bool azumthal) { setAzmuthalDisplay(azumthal); return this; }
+        ref<GeoChrono> withAzmuthalDisplay(bool azumthal) { setAzmuthalDisplay(azumthal); return ref<GeoChrono>{this}; }
 
         bool azmuthalDisplay() const { return mAzimuthalDisplay; }
 

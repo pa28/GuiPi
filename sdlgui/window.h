@@ -64,8 +64,8 @@ public:
     /// Invoke the associated layout generator to properly place child widgets, if any
     void performLayout(SDL_Renderer *ctx) override;
 
-    ref<Window> withBlank(bool isBlankWindow) { mBlank = isBlankWindow; return this; }
-    ref<Window> withVisible(bool isVisible) { mVisible = isVisible; return this; }
+    ref<Window> withBlank(bool isBlankWindow) { mBlank = isBlankWindow; return ref<Window>{this}; }
+    ref<Window> withVisible(bool isVisible) { mVisible = isVisible; return ref<Window>{this}; }
 
     /// Handle a focus change event (default implementation: record the focus status, but do nothing)
     bool focusEvent(bool focused);

@@ -127,10 +127,10 @@ NAMESPACE_BEGIN(sdlgui)
     class ref {
     public:
         /// Create a ``nullptr``-valued reference
-        ref() {}
+        ref() = default;
 
         /// Construct a reference from a pointer
-        ref(T *ptr) : m_ptr(ptr) {
+        explicit ref(T *ptr) : m_ptr(ptr) {
             if (m_ptr)
                 ((Object *) m_ptr)->incRef();
         }
@@ -227,7 +227,7 @@ NAMESPACE_BEGIN(sdlgui)
         const T &operator*() const { return *m_ptr; }
 
         /// Return a pointer to the referenced object
-        operator T *() { return m_ptr; }
+        explicit operator T *() { return m_ptr; }
 
         /// Return a const pointer to the referenced object
         T *get() { return m_ptr; }
@@ -236,7 +236,7 @@ NAMESPACE_BEGIN(sdlgui)
         const T *get() const { return m_ptr; }
 
         /// Check if the object is defined
-        operator bool() const { return m_ptr != nullptr; }
+        explicit operator bool() const { return m_ptr != nullptr; }
 
     private:
         T *m_ptr = nullptr;

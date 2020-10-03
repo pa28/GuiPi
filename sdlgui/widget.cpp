@@ -41,9 +41,9 @@ Widget::~Widget()
     }
 }
 
-void Widget::setTheme(Theme *theme) 
+void Widget::setTheme(ref <Theme> theme)
 {
-    if (mTheme.get() == theme)
+    if (mTheme == theme)
         return;
     mTheme = theme;
     for (auto child : mChildren)

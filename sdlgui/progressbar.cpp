@@ -31,7 +31,7 @@ struct ProgressBar::AsyncTexture
     ProgressBar* pbar = ptr;
     AsyncTexture* self = this;
     std::thread tgr([=]() {
-      Theme* mTheme = pbar->theme();
+      ref<Theme> mTheme = pbar->theme();
       std::lock_guard<std::mutex> guard(mTheme->loadMutex);
 
       int ww = pbar->width();
@@ -67,7 +67,7 @@ struct ProgressBar::AsyncTexture
     value = newvalue;
 
     std::thread tgr([=]() {
-      Theme* mTheme = pbar->theme();
+      ref<Theme> mTheme = pbar->theme();
       std::lock_guard<std::mutex> guard(mTheme->loadMutex);
 
       int ww = pbar->width();

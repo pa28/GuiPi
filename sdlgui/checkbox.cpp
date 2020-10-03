@@ -39,7 +39,7 @@ struct CheckBox::AsyncTexture
     CheckBox* cb = ptr;
     AsyncTexture* self = this;
     std::thread tgr([=]() {
-      Theme* theme = cb->theme();
+      ref<Theme> theme = cb->theme();
       Color b = Color(0, 0, 0, 180);
       Color c = pushed ? Color(0, 100) : Color(0, 32);
 

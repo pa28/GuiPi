@@ -151,7 +151,7 @@ namespace sdlgui {
             mImages.clear();
             std::move(listImages.begin(), listImages.end(), std::back_inserter(mImages));
             setImageIndex(0);
-            return this;
+            return ref<ImageDisplay>{this};
         }
 
         /**
@@ -161,7 +161,7 @@ namespace sdlgui {
          */
         ref<ImageDisplay> withImageIndex(const long idx) {
             mImageIndex = idx % (long)mImages.size();
-            return this;
+            return ref<ImageDisplay>{this};
         }
 
         /**
@@ -172,7 +172,7 @@ namespace sdlgui {
         ref<ImageDisplay> withRepeater(ref<ImageRepeater> repeater) {
             mImageRepeater = std::move(repeater);
             mImageRepeater->mParentImageDisplay = ref<ImageDisplay>{this};
-            return this;
+            return ref<ImageDisplay>{this};
         }
 
         /**
@@ -213,7 +213,7 @@ namespace sdlgui {
          */
         ref<ImageDisplay> setCallback(const std::function<void(ImageDisplay &, EventType)> &callback) {
             mCallback = callback;
-            return this;
+            return ref<ImageDisplay>{this};
         }
 
         const string &getImageTitle() const {

@@ -55,18 +55,18 @@ public:
     void setParent(Widget *parent) { mParent = parent; }
 
     /// Return the used \ref Layout generator
-    Layout *layout() { return mLayout; }
+    ref<Layout> layout() { return mLayout; }
     /// Return the used \ref Layout generator
     const Layout *layout() const { return mLayout.get(); }
     /// Set the used \ref Layout generator
     void setLayout(Layout *layout) { mLayout = layout; }
 
     /// Return the \ref Theme used to draw this widget
-    Theme *theme() { return mTheme; }
+    ref<Theme> theme() { return mTheme; }
     /// Return the \ref Theme used to draw this widget
     const Theme *theme() const { return mTheme.get(); }
     /// Set the \ref Theme used to draw this widget
-    virtual void setTheme(Theme *theme);
+    virtual void setTheme(ref <Theme> theme);
 
     /// Return the position relative to the parent widget
     const Vector2i &position() const { return _pos; }
@@ -117,11 +117,11 @@ public:
     int fixedHeight() const { return mFixedSize.y; }
     /// Set the fixed width (see \ref setFixedSize())
     void setFixedWidth(int width) { mFixedSize.x = width; }
-    ref<Widget> withFixedWidth(int width) { setFixedWidth(width); return this; }
+    ref<Widget> withFixedWidth(int width) { setFixedWidth(width); return ref<Widget>{this}; }
 
     /// Set the fixed height (see \ref setFixedSize())
     void setFixedHeight(int height) { mFixedSize.y = height; }
-    ref<Widget> withFixedHeight(int height) {mFixedSize.y = height; return this; }
+    ref<Widget> withFixedHeight(int height) {mFixedSize.y = height; return ref<Widget>{this}; }
 
     /// Return whether or not the widget is currently visible (assuming all parents are visible)
     bool visible() const { return mVisible; }
@@ -175,8 +175,8 @@ public:
 
     /// Variadic shorthand notation to construct and add a child widget
     template<typename WidgetClass, typename... Args>
-    WidgetClass* add(const Args&... args) {
-        return new WidgetClass(this, args...);
+    auto add(const Args&... args) {
+        return ref<WidgetClass>(new WidgetClass(this, args...));
     }
 
     template<typename WidgetClass, typename... Args>
@@ -289,17 +289,17 @@ public:
     virtual PntRect getAbsoluteCliprect() const;
     virtual int getAbsoluteTop() const;
 
-    ref<Widget> _and() { return parent(); }
-    ref<Widget> withId(const std::string& id) { setId(id); return this; }
+    ref<Widget> _and() { return ref<Widget>{parent()}; }
+    ref<Widget> withId(const std::string& id) { setId(id); return ref<Widget>{this}; }
     
-    ref<Widget> withPosition( const Vector2i& pos ) { setPosition( pos); return this; }
-    ref<Widget> withFontSize(int size) { setFontSize(size); return this; }
-    ref<Widget> withIconFontSize(int size) { setIconFontSize(size); return this;}
-    ref<Widget> withFixedSize(const Vector2i& size) { setFixedSize(size); return this; }
-    ref<Widget> withTooltip(const std::string& text) { setTooltip(text); return this; }
+    ref<Widget> withPosition( const Vector2i& pos ) { setPosition( pos); return ref<Widget>{this}; }
+    ref<Widget> withFontSize(int size) { setFontSize(size); return ref<Widget>{this}; }
+    ref<Widget> withIconFontSize(int size) { setIconFontSize(size); return ref<Widget>{this};}
+    ref<Widget> withFixedSize(const Vector2i& size) { setFixedSize(size); return ref<Widget>{this}; }
+    ref<Widget> withTooltip(const std::string& text) { setTooltip(text); return ref<Widget>{this}; }
 
     template<typename LayoutClass,typename... Args>
-    ref<Widget> withLayout(const Args&... args) { setLayout(new LayoutClass(args...)); return this; }
+    ref<Widget> withLayout(const Args&... args) { setLayout(new LayoutClass(args...)); return ref<Widget>{this}; }
 
     template<typename RetClass> RetClass* cast() { return dynamic_cast<RetClass*>(this); }
 

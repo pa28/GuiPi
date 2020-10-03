@@ -45,7 +45,7 @@ NAMESPACE_BEGIN(sdlgui)
             Window *wnd = ptr;
             AsyncTexture *self = this;
             std::thread tgr([=]() {
-                Theme *mTheme = wnd->theme();
+                ref<Theme> mTheme = wnd->theme();
 
                 int ww = wnd->width();
                 int hh = wnd->height();

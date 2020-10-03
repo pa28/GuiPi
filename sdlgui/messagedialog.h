@@ -55,7 +55,7 @@ public:
     void setCallback(const std::function<void(int)> &callback) { mCallback = callback; }
 
     ref<MessageDialog> withCallback(const std::function<void(int)> &callback)
-    { setCallback( callback ); return this; }
+    { setCallback( callback ); return ref<MessageDialog>{this}; }
 
 protected:
     std::function<void(int)> mCallback;

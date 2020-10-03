@@ -45,7 +45,7 @@ struct TextBox::AsyncTexture
     TextBox* tbox = ptr;
     AsyncTexture* self = this;
     std::thread tgr([=]() {
-      Theme* mTheme = tbox->theme();
+      ref<Theme> mTheme = tbox->theme();
       std::lock_guard<std::mutex> guard(mTheme->loadMutex);
 
       int ww = tbox->width();
@@ -159,7 +159,7 @@ void TextBox::setEditable(bool editable)
     setCursor(editable ? Cursor::IBeam : Cursor::Arrow);
 }
 
-void TextBox::setTheme(Theme *theme) 
+void TextBox::setTheme(ref <Theme> theme)
 {
     Widget::setTheme(theme);
     if (mTheme)

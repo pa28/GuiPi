@@ -53,7 +53,7 @@ public:
     Alignment alignment() const { return mAlignment; }
     void setAlignment(Alignment align) { mAlignment = align; }
 
-    ref<TextBox> withAlignment(Alignment align) { setAlignment(align); return this; }
+    ref<TextBox> withAlignment(Alignment align) { setAlignment(align); return ref<TextBox>{this}; }
 
     const std::string &units() const { return mUnits; }
     void setUnits(const std::string &units) { mUnits = units; }
@@ -67,7 +67,7 @@ public:
     void setFormat(const std::string &format) { mFormat = format; }
 
     /// Set the \ref Theme used to draw this widget
-    void setTheme(Theme *theme) override;
+    void setTheme(ref <Theme> theme) override;
 
     /// Set the change callback
     std::function<bool(const std::string& str)> callback() const { return mCallback; }

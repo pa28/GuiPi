@@ -114,7 +114,7 @@ bool Button::mouseButtonEvent(const Vector2i &p, int button, bool down, int modi
     Widget::mouseButtonEvent(p, button, down, modifiers);
     /* Temporarily increase the reference count of the button in case the
        button causes the parent window to be destructed */
-    ref<Button> self = this;
+    ref<Button> self = ref<Button>{this};
 
     if (button ==  SDL_BUTTON_LEFT && mEnabled) 
     {

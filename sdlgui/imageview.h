@@ -131,7 +131,7 @@ public:
     void performLayout(SDL_Renderer* ctx) override;
     void draw(SDL_Renderer* renderer);
 
-    ref<ImageView> withImage(SDL_Texture *texture) { bindImage(texture); return this; }
+    ref<ImageView> withImage(SDL_Texture *texture) { bindImage(texture); return ref<ImageView>{this}; }
 
 private:
     // Helper image methods.

@@ -39,7 +39,7 @@ public:
     Vector2i preferredSize(SDL_Renderer *ctx) const override;
     void draw(SDL_Renderer* renderer) override;
 
-    ref<ImagePanel> withImages(const ListImages& data ) { setImages(data); return this; }
+    ref<ImagePanel> withImages(const ListImages& data ) { setImages(data); return ref<ImagePanel>{this}; }
 
 protected:
   Vector2i gridSize() const;

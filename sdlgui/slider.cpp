@@ -31,7 +31,7 @@ struct Slider::AsyncTexture
     Slider* slider = ptr;
     AsyncTexture* self = this;
     std::thread tgr([=]() {
-      Theme* mTheme = slider->theme();
+      ref<Theme> mTheme = slider->theme();
       std::lock_guard<std::mutex> guard(mTheme->loadMutex);
 
       int ww = slider->width();
@@ -85,7 +85,7 @@ struct Slider::AsyncTexture
     AsyncTexture* self = this;
 
     std::thread tgr([=]() {
-      Theme* mTheme = slider->theme();
+      ref<Theme> mTheme = slider->theme();
       std::lock_guard<std::mutex> guard(mTheme->loadMutex);
 
       int hh = slider->height();

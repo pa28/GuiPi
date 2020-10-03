@@ -42,7 +42,7 @@ public:
     const std::vector<std::string> &items() const { return mItems; }
     const std::vector<std::string> &itemsShort() const { return mItemsShort; }
 
-    ref<ComboBox> withItems(const std::vector<std::string>& items) {setItems(items); return this;}
+    ref<ComboBox> withItems(const std::vector<std::string>& items) {setItems(items); return ref<ComboBox>{this};}
 
     bool scrollEvent(const Vector2i &p, const Vector2f &rel);
 

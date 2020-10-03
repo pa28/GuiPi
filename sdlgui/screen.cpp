@@ -116,7 +116,6 @@ void Screen::initialize(SDL_Window* window)
 Screen::~Screen()
 {
     __sdlgui_screens.erase(_window);
-    delete mTheme;
 }
 
 void Screen::setVisible(bool visible)

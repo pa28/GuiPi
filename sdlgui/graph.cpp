@@ -30,7 +30,7 @@ struct Graph::AsyncTexture
     AsyncTexture* self = this;
 
     std::thread tgr([=]() {
-      Theme* theme = graph->theme();
+      ref<Theme> theme = graph->theme();
 
       int ww = graph->width();
       int hh = graph->height();

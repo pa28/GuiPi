@@ -88,12 +88,12 @@ public:
     virtual Color bodyColor();
     virtual Vector2i getTextOffset() const;
 
-    ref<Button> withCallback(const std::function<void()> &callback) { setCallback( callback ); return this; }
-    ref<Button> withFlags(int flags) { setFlags( flags); return this; }
-    ref<Button> withChangeCallback(const std::function<void(bool)>& callback) { setChangeCallback( callback ); return this; }
-    ref<Button> withBackgroundColor(const Color& color) { setBackgroundColor( color ); return this; }
-    ref<Button> withIcon(int icon) { setIcon( icon ); return this; }
-    ref<Button> withPushed(bool pushed) { setPushed(pushed); return this; }
+    ref<Button> withCallback(const std::function<void()> &callback) { setCallback( callback ); return ref<Button>{this}; }
+    ref<Button> withFlags(int flags) { setFlags( flags); return ref<Button>{this}; }
+    ref<Button> withChangeCallback(const std::function<void(bool)>& callback) { setChangeCallback( callback ); return ref<Button>{this}; }
+    ref<Button> withBackgroundColor(const Color& color) { setBackgroundColor( color ); return ref<Button>{this}; }
+    ref<Button> withIcon(int icon) { setIcon( icon ); return ref<Button>{this}; }
+    ref<Button> withPushed(bool pushed) { setPushed(pushed); return ref<Button>{this}; }
 
 protected:
     virtual void renderBodyTexture(NVGcontext* &ctx, int &realw, int &realh);

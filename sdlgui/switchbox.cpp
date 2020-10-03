@@ -32,7 +32,7 @@ struct SwitchBox::AsyncTexture
     SwitchBox* sb = ptr;
     AsyncTexture* self = this;
     std::thread tgr([=]() {
-      Theme* theme = sb->theme();
+      ref<Theme> theme = sb->theme();
 
       int ww = sb->width();
       int hh = sb->height();
@@ -96,7 +96,7 @@ struct SwitchBox::AsyncTexture
     SwitchBox* sb = ptr;
     AsyncTexture* self = this;
     std::thread tgr([=]() {
-      Theme* theme = sb->theme();
+      ref<Theme> theme = sb->theme();
 
       int ww = std::min(sb->width(), sb->height());
       int hh = ww;

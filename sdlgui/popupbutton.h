@@ -40,7 +40,7 @@ public:
     Vector2i preferredSize(SDL_Renderer *ctx) const override;
     void performLayout(SDL_Renderer *ctx) override;
 
-    ref<PopupButton> withChevron(int icon) { setChevronIcon(icon); return this; }
+    ref<PopupButton> withChevron(int icon) { setChevronIcon(icon); return ref<PopupButton>{this}; }
 protected:
     
     Popup *mPopup = nullptr;

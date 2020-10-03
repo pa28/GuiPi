@@ -134,19 +134,19 @@ public:
     Window *addWindow(const Vector2i &pos,
                          const std::string &title = "Untitled") {
         assert(mScreen);
-        mWindow = new Window(mScreen, title);
+        mWindow = new Window(mScreen.get(), title);
         mLayout = new AdvancedGridLayout({10, 0, 10, 0}, {});
         mLayout->setMargin(10);
         mLayout->setColStretch(2, 1);
         mWindow->setPosition(pos);
-        mWindow->setLayout(mLayout);
+        mWindow->setLayout(mLayout.get());
         mWindow->setVisible(true);
-        return mWindow;
+        return mWindow.get();
     }
 
     /// Add a new group that may contain several sub-widgets
     Label *addGroup(const std::string &caption) {
-        Label* label = new Label(mWindow, caption, mGroupFontName, mGroupFontSize);
+        Label* label = new Label(mWindow.get(), caption, mGroupFontName, mGroupFontSize);
         if (mLayout->rowCount() > 0)
             mLayout->appendRow(mPreGroupSpacing); /* Spacing */
         mLayout->appendRow(0);
@@ -159,7 +159,7 @@ public:
     template <typename Type> detail::FormWidget<Type> *
     addVariable(const std::string &label, const std::function<void(Type)> &setter,
                 const std::function<Type()> &getter, bool editable = true) {
-        Label *labelW = new Label(mWindow, label, mLabelFontName, mLabelFontSize);
+        Label *labelW = new Label(mWindow.get(), label, mLabelFontName, mLabelFontSize);
         auto widget = new detail::FormWidget<Type>(mWindow);
         auto refresh = [widget, getter] {
             Type value = getter(), current = widget->value();
@@ -194,7 +194,7 @@ public:
 
     /// Add a button with a custom callback
     Button *addButton(const std::string &label, const std::function<void()> &cb) {
-        Button *button = new Button(mWindow, label);
+        Button *button = new Button(mWindow.get(), label);
         button->setCallback(cb);
         button->setFixedHeight(25);
         if (mLayout->rowCount() > 0)
@@ -210,7 +210,7 @@ public:
         if (label == "") {
             mLayout->setAnchor(widget, AdvancedGridLayout::Anchor(1, mLayout->rowCount()-1, 3, 1));
         } else {
-            Label *labelW = new Label(mWindow, label, mLabelFontName, mLabelFontSize);
+            Label *labelW = new Label(mWindow.get(), label, mLabelFontName, mLabelFontSize);
             mLayout->setAnchor(labelW, AdvancedGridLayout::Anchor(1, mLayout->rowCount()-1));
             mLayout->setAnchor(widget, AdvancedGridLayout::Anchor(3, mLayout->rowCount()-1));
         }
@@ -223,10 +223,10 @@ public:
     }
 
     /// Access the currently active \ref Window instance
-    Window *window() { return mWindow; }
+    Window *window() { return mWindow.get(); }
     void setWindow(Window *window) {
         mWindow = window;
-        mLayout = dynamic_cast<AdvancedGridLayout *>(window->layout());
+        mLayout = dynamic_cast<AdvancedGridLayout *>(window->layout().get());
         if (mLayout == nullptr)
             throw std::runtime_error(
                 "Internal error: window has an incompatible layout!");
