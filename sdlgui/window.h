@@ -40,7 +40,7 @@ public:
     void setModal(bool modal) { mModal = modal; }
 
     /// Return the panel used to house window buttons
-    Widget *buttonPanel();
+    ref<Widget> buttonPanel();
 
     /// Dispose the window
     void dispose();
@@ -76,7 +76,7 @@ protected:
 protected:
 
     std::string mTitle;
-    Widget *mButtonPanel;
+    ref<Widget> mButtonPanel;
 
     Texture _titleTex;
 

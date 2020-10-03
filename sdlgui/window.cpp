@@ -159,10 +159,10 @@ NAMESPACE_BEGIN(sdlgui)
     Vector2i Window::preferredSize(SDL_Renderer *ctx) const {
         if (!mBlank) {
             if (mButtonPanel)
-                mButtonPanel->setVisible(false);
+                const_cast<Widget*>(mButtonPanel.get())->setVisible(false);
             Vector2i result = Widget::preferredSize(ctx);
             if (mButtonPanel)
-                mButtonPanel->setVisible(true);
+                const_cast<Widget*>(mButtonPanel.get())->setVisible(true);
 
             int w, h;
             const_cast<Window *>(this)->mTheme->getTextBounds(const_cast<Window *>(this)->mTheme->mStandardFont.c_str(), 18.0, mTitle.c_str(), &w, &h);
@@ -173,7 +173,7 @@ NAMESPACE_BEGIN(sdlgui)
         }
     }
 
-    Widget *Window::buttonPanel() {
+    ref<Widget> Window::buttonPanel() {
         if (!mBlank) {
             if (!mButtonPanel) {
                 mButtonPanel = new Widget(this);
@@ -181,7 +181,7 @@ NAMESPACE_BEGIN(sdlgui)
             }
             return mButtonPanel;
         } else
-            return nullptr;
+            return ref<Widget>{nullptr};
     }
 
     void Window::performLayout(SDL_Renderer *ctx) {
