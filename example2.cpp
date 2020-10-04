@@ -38,7 +38,7 @@
 #include <memory>
 #include <sdlgui/TimeBox.h>
 #include <sdlgui/ImageDisplay.h>
-#include <sdlgui/GeoChrono.h>
+#include <guipi/GeoChrono.h>
 
 #if defined(_WIN32)
 #include <windows.h>

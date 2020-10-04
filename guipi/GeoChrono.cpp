@@ -16,14 +16,14 @@
 #include <sdlgui/Image.h>
 #include "GeoChrono.h"
 
-#include "nanovg.h"
+#include "sdlgui/nanovg.h"
 
 #define NANOVG_RT_IMPLEMENTATION
 #define NANORT_IMPLEMENTATION
 
-#include "nanovg_rt.h"
+#include "sdlgui/nanovg_rt.h"
 
-namespace sdlgui {
+namespace guipi {
 
     /**
      * Handle mouse motion events

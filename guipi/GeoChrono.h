@@ -18,7 +18,9 @@
 #define USE_COMPILED_MAPS 0
 #define USER_SET_CENTRE_LONG 1
 
-namespace sdlgui {
+namespace guipi {
+    using namespace sdlgui;
+    using sdlgui::ref;
 
     template<typename T>
     constexpr T deg2rad(T deg) { return deg * M_PI / 180.; }

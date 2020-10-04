@@ -14,7 +14,7 @@
 #include <guipi/GuiPiApplication.h>
 #include <guipi/Ephemeris.h>
 #include <sdlgui/entypo.h>
-#include <sdlgui/GeoChrono.h>
+#include <guipi/GeoChrono.h>
 #include <sdlgui/ImageRepository.h>
 #include <sdlgui/ImageDisplay.h>
 #include <sdlgui/button.h>

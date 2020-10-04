@@ -4,7 +4,6 @@ list(APPEND GUIPI_SOURCES
         ${CMAKE_CURRENT_LIST_DIR}/combobox.cpp
         ${CMAKE_CURRENT_LIST_DIR}/common.cpp
         ${CMAKE_CURRENT_LIST_DIR}/dropdownbox.cpp
-        ${CMAKE_CURRENT_LIST_DIR}/GeoChrono.cpp
         ${CMAKE_CURRENT_LIST_DIR}/graph.cpp
         ${CMAKE_CURRENT_LIST_DIR}/Image.cpp
         ${CMAKE_CURRENT_LIST_DIR}/ImageDisplay.cpp
