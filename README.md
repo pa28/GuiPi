@@ -1,6 +1,6 @@
 # HamChrono - HamClock reimagined for the RaspberryPi 
 
-![Mercator Projection](https://raw.githubusercontent.com/pa28/GuiPi/porting/ScreenShots/ScreenshotMercator.png)
+![Mercator Projection](https://github.com/pa28/GuiPi/blob/main/ScreenShots/ScreenshotMercator.png)
 
 I have started this project mainly to bring my
 personal desires to the great features available
@@ -11,7 +11,7 @@ some benefit to you. I am not here to criticize HamClock,
 only to bring a slightly different vision to packaging
 the features.
 
-![Azimuthal Projection](https://raw.githubusercontent.com/pa28/GuiPi/porting/ScreenShots/ScreenshotAzimuthal.png)
+![Azimuthal Projection](https://github.com/pa28/GuiPi/blob/main/ScreenShots/ScreenshotAzimuthal.png)
 
 [HamClock](https://www.clearskyinstitute.com/ham/HamClock/)
 by Elwood Downey WB0OEW is an
@@ -29,7 +29,7 @@ even the most advanced Arduino. So I became
 interested in seeing what I could to to unlock
 those features for Pi users.
 
-![Image Repeater](https://raw.githubusercontent.com/pa28/GuiPi/porting/ScreenShots/ScreenshotRepeater.png)
+![Image Repeater](https://github.com/pa28/GuiPi/blob/main/ScreenShots/ScreenshotRepeater.png)
 
 ## [Porting to modern C++.](https://github.com/pa28/GuiPi/blob/porting/LanguageFeatures.md)
 
