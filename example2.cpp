@@ -266,6 +266,8 @@ public:
                 ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 5, 5)
                 ->withId("sidebar");
 
+        sideBar->add<TimeBox>(true, true);
+
         mImageRepository = new ImageRepository();
         mImageRepository->addImageList(loadImageDataDirectory(mSDL_Renderer, string(image_path)));
 
