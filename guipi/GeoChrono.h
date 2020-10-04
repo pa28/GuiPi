@@ -10,6 +10,7 @@
 #include <chrono>
 #include <mutex>
 #include <thread>
+#include <guipi/Ephemeris.h>
 #include <sdlgui/widget.h>
 #include <sdlgui/TimeBox.h>
 #include <sdlgui/Image.h>
@@ -110,14 +111,9 @@ namespace guipi {
         typedef std::shared_ptr<AsyncTexture> AsyncTexturePtr;
         std::vector<AsyncTexturePtr> _txs;
 
-        ImageData mSunIcon;
-        ImageData mMoonIcon;
-        ImageData mGreenTargetIcon;
-        ImageData mRedTargetIcon;
-        ImageData mRocketIcon;
-        Vector2f mSubSolar{};
-        Vector2f mSubLunar{};
-        Vector2f mRocket{};
+        PlotPackage mSun;
+
+        vector<PlotPackage> mPlotPackage{};
 
     public:
         /**
@@ -125,8 +121,7 @@ namespace guipi {
          * Construct a GeoChrono with no images
          * @param parent
          */
-        explicit GeoChrono(Widget *parent) : Widget(parent), mTimer(*this, &GeoChrono::timerCallback, 60000),
-                               mDayMap{nullptr}, mNightMap{nullptr}, mTransparentMap{nullptr}, mStationLocation{0} {}
+        explicit GeoChrono(Widget *parent);
 
         bool mouseMotionEvent(const Vector2i &p, const Vector2i &rel, int button, int modifiers) override;
 
@@ -181,7 +176,7 @@ namespace guipi {
          * @param stationLocation in degrees, West is negative
          * @return a reference to this GeoChrono.
          */
-        ref<GeoChrono> withStationCoordinates(Vector2f stationLocation) {
+        ref<GeoChrono> withStationCoordinates(const Vector2f& stationLocation) {
             mStationLocation = stationLocation;
             mMapsDirty = true;
             mTextureDirty = true;
@@ -218,6 +213,10 @@ namespace guipi {
 
         void setAzmuthalDisplay(bool azmuthal) {
             mAzimuthalDisplay = azmuthal;
+            mSun.setMapCoordValid(false);
+            for (auto plotItem = mPlotPackage.begin(); plotItem != mPlotPackage.end(); ++plotItem ) {
+                plotItem->setMapCoordValid(false);
+            }
         }
 
         ref<GeoChrono> withAzmuthalDisplay(bool azumthal) { setAzmuthalDisplay(azumthal); return ref<GeoChrono>{this}; }
@@ -230,13 +229,16 @@ namespace guipi {
 
         ref<GeoChrono> withSunMoonDisplay(bool sunMoon) { setSunMoonDisplay(sunMoon); return ref<GeoChrono>{this}; }
 
-        void setSubLunar(const Vector2f &moonCoord) { mSubLunar = moonCoord; }
+        void setPlotPackage(vector<PlotPackage> plotPackage) { mPlotPackage = move(plotPackage); }
 
-        static Vector2f antipode(const Vector2f &location) {
-            return Vector2f {(location.x < 0 ? 1.f : -1.f) * ((float)M_PI - abs(location.x)), -location.y};
+        vector<PlotPackage> &getPlotPackage() { return mPlotPackage; }
+
+        ref<GeoChrono> withPlotPackage(vector<PlotPackage> plotPackage) {
+            mPlotPackage = move(plotPackage);
+            return ref<GeoChrono>{this};
         }
 
-        void setRocketCoord(const Vector2f &rocketCoord) { mRocket = rocketCoord; }
+        void setSunPlotPackage(PlotPackage plotPackage) { mSun = move(plotPackage); }
 
         void transparentForeground();
 
@@ -247,7 +249,7 @@ namespace guipi {
          * @param geoCoord the geographic coordinate of the icon
          * @param icon the icon pre-rendered as a texture.
          */
-        void renderMapIcon(SDL_Renderer *renderer, const Vector2i &mapLocation, const Vector2f &geoCoord, ImageData &icon);
+        void renderMapIcon(SDL_Renderer *renderer, const Vector2i& mapLocation, PlotPackage &plotItem) const;
 
         /**
          * Create a texture of an icon
@@ -266,7 +268,7 @@ namespace guipi {
          * @param location the station location for projection centring
          * @return a tuple with x and y co-ordinate.
          */
-        tuple<int, int> latLongToMap(float lat, float lon);
+        Vector2i latLongToMap(float lat, float lon);
     };
 
 }

@@ -57,10 +57,50 @@ namespace guipi {
         static constexpr string_view night_map = "night_earth_660x330.png";
         static constexpr string_view backdrop = "NASA_Nebula.png";
 
+        struct PlotPackageConfig {
+            string_view name;
+            PlotItemType itemType;
+            int icon;
+            int size;
+            array<uint8_t ,4>color;
+        };
+
+        static constexpr array<PlotPackageConfig, 5> mPlotPackageConfig = {
+                PlotPackageConfig{"QTH", PlotItemType::GEO_LOCATION, ENTYPO_ICON_HAIR_CROSS, 50, {0, 255, 0, 255}},
+                PlotPackageConfig{"A_QTH", PlotItemType::GEO_LOCATION, ENTYPO_ICON_HAIR_CROSS, 50, {255, 0, 0, 255}},
+                PlotPackageConfig{"Moon", PlotItemType::CELESTIAL_BODY, ENTYPO_ICON_MOON, 50, {255, 255, 255, 255}},
+                PlotPackageConfig{"NOAA_15", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_DOT, 50, {0, 255, 0, 255}},
+                PlotPackageConfig{"ISS", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_DOT, 50, {255, 0, 0, 255}}
+        };
+
+        static Vector2f antipode(const Vector2f &location) {
+            return Vector2f {(location.x < 0 ? 1.f : -1.f) * ((float)M_PI - abs(location.x)), -location.y};
+        }
+
+        vector<PlotPackage> buildPlotPackage() {
+            vector<PlotPackage> plotPackage;
+            for (auto config : mPlotPackageConfig) {
+                ImageData imageData = createIcon(config.icon, config.size, Color{get<0>(config.color),get<1>(config.color),get<2>(config.color),get<3>(config.color)});
+                if (config.itemType == PlotItemType::GEO_LOCATION) {
+                    if (config.name == "QTH")
+                        plotPackage.push_back(move(PlotPackage{string(config.name), move(imageData), config.itemType, qthLatLon}));
+                    else
+                        plotPackage.push_back(move(PlotPackage{string(config.name), move(imageData), config.itemType, antipode(qthLatLon)}));
+                } else
+                    plotPackage.push_back(move(PlotPackage(mEphemeris, string(config.name), move(imageData), config.itemType)));
+            }
+
+            return move(plotPackage);
+        }
+
+        PlotPackage buildSunPlotPackage() {
+            ImageData imageData = createIcon(ENTYPO_ICON_LIGHT_UP, 50, Color{255, 255, 0, 255});
+            return move(PlotPackage{mEphemeris, "Sun", move(imageData), PlotItemType::CELESTIAL_BODY});
+        }
 
         HamChrono(SDL_Window *pwindow, int rwidth, int rheight)
                 : GuiPiApplication(pwindow, rwidth, rheight, "HamChrono")
-                , mTimer(*this, &HamChrono::timerCallback, 60000)
+                , mTimer(*this, &HamChrono::timerCallback, 5000)
                 {
 
             qthLatLon = Vector2f(deg2rad(-77.), deg2rad(45.));
@@ -142,10 +182,13 @@ namespace guipi {
                     ->withBackdropFile(string(background_path) + string(backdrop))
                     ->withFixedSize(Vector2i(EARTH_BIG_W, EARTH_BIG_H));
 
-            if (auto moon = mEphemeris.predict("Moon"))
-                mGeoChrono->setSubLunar(moon.value());
-            if (auto iss = mEphemeris.predict("ISS"))
-                mGeoChrono->setRocketCoord(iss.value());
+//            if (auto moon = mEphemeris.predict("Moon"))
+//                mGeoChrono->setSubLunar(moon.value());
+//            if (auto iss = mEphemeris.predict("ISS"))
+//                mGeoChrono->setRocketCoord(iss.value());
+
+            mGeoChrono->setPlotPackage(buildPlotPackage());
+            mGeoChrono->setSunPlotPackage( buildSunPlotPackage());
 
             auto switches = topArea->add<Widget>()
                     ->withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 0, 0);
@@ -176,7 +219,7 @@ namespace guipi {
                     ->add<ToolButton>(ENTYPO_ICON_HAIR_CROSS, Button::Flags::ToggleButton);
         }
 
-        virtual void drawContents() {
+        void drawContents() override {
         }
 
     public:
@@ -186,10 +229,16 @@ namespace guipi {
          * @return the new interval
          */
         Uint32 timerCallback(Uint32 interval) {
-            if (auto moon = mEphemeris.predict("Moon"))
-                mGeoChrono->setSubLunar(moon.value());
-            if (auto iss = mEphemeris.predict("ISS"))
-                mGeoChrono->setRocketCoord(iss.value());
+            for (auto & plotItem : mGeoChrono->getPlotPackage()) {
+                if (plotItem.getPlotItemType() == PlotItemType::CELESTIAL_BODY ||
+                plotItem.getPlotItemType() == PlotItemType::EARTH_SATELLITE) {
+                    plotItem.rePredict(mEphemeris);
+                }
+            }
+//            if (auto moon = mEphemeris.predict("Moon"))
+//                mGeoChrono->setSubLunar(moon.value());
+//            if (auto iss = mEphemeris.predict("ISS"))
+//                mGeoChrono->setRocketCoord(iss.value());
             return interval;
         }
 

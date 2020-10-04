@@ -107,7 +107,9 @@ namespace sdlgui {
             if (tex)
                 SDL_DestroyTexture(tex);
             tex = texture;
-            SDL_QueryTexture(tex, nullptr, nullptr, &w, &h); }
+            SDL_QueryTexture(tex, nullptr, nullptr, &w, &h);
+        }
+
         SDL_Texture* get() { return tex; }
 
         explicit operator bool() const { return tex != nullptr; }

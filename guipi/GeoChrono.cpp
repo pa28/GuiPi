@@ -161,11 +161,12 @@ namespace guipi {
         return tuple<bool, float, float>{false, 0, 0};
     }
 
-    tuple<int, int>
+    Vector2i
     GeoChrono::latLongToMap(float lat, float lon) {
         if (mAzimuthalDisplay) {
             float ca, B;
-            solveSphere(lon - mStationLocation.x, M_PI_2-lat, sin(mStationLocation.y) , cos(mStationLocation.y), ca, B);
+            solveSphere(lon - mStationLocation.x, M_PI_2-lat, sin(mStationLocation.y),
+                        cos(mStationLocation.y), ca, B);
             if (ca > 0) {
                 float a = acos(ca);
                 float R0 = (float)mForeground.w/4.f - 1.f;
@@ -173,8 +174,7 @@ namespace guipi {
                 R = min(R, R0);
                 float dx = R*sin(B);
                 float dy = R*cos(B);
-                return make_tuple(mForeground.w/4 + roundToInt(dx),
-                                  mForeground.h/2 - roundToInt(dy));
+                return Vector2i {mForeground.w/4 + roundToInt(dx), mForeground.h/2 - roundToInt(dy)};
             } else {
                 float a = M_PI - acos(ca);
                 float R0 = (float)mForeground.w/4 - 1;
@@ -182,12 +182,11 @@ namespace guipi {
                 R = min(R, R0);
                 float dx = -R * sin(B);
                 float dy = R * cos(B);
-                return make_tuple(3*mForeground.w/4 + roundToInt(dx),
-                                  mForeground.h/2 - roundToInt(dy));
+                return Vector2i {3*mForeground.w/4 + roundToInt(dx), mForeground.h/2 - roundToInt(dy)};
             }
         } else {
-            return make_tuple(roundToInt(mForeground.w * (lon-mStationLocation.x+M_PI)/(2.*M_PI)) % mForeground.w,
-                                         roundToInt(mForeground.h * (M_PI_2-lat)/M_PI));
+            return Vector2i {roundToInt(mForeground.w * (lon-mStationLocation.x+M_PI)/(2.*M_PI)) % mForeground.w,
+                             roundToInt(mForeground.h * (M_PI_2-lat)/M_PI) };
         }
     }
 
@@ -294,14 +293,26 @@ namespace guipi {
             }
 
             if (mForeground) {
-                renderMapIcon(renderer, p, mStationLocation, mGreenTargetIcon);
-                renderMapIcon(renderer, p, antipode(mStationLocation), mRedTargetIcon);
-                renderMapIcon(renderer, p, mRocket, mRocketIcon);
                 if (mSunMoonDisplay) {
-                    if (mSunIcon)
-                        renderMapIcon(renderer, p, mSubSolar, mSunIcon);
-                    if (mMoonIcon)
-                        renderMapIcon(renderer, p, mSubLunar, mMoonIcon);
+                    if (mSunMoonDisplay && !mSun.getMapCoordinatesValid())
+                        mSun.setMapCoord(latLongToMap(mSun.getGeoCoord().y, mSun.getGeoCoord().x));
+                    renderMapIcon(renderer, p, mSun);
+                }
+
+                for (auto & plotItem : mPlotPackage) {
+                    switch (plotItem.getPlotItemType()) {
+                        case PlotItemType::GEO_LOCATION:
+                        case PlotItemType::EARTH_SATELLITE:
+                            plotItem.setMapCoord(latLongToMap(plotItem.getGeoCoord().y, plotItem.getGeoCoord().x));
+                            break;
+                        case PlotItemType::CELESTIAL_BODY:
+                            if (mSunMoonDisplay && !plotItem.getMapCoordinatesValid()) {
+                                plotItem.setMapCoord(latLongToMap(plotItem.getGeoCoord().y, plotItem.getGeoCoord().x));
+                            }
+                            break;
+                    }
+                    if (mSunMoonDisplay || plotItem.getPlotItemType() != PlotItemType::CELESTIAL_BODY)
+                        renderMapIcon(renderer, p, plotItem);
                 }
             }
         }
@@ -309,29 +320,27 @@ namespace guipi {
         Widget::draw(renderer);
     }
 
-    void GeoChrono::renderMapIcon(SDL_Renderer *renderer, const Vector2i &mapLocation, const Vector2f &geoCoord,
-                                  ImageData &icon) {
-        auto[sunx, suny] = latLongToMap(geoCoord.y, geoCoord.x);
-        if (sunx < icon.w / 2) {
-            auto split = icon.w / 2 - sunx;
-            SDL_Rect src{split, 0, icon.w - split, icon.h};
-            SDL_Rect dst{ mapLocation.x, mapLocation.y + suny - icon.h / 2, icon.w - split, icon.h};
-            SDL_RenderCopy(renderer, icon.get(), &src, &dst);
-            src = SDL_Rect{0, 0, split, icon.h};
-            dst = SDL_Rect{mapLocation.x + mForeground.w - split, mapLocation.y + suny - icon.h / 2, icon.w - split, icon.h};
-            SDL_RenderCopy(renderer, icon.get(), &src, &dst);
-        } else if (sunx > mForeground.w - icon.w / 2) {
-            auto split = icon.w + (mForeground.w - icon.w / 2) - sunx;
-            SDL_Rect src{split, 0, icon.w - split, icon.h};
-            SDL_Rect dst{ mapLocation.x, mapLocation.y + suny - icon.h / 2, icon.w - split, icon.h};
-            SDL_RenderCopy(renderer, icon.get(), &src, &dst);
-            src = SDL_Rect{0, 0, split, icon.h};
-            dst = SDL_Rect{mapLocation.x + mForeground.w - split, mapLocation.y + suny - icon.h / 2, split, icon.h};
-            SDL_RenderCopy(renderer, icon.get(), &src, &dst);
+    void GeoChrono::renderMapIcon(SDL_Renderer *renderer, const Vector2i& mapLocation, PlotPackage &plotItem) const {
+        if (plotItem.getMapCoord().x < plotItem.iconWidth() / 2) {
+            auto split = plotItem.iconWidth() / 2 - plotItem.getMapCoord().x;
+            SDL_Rect src{split, 0, plotItem.iconWidth() - split, plotItem.iconHeight()};
+            SDL_Rect dst{ mapLocation.x, mapLocation.y + plotItem.getMapCoord().y - plotItem.iconHeight() / 2, plotItem.iconWidth() - split, plotItem.iconHeight()};
+            SDL_RenderCopy(renderer, plotItem.texture(), &src, &dst);
+            src = SDL_Rect{0, 0, split, plotItem.iconHeight()};
+            dst = SDL_Rect{mapLocation.x + mForeground.w - split, mapLocation.y + plotItem.getMapCoord().y - plotItem.iconHeight() / 2, plotItem.iconWidth() - split, plotItem.iconHeight()};
+            SDL_RenderCopy(renderer, plotItem.texture(), &src, &dst);
+        } else if (plotItem.getMapCoord().x > mForeground.w - plotItem.iconWidth() / 2) {
+            auto split = plotItem.iconWidth() + (mForeground.w - plotItem.iconWidth() / 2) - plotItem.getMapCoord().x;
+            SDL_Rect src{split, 0, plotItem.iconWidth() - split, plotItem.iconHeight()};
+            SDL_Rect dst{ mapLocation.x, mapLocation.y + plotItem.getMapCoord().y - plotItem.iconHeight() / 2, plotItem.iconWidth() - split, plotItem.iconHeight()};
+            SDL_RenderCopy(renderer, plotItem.texture(), &src, &dst);
+            src = SDL_Rect{0, 0, split, plotItem.iconHeight()};
+            dst = SDL_Rect{mapLocation.x + mForeground.w - split, mapLocation.y + plotItem.getMapCoord().y - plotItem.iconHeight() / 2, split, plotItem.iconHeight()};
+            SDL_RenderCopy(renderer, plotItem.texture(), &src, &dst);
         } else {
-            SDL_Rect src{0, 0, icon.w, icon.h};
-            SDL_Rect dst{mapLocation.x + sunx - icon.w / 2, mapLocation.y + suny - icon.h / 2, icon.w, icon.h};
-            SDL_RenderCopy(renderer, icon.get(), &src, &dst);
+            SDL_Rect src{0, 0, plotItem.iconWidth(), plotItem.iconHeight()};
+            SDL_Rect dst{mapLocation.x + plotItem.getMapCoord().x - plotItem.iconWidth() / 2, mapLocation.y + plotItem.getMapCoord().y - plotItem.iconHeight() / 2, plotItem.iconWidth(), plotItem.iconHeight()};
+            SDL_RenderCopy(renderer, plotItem.texture(), &src, &dst);
         }
     }
 
@@ -347,12 +356,6 @@ namespace guipi {
      * @param renderer
      */
     void GeoChrono::generateMapSurfaces(SDL_Renderer *renderer) {
-
-        mSunIcon = createMapIcon(renderer, ENTYPO_ICON_LIGHT_UP, 50, Color{ 255, 255, 0, 255});
-        mMoonIcon = createMapIcon(renderer, ENTYPO_ICON_MOON, 50, Color{ 255, 255, 255, 255});
-        mGreenTargetIcon = createMapIcon(renderer, ENTYPO_ICON_HAIR_CROSS, 50, Color{ 0, 255, 0, 255});
-        mRedTargetIcon = createMapIcon(renderer, ENTYPO_ICON_HAIR_CROSS, 50, Color{ 255, 0, 0, 255});
-        mRocketIcon = createMapIcon(renderer, ENTYPO_ICON_ROCKET, 50, Color{ 255, 255, 255, 255});
 
         // Initialize surfaces for each layer of each map including transparent versions of the day map
         mTransparentMap.reset(SDL_CreateRGBSurface(0, EARTH_BIG_W, EARTH_BIG_H, 32, rmask, gmask, bmask, amask));
@@ -457,8 +460,11 @@ namespace guipi {
         SDL_BlitSurface(mDayMap.get(), nullptr, mTransparentMap.get(), nullptr);
 
         auto[latS, lonS] = subSolar();
-        mSubSolar.y = latS;
+        Vector2f mSubSolar;
         mSubSolar.x = lonS;
+        mSubSolar.y = latS;
+        mSun.setGeoCoord(mSubSolar);
+
         float siny = sin(mStationLocation.y);
         float cosy = cos(mStationLocation.y);
 
@@ -518,4 +524,7 @@ namespace guipi {
         // They're ready!
         mTransparentReady = true;
     }
+
+    GeoChrono::GeoChrono(Widget *parent) : Widget(parent), mTimer(*this, &GeoChrono::timerCallback, 60000),
+                                           mDayMap{nullptr}, mNightMap{nullptr}, mTransparentMap{nullptr}, mStationLocation{0} {}
 }

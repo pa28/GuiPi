@@ -26,6 +26,7 @@
 #include <fstream>
 #include <SDL.h>
 #include <sdlgui/common.h>
+#include <sdlgui/Image.h>
 #include <sdlgui/screen.h>
 
 namespace guipi {
@@ -137,6 +138,16 @@ namespace guipi {
                 throw e;
             }
         }
+
+        /**
+         * Create a texture of an icon
+         * @param renderer
+         * @param iconCode the font code point for the icon
+         * @param iconSize the point size of the font generating the icon
+         * @param iconColor
+         * @return
+         */
+        ImageData createIcon(int iconCode, int iconSize, const Color &iconColor);
 
         GuiPiApplication(SDL_Window *pwindow, int rwidth, int rheight, const std::string &caption = "GuiPi")
                 : Screen(pwindow, Vector2i(rwidth, rheight), caption) {
