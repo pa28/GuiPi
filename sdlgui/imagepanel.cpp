@@ -22,8 +22,8 @@ ImagePanel::ImagePanel(Widget *parent)
 Vector2i ImagePanel::gridSize() const
 {
     int nCols = 1 + std::max(0,
-        (int) ((mSize.x - 2 * mMargin - mThumbSize) /
-        (float) (mThumbSize + mSpacing)));
+         roundToInt((float)(mSize.x - 2 * mMargin - mThumbSize) /
+                            (float)(mThumbSize + mSpacing)));
     int nRows = ((int) mImages.size() + nCols - 1) / nCols;
     return Vector2i(nCols, nRows);
 }
@@ -31,7 +31,7 @@ Vector2i ImagePanel::gridSize() const
 int ImagePanel::indexForPosition(const Vector2i &p) const
 {
   Vector2f pp = (p.tofloat() - Vector2f(mMargin, mMargin)) / (float)(mThumbSize + mSpacing);
-    float iconRegion = mThumbSize / (float)(mThumbSize + mSpacing);
+    float iconRegion = (float)mThumbSize / (float)(mThumbSize + mSpacing);
     bool overImage = pp.x - std::floor(pp.x) < iconRegion &&
                     pp.y - std::floor(pp.y) < iconRegion;
     Vector2i gridPos = pp.toint();
@@ -85,16 +85,16 @@ void ImagePanel::draw(SDL_Renderer* renderer)
         float iw, ih, ix, iy;
         if (imgw < imgh) 
         {
-            iw = mThumbSize;
+            iw = (float)mThumbSize;
             ih = iw * (float)imgh / (float)imgw;
             ix = 0;
-            iy = -(ih - mThumbSize) * 0.5f;
+            iy = -(ih - (float)mThumbSize) * 0.5f;
         } 
         else 
         {
-            ih = mThumbSize;
+            ih = (float)mThumbSize;
             iw = ih * (float)imgw / (float)imgh;
-            ix = -(iw - mThumbSize) * 0.5f;
+            ix = -(iw - (float)mThumbSize) * 0.5f;
             iy = 0;
         }
 
@@ -111,7 +111,7 @@ void ImagePanel::draw(SDL_Renderer* renderer)
           SDL_RenderFillRect(renderer, &shadowPaintRect);
         }
 
-        SDL_Rect imgPaintRect{ p.x + ix, p.y + iy, iw, ih };
+        SDL_Rect imgPaintRect{ p.x + roundToInt(ix), p.y + roundToInt(iy), roundToInt(iw), roundToInt(ih) };
         SDL_Rect imgSrcRect{ 0, 0, imgw, imgh };
         PntRect imgrect = clip_rects(srect2pntrect(imgPaintRect), clip);
         imgPaintRect.w = imgrect.x2 - imgrect.x1;
@@ -119,12 +119,12 @@ void ImagePanel::draw(SDL_Renderer* renderer)
         if (imgPaintRect.y < clip.y1)
         {
           imgPaintRect.y = clip.y1;
-          imgSrcRect.h = (imgPaintRect.h / (float)ih) * imgh;
-          imgSrcRect.y = (1 - (imgPaintRect.h / (float)ih)) * imgh;
+          imgSrcRect.h = roundToInt((float)imgPaintRect.h / ih) * imgh;
+          imgSrcRect.y = (1 - roundToInt((float)imgPaintRect.h / ih)) * imgh;
         }
-        else if(imgPaintRect.h < ih)
+        else if(imgPaintRect.h < roundToInt(ih))
         {
-          imgSrcRect.h = (imgPaintRect.h / (float)ih) * imgh;
+          imgSrcRect.h = roundToInt((float)imgPaintRect.h / ih) * imgh;
         }
 
         SDL_RenderCopy(renderer, mImages[i].tex, &imgSrcRect, &imgPaintRect);
