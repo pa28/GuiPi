@@ -112,8 +112,10 @@ namespace sdlgui {
         ImageData mMoonIcon;
         ImageData mGreenTargetIcon;
         ImageData mRedTargetIcon;
+        ImageData mRocketIcon;
         Vector2f mSubSolar{};
         Vector2f mSubLunar{};
+        Vector2f mRocket{};
 
     public:
         /**
@@ -226,11 +228,13 @@ namespace sdlgui {
 
         ref<GeoChrono> withSunMoonDisplay(bool sunMoon) { setSunMoonDisplay(sunMoon); return ref<GeoChrono>{this}; }
 
-        void setMoonCoord(const Vector2f &moonCoord) { mSubLunar = moonCoord; }
+        void setSubLunar(const Vector2f &moonCoord) { mSubLunar = moonCoord; }
 
         static Vector2f antipode(const Vector2f &location) {
             return Vector2f {(location.x < 0 ? 1.f : -1.f) * ((float)M_PI - abs(location.x)), -location.y};
         }
+
+        void setRocketCoord(const Vector2f &rocketCoord) { mRocket = rocketCoord; }
 
         void transparentForeground();
 

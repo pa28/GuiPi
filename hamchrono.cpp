@@ -143,7 +143,9 @@ namespace guipi {
                     ->withFixedSize(Vector2i(EARTH_BIG_W, EARTH_BIG_H));
 
             if (auto moon = mEphemeris.predict("Moon"))
-                mGeoChrono->setMoonCoord(moon.value());
+                mGeoChrono->setSubLunar(moon.value());
+            if (auto iss = mEphemeris.predict("ISS"))
+                mGeoChrono->setRocketCoord(iss.value());
 
             auto switches = topArea->add<Widget>()
                     ->withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 0, 0);
@@ -185,7 +187,9 @@ namespace guipi {
          */
         Uint32 timerCallback(Uint32 interval) {
             if (auto moon = mEphemeris.predict("Moon"))
-                mGeoChrono->setMoonCoord(moon.value());
+                mGeoChrono->setSubLunar(moon.value());
+            if (auto iss = mEphemeris.predict("ISS"))
+                mGeoChrono->setRocketCoord(iss.value());
             return interval;
         }
 

@@ -296,6 +296,7 @@ namespace sdlgui {
             if (mForeground) {
                 renderMapIcon(renderer, p, mStationLocation, mGreenTargetIcon);
                 renderMapIcon(renderer, p, antipode(mStationLocation), mRedTargetIcon);
+                renderMapIcon(renderer, p, mRocket, mRocketIcon);
                 if (mSunMoonDisplay) {
                     if (mSunIcon)
                         renderMapIcon(renderer, p, mSubSolar, mSunIcon);
@@ -351,6 +352,7 @@ namespace sdlgui {
         mMoonIcon = createMapIcon(renderer, ENTYPO_ICON_MOON, 50, Color{ 255, 255, 255, 255});
         mGreenTargetIcon = createMapIcon(renderer, ENTYPO_ICON_HAIR_CROSS, 50, Color{ 0, 255, 0, 255});
         mRedTargetIcon = createMapIcon(renderer, ENTYPO_ICON_HAIR_CROSS, 50, Color{ 255, 0, 0, 255});
+        mRocketIcon = createMapIcon(renderer, ENTYPO_ICON_ROCKET, 50, Color{ 255, 255, 255, 255});
 
         // Initialize surfaces for each layer of each map including transparent versions of the day map
         mTransparentMap.reset(SDL_CreateRGBSurface(0, EARTH_BIG_W, EARTH_BIG_H, 32, rmask, gmask, bmask, amask));
