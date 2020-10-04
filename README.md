@@ -148,9 +148,17 @@ for selecting an image from the set.
 1. **ImageRepeater** Repeat the display of an image in a larger windows. Tied
 to an `ImageDisplay`.
 
-1. **ImageServer** *Proposed* A non-drawing object that will maintian the set
+1. **ImageRepository** A non-drawing object that will maintain the set
 of images and allow any `ImageDisplay` or `ImageRepeater` to render the image
-at a specified location and size.
+at a specified location and size. The Model-View-Controller pattern with the
+`ImageRepository` providing the model, and the `ImageDisplay`/`Image Repeater`
+providing the display and controller.
+
+1. **GeoChrono** The heart and soul of HamClock and HamChrono. Modeled on the
+mechanical [Geochron](https://www.geochron.com/) clock which had pride of place in
+my early workplaces this form of time display graphically conveys a wealth of
+information important to communicators. This version is modeled closely on the
+implementation in [HamClock](https://www.clearskyinstitute.com/ham/HamClock/).
 
 # Dependencies
 
@@ -178,6 +186,7 @@ Unfortunately I found the following:
     have also become busy with other things. However, it is open source and I can fork 
     the repository and begin taking it in the direction I need. My port of NanoGUI-SDL
     is included in the project.
+    1. Install on Debian derivatives: `sudo apt install libsdl2-dev libsdl2-ttf-def libsdl2-image-dev`
 
 1. [GNU CGICC](https://www.gnu.org/software/cgicc/doc/index.html)
 a [Common Gateway Interface](https://en.wikipedia.org/wiki/Common_Gateway_Interface)
@@ -188,8 +197,10 @@ interface will allow the application to be tied into a web
 server running on the RaspberryPi which will offload much of the
 configuration, security and maintenance work of a public facing 
 access.
+    1. `sudo apt install libcgicc-dev`
 
 1. [SOCI](http://soci.sourceforge.net/) a C++ Database Access Library.
+    1. `sudo apt install libsoci-dev`
 
 1. [libcurl](https://curl.haxx.se/libcurl/) the multiprotocol transfer library. ```sudo apt-get install libcurl4-openssl-dev```
 
@@ -198,6 +209,7 @@ access.
 1. C++17 compliant standard library.
 
     1. C++17 or better compiler package (if compiling from source).
+    1. For the Raspberry Pi G++ version 8 suffices (C++14)
 
 1. CMake version 3.10 or better (if compiling from source).
 
