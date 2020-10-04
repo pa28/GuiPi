@@ -7,10 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 # Required libraries for linking against nngui (all targets)
-set(NNGUI_EXTRA_LIBS "")
-
-# Platform-dependent files for nngui
-set(NNGUI_EXTRA_SOURCE "")
+set(EXTRA_LIBS "")
 
 include(CheckCXXCompilerFlag)
 
@@ -27,39 +24,6 @@ if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wno-deprecated-declarations")
 endif ()
 
-if (MSVC)
-    # Disable annoying MSVC warnings (all targets)
-    add_definitions(/D "_CRT_SECURE_NO_WARNINGS")
-
-    # Parallel build on MSVC (all targets)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MP")
-
-    if (NOT CMAKE_SIZEOF_VOID_P EQUAL 8)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /arch:SSE2")
-    endif ()
-endif ()
-
-# Compile with compiler warnings turned on
-if (MSVC)
-    if (CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
-        string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
-    else ()
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
-    endif ()
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244 /wd4100 /wd4101 /wd4018 /wd4201 /wd4189 /wd4457 /wd4456 /wd4245 /wd4838 /wd4389 /wd4702")
-elseif (CMAKE_CXX_COMPILER_ID MATCHES "Clang" OR CMAKE_CXX_COMPILER_ID MATCHES "GNU")
-    CHECK_CXX_COMPILER_FLAG("-std=c++14" HAS_CPP14_FLAG)
-    CHECK_CXX_COMPILER_FLAG("-std=c++11" HAS_CPP11_FLAG)
-
-    if (HAS_CPP14_FLAG)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++14")
-    elseif (HAS_CPP11_FLAG)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
-    else ()
-        message(FATAL_ERROR "Unsupported compiler -- requires C++11 support!")
-    endif ()
-endif ()
-
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 find_package(SDL2 REQUIRED)
@@ -72,92 +36,34 @@ include_directories(${SDL2TTF_INCLUDE_DIR})
 include_directories(${SDL2_IMAGE_INCLUDE_DIR})
 include_directories(${CURLPP_INCLUDE_DIR})
 
-INCLUDE(guipi/CMakeLists.txt)
-
 # Required core libraries on various platforms
-if (WIN32)
-    list(APPEND NNGUI_EXTRA_LIBS opengl32)
-elseif (APPLE)
-    find_library(cocoa_library Cocoa)
-    find_library(opengl_library OpenGL)
-    find_library(corevideo_library CoreVideo)
-    find_library(iokit_library IOKit)
-    list(APPEND NNGUI_EXTRA_LIBS ${cocoa_library} ${opengl_library} ${corevideo_library} ${iokit_library})
-    list(APPEND NNGUI_EXTRA_SOURCE darwin.mm)
-elseif (CMAKE_SYSTEM MATCHES "Linux")
-    list(APPEND NNGUI_EXTRA_LIBS GL Xxf86vm Xrandr Xinerama Xcursor Xi X11 pthread dl rt)
-endif ()
+list(APPEND EXTRA_LIBS GL Xxf86vm Xrandr Xinerama Xcursor Xi X11 pthread dl rt m)
+
+message(${EXTRA_LIBS})
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR})
 
-message(${NNGUI_EXTRA_LIBS})
+INCLUDE(sdlgui/CMakeLists.txt)
+INCLUDE(guipi/CMakeLists.txt)
 
-set(NNGUI_BASIC_SOURCE "")
-list(APPEND NNGUI_BASIC_SOURCE
-        sdlgui/button.cpp
-        sdlgui/checkbox.cpp
-        sdlgui/colorpicker.cpp
-        sdlgui/colorwheel.cpp
-        sdlgui/combobox.cpp
-        sdlgui/common.cpp
-        sdlgui/graph.cpp
-        sdlgui/imagepanel.cpp
-        sdlgui/imageview.cpp
-        sdlgui/label.cpp
-        sdlgui/layout.cpp
-        sdlgui/loadimages.cpp
-        sdlgui/messagedialog.cpp
-        sdlgui/resources.cpp
-        sdlgui/popup.cpp
-        sdlgui/popupbutton.cpp
-        sdlgui/progressbar.cpp
-        sdlgui/screen.cpp
-        sdlgui/slider.cpp
-        sdlgui/stackedwidget.cpp
-        sdlgui/tabheader.cpp
-        sdlgui/tabwidget.cpp
-        sdlgui/textbox.cpp
-        sdlgui/switchbox.cpp
-        sdlgui/dropdownbox.cpp
-        sdlgui/theme.cpp
-        sdlgui/vscrollpanel.cpp
-        sdlgui/widget.cpp
-        sdlgui/window.cpp
-        sdlgui/nanovg.c
-        sdlgui/TimeBox.cpp
-        sdlgui/Image.cpp
-        sdlgui/ImageDisplay.cpp
-        sdlgui/GeoChrono.cpp
-        )
+option(BUILD_EXAMPLE "Build example application" ON)
+if (BUILD_EXAMPLE)
 
-option(NANOGUI_BUILD_EXAMPLE "Build example application" ON)
-if (NANOGUI_BUILD_EXAMPLE)
-    # Build example application if desired
-#    add_executable(example1 ${NNGUI_EXTRA_SOURCE} ${NNGUI_BASIC_SOURCE} example1.cpp)
-#    set_target_properties(
-#            example1 PROPERTIES
-#            VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/build/debug")
-#    target_link_libraries(example1 ${NNGUI_EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2IMAGE_LIBRARY} ${SDL2TTF_LIBRARY})
-
-    add_executable(example2 ${GUIPI_SOURCES} ${NNGUI_EXTRA_SOURCE} ${NNGUI_BASIC_SOURCE} example2.cpp)
+    add_executable(hamchrono ${GUIPI_SOURCES} ${SDLGUI_SOURCES} hamchrono.cpp)
     set_target_properties(
-            example2 PROPERTIES
+            hamchrono PROPERTIES
             VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/build/debug")
-    target_link_libraries(example2 ${NNGUI_EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2IMAGE_LIBRARY} ${SDL2TTF_LIBRARY} ${CURLPP_LIBRARIES})
+    target_link_libraries(hamchrono ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2IMAGE_LIBRARY} ${SDL2TTF_LIBRARY} ${CURLPP_LIBRARIES})
 
     # Copy icons for example application
-    if (WIN32)
-        file(COPY resources/icons DESTINATION ${CMAKE_CURRENT_BINARY_DIR}/debug)
-    else ()
-        file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/maps)
-        file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/backgrounds)
-        file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/images)
-        file(COPY resources/maps DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-        file(COPY resources/images DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-        file(COPY resources/backgrounds DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-        file(COPY resources/icons DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-        file(COPY resources/entypo.ttf DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-    endif ()
+    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/maps)
+    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/backgrounds)
+    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/images)
+    file(COPY resources/maps DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+    file(COPY resources/images DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+    file(COPY resources/backgrounds DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+    file(COPY resources/icons DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
+    file(COPY resources/entypo.ttf DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
 endif ()
