@@ -30,6 +30,7 @@
 #include <sdlgui/ImageRepository.h>
 #include <guipi/p13.h>
 #include <guipi/SatelliteEphemerisFetch.h>
+#include <guipi/Earthsat.h>
 
 namespace guipi {
     using namespace sdlgui;
