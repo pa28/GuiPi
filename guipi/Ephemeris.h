@@ -125,6 +125,28 @@ namespace guipi {
         void predict(const Ephemeris &ephemeris);
 
         void predictPass(const Ephemeris &ephemeris, const Observer &observer);
+
+        [[nodiscard]] bool compareLt(const PlotPackage &o) const {
+            if (mPlotItemType == o.mPlotItemType) {
+                if (mEarthsat.passFound()) {
+                    return mEarthsat.riseTime() < o.mEarthsat.riseTime();
+                } else
+                    return true;
+            } else {
+                return mPlotItemType < o.mPlotItemType;
+            }
+        }
+
+        [[nodiscard]] bool compareGt(const PlotPackage &o) const {
+            if (mPlotItemType == o.mPlotItemType) {
+                if (mEarthsat.passFound()) {
+                    return mEarthsat.riseTime() > o.mEarthsat.riseTime();
+                } else
+                    return true;
+            } else {
+                return mPlotItemType > o.mPlotItemType;
+            }
+        }
     };
 }
 
