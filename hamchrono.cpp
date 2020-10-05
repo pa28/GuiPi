@@ -22,6 +22,7 @@
 #include <sdlgui/layout.h>
 #include <sdlgui/toolbutton.h>
 #include <sdlgui/widget.h>
+#include <sdlgui/tabwidget.h>
 #include <sdlgui/TimeBox.h>
 
 using namespace sdlgui;
@@ -32,6 +33,7 @@ namespace guipi {
 
         Vector2f qthLatLon;
         Vector2i mScreenSize{800, 480};
+        Observer mObserver;
 
         bool mHasBrightnessControl{true};
         bool mRunEventLoop{true};
@@ -97,7 +99,6 @@ namespace guipi {
             vector<PlotPackage> plotPackage;
 
             ImageRepository::ImageStoreIndex idx{0,0};
-            Observer observer{qthLatLon.y, qthLatLon.x, 0};
             for( auto & conf : mPlotPackageConfig) {
                 if (conf.icon) {
                     ImageData imageData{createIcon(conf.icon, conf.size,
@@ -142,6 +143,7 @@ namespace guipi {
             mIconRepository = new ImageRepository{};
 
             qthLatLon = Vector2f(deg2rad(-77.), deg2rad(45.));
+            mObserver = Observer{45., -77., 126.};
 
             Vector2i mapAreaSize(660, 330);
             Vector2i topAreaSize(mScreenSize.x, mScreenSize.y - mapAreaSize.y);
@@ -278,36 +280,35 @@ namespace guipi {
          * @return the new interval
          */
         Uint32 timerCallback(Uint32 interval) {
-            Observer observer{qthLatLon.y, qthLatLon.x, 0};
             for (auto & plotItem : mGeoChrono->getPlotPackage()) {
                 if (plotItem.mPlotItemType == CELESTIAL_BODY_MOON || plotItem.mPlotItemType == EARTH_SATELLITE) {
                     plotItem.predict(mEphemeris);
-                    plotItem.predictPass(mEphemeris, observer);
+                    plotItem.predictPass(mEphemeris, mObserver);
                 }
             }
 
-            sort(mGeoChrono->getPlotPackage().begin(), mGeoChrono->getPlotPackage().end(), [](PlotPackage &p0, PlotPackage &p1) {
-                if (p0.mEarthsat.passFound() && p1.mEarthsat.passFound()) {
-                    if (p0.mPlotItemType == EARTH_SATELLITE && p1.mPlotItemType == EARTH_SATELLITE)
-                        return p0.mEarthsat.riseTime() > p1.mEarthsat.riseTime();
-                    if (p0.mPlotItemType == EARTH_SATELLITE) return true;
-                    if (p1.mPlotItemType == EARTH_SATELLITE) return false;
-                }
-                return false;
+            bool changed = false;
+            sort(mGeoChrono->getPlotPackage().begin(), mGeoChrono->getPlotPackage().end(), [&changed](PlotPackage &p0, PlotPackage &p1) {
+                auto r = p0.compareLt(p1);
+                changed |= r;
+                return r;
             });
 
-            for (auto & plotItem : mGeoChrono->getPlotPackage()) {
-                if (plotItem.mEarthsat.passFound()) {
+            if (changed) {
+                std::cout << "Changed\n";
+
+                for (auto &plotItem : mGeoChrono->getPlotPackage()) {
                     std::cout << plotItem.mName << '\n';
-                    std::cout << "Rise: " << plotItem.mEarthsat.riseTime() << " @ " << plotItem.mEarthsat.riseAzimuth() << '\n'
-                              << "Set:  " << plotItem.mEarthsat.setTime() << " @ " << plotItem.mEarthsat.setAzimuth() << "\n\n";
+                    if (plotItem.mEarthsat.passFound()) {
+                        std::cout << "Rise: " << plotItem.mEarthsat.riseTime() << " @ "
+                                  << plotItem.mEarthsat.riseAzimuth() << '\n'
+                                  << "Set:  " << plotItem.mEarthsat.setTime() << " @ "
+                                  << plotItem.mEarthsat.setAzimuth() << "\n\n";
+                    } else
+                        std::cout << "No pass\n\n";
                 }
             }
 
-//            if (auto moon = mEphemeris.predict("Moon"))
-//                mGeoChrono->setSubLunar(moon.value());
-//            if (auto iss = mEphemeris.predict("ISS"))
-//                mGeoChrono->setRocketCoord(iss.value());
             return interval;
         }
 
