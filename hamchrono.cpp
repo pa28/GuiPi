@@ -67,7 +67,7 @@ namespace guipi {
             array<uint8_t ,4>color;
         };
 
-        static constexpr array<PlotPackageConfig, 6> mPlotPackageConfig = {
+        static constexpr array<PlotPackageConfig, 9> mPlotPackageConfig = {
                 PlotPackageConfig{"QTH", PlotItemType::GEO_LOCATION_QTH, ENTYPO_ICON_HAIR_CROSS,
                                   50, {0, 255, 0, 255}},
                 PlotPackageConfig{"A_QTH", PlotItemType::GEO_LOCATION_ANTIPODE, ENTYPO_ICON_HAIR_CROSS,
@@ -76,10 +76,16 @@ namespace guipi {
                                   50, {255, 255, 255, 255}},
                 PlotPackageConfig{"Sun", PlotItemType::CELESTIAL_BODY_SUN, ENTYPO_ICON_LIGHT_UP,
                                   50, {255, 255, 0, 255}},
-                PlotPackageConfig{"NOAA_15", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_DOT,
-                                  50, {0, 255, 0, 255}},
-                PlotPackageConfig{"ISS", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_DOT,
-                                  50, {255, 0, 0, 255}}
+                PlotPackageConfig{"NOAA_15", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
+                                  30, {0, 255, 0, 255}},
+                PlotPackageConfig{"NOAA_18", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
+                                  30, {127, 127, 255, 255}},
+                PlotPackageConfig{"NOAA_19", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
+                                  30, {255, 0, 255, 255}},
+                PlotPackageConfig{"NOAA_20", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
+                                  30, {255, 255, 0, 255}},
+                PlotPackageConfig{"ISS", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
+                                  30, {255, 0, 0, 255}}
         };
 
         static Vector2f antipode(const Vector2f &location) {
