@@ -78,6 +78,7 @@ namespace guipi {
         bool mBackdropDirty{};
         bool mAzimuthalDisplay{false};
         bool mSunMoonDisplay{false};
+        bool mSatelliteDisplay{false};
         bool mTextureDirty{true};   //< True when the image needs to be re-drawn
         bool mMapsDirty{true};      //< True when the map surfaces need to be re-drawn
 
@@ -228,8 +229,13 @@ namespace guipi {
 
         ref<GeoChrono> withSunMoonDisplay(bool sunMoon) { setSunMoonDisplay(sunMoon); return ref<GeoChrono>{this}; }
 
-        void setPlotPackage(vector<PlotPackage> plotPackage) {
-            mPlotPackage = plotPackage; }
+        void setSatelliteDisplay(bool satellite) { mSatelliteDisplay = satellite; }
+
+        bool satelliteDisplay() const { return mSatelliteDisplay; }
+
+        ref<GeoChrono> withSatelliteDisplay(bool satellite) { setSatelliteDisplay(satellite); return ref<GeoChrono>{this}; }
+
+        void setPlotPackage(vector<PlotPackage> plotPackage) { mPlotPackage = plotPackage; }
 
         vector<PlotPackage> &getPlotPackage() { return mPlotPackage; }
 
