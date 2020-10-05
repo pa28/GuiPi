@@ -220,11 +220,6 @@ namespace guipi {
                     ->withBackdropFile(string(background_path) + string(backdrop))
                     ->withFixedSize(Vector2i(EARTH_BIG_W, EARTH_BIG_H));
 
-//            if (auto moon = mEphemeris.predict("Moon"))
-//                mGeoChrono->setSubLunar(moon.value());
-//            if (auto iss = mEphemeris.predict("ISS"))
-//                mGeoChrono->setRocketCoord(iss.value());
-
             auto plotPackage = buildPlotPackage();
             mGeoChrono->setPlotPackage(plotPackage);
 
