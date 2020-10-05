@@ -27,7 +27,7 @@ endif ()
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake" ${CMAKE_MODULE_PATH})
 
 find_package(SDL2 REQUIRED)
-find_package(SDL2IMAGE REQUIRED)
+find_package(SDL2_IMAGE REQUIRED)
 find_package(SDL2TTF REQUIRED)
 find_package(CURLPP REQUIRED)
 
