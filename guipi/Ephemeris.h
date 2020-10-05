@@ -44,9 +44,6 @@ namespace guipi {
     public:
         void loadEphemeris() {
             satelliteEphemerisMap = SatelliteEphemerisFetch::fetchAll();
-            for (auto & ephemeris : satelliteEphemerisMap) {
-                cout << ephemeris.first << '\n';
-            }
         }
 
         [[nodiscard]] bool haveEphemeris(const string &name) const {
