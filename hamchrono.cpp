@@ -229,7 +229,16 @@ namespace guipi {
             switches->add<Widget>()->withPosition(Vector2i(620, 0))
                     ->withFixedSize(Vector2i(40, topAreaSize.y))
                     ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 10, 12)
-                    ->add<ToolButton>(ENTYPO_ICON_COMPASS, Button::Flags::ToggleButton)->_and()
+                    ->add<ToolButton>(ENTYPO_ICON_ROCKET, Button::Flags::ToggleButton)
+                            ->withPushed(mGeoChrono->satelliteDisplay())
+                            ->withChangeCallback([&](bool state) {
+                                mGeoChrono->setSatelliteDisplay(state);
+                                if (state)
+                                    if (auto rocket = this->find("Location", true)) {
+                                        dynamic_cast<ToolButton*>(rocket)->withPushed(false);
+                                    }
+                            })
+                            ->withId("Rocket")->_and()
                     ->add<ToolButton>(ENTYPO_ICON_MOON, Button::Flags::ToggleButton)
                             ->withPushed(mGeoChrono->sunMoonDisplay())
                             ->withChangeCallback([&](bool state) { mGeoChrono->setSunMoonDisplay(state); })
@@ -241,9 +250,16 @@ namespace guipi {
             switches->add<Widget>()->withPosition(Vector2i(620, 0))
                     ->withFixedSize(Vector2i(40, topAreaSize.y))
                     ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 10, 12)
+                    ->add<ToolButton>(ENTYPO_ICON_LOCATION, Button::Flags::ToggleButton)
+                            ->withChangeCallback([&](bool state) {
+                                if (state)
+                                    if (auto rocket = this->find("Rocket", true)) {
+                                        dynamic_cast<ToolButton*>(rocket)->withPushed(false);
+                                        mGeoChrono->setSatelliteDisplay(false);
+                                    }
+                            })->withId("Location")->_and()
                     ->add<ToolButton>(ENTYPO_ICON_NETWORK, Button::Flags::ToggleButton)->_and()
-                    ->add<ToolButton>(ENTYPO_ICON_LOCATION, Button::Flags::ToggleButton)->_and()
-                    ->add<ToolButton>(ENTYPO_ICON_ROCKET, Button::Flags::ToggleButton);
+                    ->add<ToolButton>(ENTYPO_ICON_COMPASS, Button::Flags::ToggleButton);
 
             switches->add<Widget>()->withPosition(Vector2i(620, 0))
                     ->withFixedSize(Vector2i(40, topAreaSize.y))
