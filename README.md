@@ -218,6 +218,9 @@ access.
 1. [ClearSkyInstitute.Com](http://clearskyinstitute.com/)
 1. [NASA](https://www.nasa.gov/)
     1. [NASA SDO Data](https://sdo.gsfc.nasa.gov/data/)
+1. [Entypo Font](http://fontello.github.io/entypo/demo.html) was shipped with Nanogui-SDL, I am coninuing to use it.
+1. [www.die.net](https://www.die.net) I hope to be able to use the Moon Phases imagery found there. Either way
+the site deserves your attention.
 
 *73*
 Richard Buckley
