@@ -27,12 +27,14 @@
 #include <optional>
 #include <sdlgui/common.h>
 #include <sdlgui/Image.h>
+#include <sdlgui/ImageRepository.h>
 #include <guipi/p13.h>
 #include <guipi/SatelliteEphemerisFetch.h>
 
 namespace guipi {
     using namespace sdlgui;
     using namespace std;
+    using sdlgui::ref;
 
     class Ephemeris {
     protected:
@@ -70,58 +72,51 @@ namespace guipi {
         }
     };
 
-    enum class PlotItemType {
+    enum PlotItemType {
         GEO_LOCATION,
+        GEO_LOCATION_QTH,
+        GEO_LOCATION_ANTIPODE,
         CELESTIAL_BODY,
+        CELESTIAL_BODY_SUN,
+        CELESTIAL_BODY_MOON,
         EARTH_SATELLITE,
     };
 
     class PlotPackage {
-    protected:
-        PlotItemType plotItemType{};
-        string name;
-        ImageData imageData;
-        Vector2f geoCoordinates;
-        vector<Vector2f> coastingCoords;
-        long coastingInterval{};
-        Vector2i mapCoordinates;
-        bool mapCoordinatesValid{};
-
     public:
+        PlotItemType mPlotItemType{};
+        string mName;
+        Vector2f mGeoCoord;
+        Vector2i mMapCoord;
+        Vector2i mDrawSize;
+        bool mMapCoordValid{};
+        ref<ImageRepository> mImageRepository;
+        ImageRepository::ImageStoreIndex mImageIndex;
+
         PlotPackage() = default;
 
         ~PlotPackage() = default;
 
-        PlotPackage(PlotPackage &) = delete;
+        PlotPackage(PlotPackage &) = default;
 
-        PlotPackage(const PlotPackage &) = delete;
+        PlotPackage(const PlotPackage &) = default;
 
-        auto operator=(PlotPackage &) = delete;
+        PlotPackage(string plotName, PlotItemType itemType);
 
-        auto operator=(const PlotPackage &) = delete;
+        PlotPackage(string_view plotName, PlotItemType itemType) : PlotPackage(string(plotName), itemType) {}
 
-        PlotPackage(PlotPackage &&other) noexcept;
+        PlotPackage(string name, PlotItemType itemType, const Vector2f& geoCoord);
 
-        PlotPackage &operator=(PlotPackage &&other) noexcept;
+        PlotPackage(string_view name, PlotItemType itemType, const Vector2f& geoCoord)
+            : PlotPackage(string(name), itemType, geoCoord) {}
 
-        PlotPackage(const Ephemeris &ephemeris, const string &plotName, ImageData iconImageData, PlotItemType itemType, uint32_t coastInterval=0, size_t coastCount=0);
+        PlotPackage &operator=(const PlotPackage &) = default;
 
-        bool rePredict(const Ephemeris &ephemeris);
+        PlotPackage(PlotPackage &&other) noexcept = default;
 
-        bool predict(const Ephemeris &ephemeris, size_t coastingCount);
+        PlotPackage &operator=(PlotPackage &&other) noexcept = default;
 
-        [[nodiscard]] PlotItemType getPlotItemType() const { return plotItemType; }
-        [[nodiscard]] bool getMapCoordinatesValid() const { return mapCoordinatesValid; }
-        [[nodiscard]] Vector2f getGeoCoord() const { return geoCoordinates; }
-        [[nodiscard]] Vector2i getMapCoord() const { return mapCoordinates; }
-        [[nodiscard]] SDL_Texture *texture() { return imageData.get(); }
-        [[nodiscard]] int iconWidth() const { return imageData.w; }
-        [[nodiscard]] int iconHeight() const { return imageData.h; }
-        void setMapCoordValid(bool valid) { mapCoordinatesValid = valid; }
-        void setMapCoord(const Vector2i &mapCoord) { mapCoordinates = mapCoord; mapCoordinatesValid = true; }
-        void setGeoCoord(const Vector2f &geoCoord) { geoCoordinates = geoCoord; mapCoordinatesValid = false;}
-
-        PlotPackage(const string &name, ImageData imageData, PlotItemType itemType, Vector2f geoCoord);
+        void predict(const Ephemeris &ephemeris);
     };
 }
 

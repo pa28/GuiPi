@@ -213,9 +213,8 @@ namespace guipi {
 
         void setAzmuthalDisplay(bool azmuthal) {
             mAzimuthalDisplay = azmuthal;
-            mSun.setMapCoordValid(false);
             for (auto plotItem = mPlotPackage.begin(); plotItem != mPlotPackage.end(); ++plotItem ) {
-                plotItem->setMapCoordValid(false);
+                plotItem->mMapCoordValid = false;
             }
         }
 
@@ -229,7 +228,8 @@ namespace guipi {
 
         ref<GeoChrono> withSunMoonDisplay(bool sunMoon) { setSunMoonDisplay(sunMoon); return ref<GeoChrono>{this}; }
 
-        void setPlotPackage(vector<PlotPackage> plotPackage) { mPlotPackage = move(plotPackage); }
+        void setPlotPackage(vector<PlotPackage> plotPackage) {
+            mPlotPackage = plotPackage; }
 
         vector<PlotPackage> &getPlotPackage() { return mPlotPackage; }
 
@@ -237,8 +237,6 @@ namespace guipi {
             mPlotPackage = move(plotPackage);
             return ref<GeoChrono>{this};
         }
-
-        void setSunPlotPackage(PlotPackage plotPackage) { mSun = move(plotPackage); }
 
         void transparentForeground();
 
@@ -269,6 +267,9 @@ namespace guipi {
          * @return a tuple with x and y co-ordinate.
          */
         Vector2i latLongToMap(float lat, float lon);
+
+        vector <pair<SDL_Rect, SDL_Rect>>
+        renderMapIconRect(const Vector2i &mapLocation, const Vector2i &geoCoord, const Vector2i &iconsSize);
     };
 
 }

@@ -40,7 +40,7 @@ namespace sdlgui {
 
         map<ImageStoreIndex, ImageChangedCallbackList> mImageCallbackMap;
 
-        ImageStore mImageStore;
+        ImageStore mImageStore{};
 
         enum EventType {
             UP_EVENT, LEFT_EVENT, DOWN_EVENT, RIGHT_EVENT, CLICK_EVENT
@@ -96,6 +96,8 @@ namespace sdlgui {
         }
 
         void push_back(ImageStore::size_type index, ImageData imageData) {
+            if (mImageStore.empty())
+                mImageStore.push_back(ImageDataList{});
             mImageStore[index].push_back(move(imageData));
         }
 
