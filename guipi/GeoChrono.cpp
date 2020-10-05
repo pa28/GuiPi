@@ -294,36 +294,72 @@ namespace guipi {
 
             if (mForeground) {
                 for (auto &plotItem : mPlotPackage) {
-                    if (!plotItem.mMapCoordValid) {
-                        switch (plotItem.mPlotItemType) {
-                            case CELESTIAL_BODY:
-                            case CELESTIAL_BODY_MOON:
-                                if (mSunMoonDisplay) {
-                                    plotItem.mMapCoord = latLongToMap(plotItem.mGeoCoord.y, plotItem.mGeoCoord.x);
-                                    plotItem.mMapCoordValid = true;
-                                } else {
-                                    continue;
-                                }
-                                break;
-                            case CELESTIAL_BODY_SUN:
-                                if (mSunMoonDisplay) {
-                                    plotItem.mMapCoord = latLongToMap(mSun.mGeoCoord.y, mSun.mGeoCoord.x);
-                                    plotItem.mMapCoordValid = true;
-                                } else {
-                                    continue;
-                                }
-                                break;
-                            default:
-                                plotItem.mMapCoord = latLongToMap(plotItem.mGeoCoord.y, plotItem.mGeoCoord.x);
-                                plotItem.mMapCoordValid = true;
-                        }
-                    }
-                    Vector2i imageSize;
                     switch (plotItem.mPlotItemType) {
                         case CELESTIAL_BODY:
                         case CELESTIAL_BODY_MOON:
+                            if (mSunMoonDisplay) {
+                                plotItem.mMapCoord = latLongToMap(plotItem.mGeoCoord.y, plotItem.mGeoCoord.x);
+                                plotItem.mMapCoordValid = true;
+                            } else {
+                                plotItem.mMapCoordValid = false;
+                                continue;
+                            }
+                            break;
                         case CELESTIAL_BODY_SUN:
                             if (mSunMoonDisplay) {
+                                plotItem.mMapCoord = latLongToMap(mSun.mGeoCoord.y, mSun.mGeoCoord.x);
+                                plotItem.mMapCoordValid = true;
+                            } else {
+                                plotItem.mMapCoordValid = false;
+                                continue;
+                            }
+                            break;
+                        case EARTH_SATELLITE:
+                            if (mSatelliteDisplay) {
+                                plotItem.mMapCoord = latLongToMap(plotItem.mGeoCoord.y, plotItem.mGeoCoord.x);
+                                plotItem.mMapCoordValid = true;
+                            } else {
+                                plotItem.mMapCoordValid = false;
+                                continue;
+                            }
+                            break;
+                        default:
+                            if (!plotItem.mMapCoordValid) {
+                                plotItem.mMapCoord = latLongToMap(plotItem.mGeoCoord.y, plotItem.mGeoCoord.x);
+                                plotItem.mMapCoordValid = true;
+                            }
+                    }
+                    if (plotItem.mMapCoordValid) {
+                        Vector2i imageSize;
+                        switch (plotItem.mPlotItemType) {
+                            case CELESTIAL_BODY:
+                            case CELESTIAL_BODY_MOON:
+                            case CELESTIAL_BODY_SUN:
+                                if (mSunMoonDisplay) {
+                                    imageSize = plotItem.mDrawSize == Vector2i::Zero() ?
+                                                plotItem.mImageRepository->imageSize(plotItem.mImageIndex) :
+                                                plotItem.mDrawSize;
+                                    auto list = renderMapIconRect(p, plotItem.mMapCoord, imageSize);
+                                    for (auto &copySet : list) {
+                                        plotItem.mImageRepository->renderCopy(renderer, plotItem.mImageIndex,
+                                                                              copySet.first,
+                                                                              copySet.second);
+                                    }
+                                }
+                                break;
+                            case EARTH_SATELLITE:
+                                if (mSatelliteDisplay) {
+                                    imageSize = plotItem.mDrawSize == Vector2i::Zero() ?
+                                                plotItem.mImageRepository->imageSize(plotItem.mImageIndex) :
+                                                plotItem.mDrawSize;
+                                    auto list = renderMapIconRect(p, plotItem.mMapCoord, imageSize);
+                                    for (auto &copySet : list) {
+                                        plotItem.mImageRepository->renderCopy(renderer, plotItem.mImageIndex,
+                                                                              copySet.first,
+                                                                              copySet.second);
+                                    }
+                                }
+                            default:
                                 imageSize = plotItem.mDrawSize == Vector2i::Zero() ?
                                             plotItem.mImageRepository->imageSize(plotItem.mImageIndex) :
                                             plotItem.mDrawSize;
@@ -332,17 +368,7 @@ namespace guipi {
                                     plotItem.mImageRepository->renderCopy(renderer, plotItem.mImageIndex, copySet.first,
                                                                           copySet.second);
                                 }
-                            }
-                            break;
-                        default:
-                            imageSize = plotItem.mDrawSize == Vector2i::Zero() ?
-                                        plotItem.mImageRepository->imageSize(plotItem.mImageIndex) :
-                                        plotItem.mDrawSize;
-                            auto list = renderMapIconRect(p, plotItem.mMapCoord, imageSize);
-                            for (auto &copySet : list) {
-                                plotItem.mImageRepository->renderCopy(renderer, plotItem.mImageIndex, copySet.first,
-                                                                      copySet.second);
-                            }
+                        }
                     }
                 }
             }
