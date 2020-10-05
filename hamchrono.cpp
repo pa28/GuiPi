@@ -113,6 +113,8 @@ namespace guipi {
                         case CELESTIAL_BODY_MOON:
                         case EARTH_SATELLITE:
                             plot = PlotPackage{conf.name, conf.itemType};
+                            if (plot.mPlotItemType != CELESTIAL_BODY_SUN)
+                                plot.predict(mEphemeris);
                             break;
                         default:
                             throw (logic_error("Can't configure PlotPackage/Icon as defined."));
