@@ -9,6 +9,7 @@
     BSD-style license that can be found in the LICENSE.txt file.
 */
 
+#include <algorithm>
 #include <string_view>
 #include <SDL2/SDL.h>
 #include <guipi/GuiPiApplication.h>
@@ -96,6 +97,7 @@ namespace guipi {
             vector<PlotPackage> plotPackage;
 
             ImageRepository::ImageStoreIndex idx{0,0};
+            Observer observer{qthLatLon.y, qthLatLon.x, 0};
             for( auto & conf : mPlotPackageConfig) {
                 if (conf.icon) {
                     ImageData imageData{createIcon(conf.icon, conf.size,
@@ -113,8 +115,10 @@ namespace guipi {
                         case CELESTIAL_BODY_MOON:
                         case EARTH_SATELLITE:
                             plot = PlotPackage{conf.name, conf.itemType};
-                            if (plot.mPlotItemType != CELESTIAL_BODY_SUN)
+                            if (plot.mPlotItemType != CELESTIAL_BODY_SUN) {
                                 plot.predict(mEphemeris);
+                                plot.predictPass(mEphemeris, observer);
+                            }
                             break;
                         default:
                             throw (logic_error("Can't configure PlotPackage/Icon as defined."));
@@ -279,10 +283,32 @@ namespace guipi {
          * @return the new interval
          */
         Uint32 timerCallback(Uint32 interval) {
+            Observer observer{qthLatLon.y, qthLatLon.x, 0};
             for (auto & plotItem : mGeoChrono->getPlotPackage()) {
-                if (plotItem.mPlotItemType == CELESTIAL_BODY_MOON || plotItem.mPlotItemType == EARTH_SATELLITE)
+                if (plotItem.mPlotItemType == CELESTIAL_BODY_MOON || plotItem.mPlotItemType == EARTH_SATELLITE) {
                     plotItem.predict(mEphemeris);
+                    plotItem.predictPass(mEphemeris, observer);
+                }
             }
+
+            sort(mGeoChrono->getPlotPackage().begin(), mGeoChrono->getPlotPackage().end(), [](PlotPackage &p0, PlotPackage &p1) {
+                if (p0.mEarthsat.passFound() && p1.mEarthsat.passFound()) {
+                    if (p0.mPlotItemType == EARTH_SATELLITE && p1.mPlotItemType == EARTH_SATELLITE)
+                        return p0.mEarthsat.riseTime() > p1.mEarthsat.riseTime();
+                    if (p0.mPlotItemType == EARTH_SATELLITE) return true;
+                    if (p1.mPlotItemType == EARTH_SATELLITE) return false;
+                }
+                return false;
+            });
+
+            for (auto & plotItem : mGeoChrono->getPlotPackage()) {
+                if (plotItem.mEarthsat.passFound()) {
+                    std::cout << plotItem.mName << '\n';
+                    std::cout << "Rise: " << plotItem.mEarthsat.riseTime() << " @ " << plotItem.mEarthsat.riseAzimuth() << '\n'
+                              << "Set:  " << plotItem.mEarthsat.setTime() << " @ " << plotItem.mEarthsat.setAzimuth() << "\n\n";
+                }
+            }
+
 //            if (auto moon = mEphemeris.predict("Moon"))
 //                mGeoChrono->setSubLunar(moon.value());
 //            if (auto iss = mEphemeris.predict("ISS"))

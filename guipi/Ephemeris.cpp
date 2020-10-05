@@ -30,3 +30,9 @@ guipi::PlotPackage::PlotPackage(std::string name, guipi::PlotItemType itemType,
                 : mName(std::move(name)), mPlotItemType(itemType), mGeoCoord(geoCoord), mMapCoord(), mMapCoordValid(false),
                   mDrawSize(Vector2i::Zero()) {
 }
+
+void guipi::PlotPackage::predictPass(const guipi::Ephemeris &ephemeris, const Observer &observer) {
+    if (mPlotItemType == CELESTIAL_BODY_MOON || mPlotItemType == EARTH_SATELLITE) {
+        mEarthsat = ephemeris.nextPass(mName, observer);
+    }
+}

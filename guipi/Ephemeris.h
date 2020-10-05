@@ -70,6 +70,12 @@ namespace guipi {
                 return nullopt;
             }
         }
+
+        [[nodiscard]] Earthsat nextPass(const string &name, const Observer &observer) const {
+            Earthsat earthsat{};
+            earthsat.FindNextPass(Satellite{satelliteEphemerisMap.at(name)}, observer);
+            return earthsat;
+        }
     };
 
     enum PlotItemType {
@@ -90,6 +96,8 @@ namespace guipi {
         Vector2i mMapCoord;
         Vector2i mDrawSize;
         bool mMapCoordValid{};
+        Earthsat mEarthsat;
+
         ref<ImageRepository> mImageRepository;
         ImageRepository::ImageStoreIndex mImageIndex;
 
@@ -117,6 +125,8 @@ namespace guipi {
         PlotPackage &operator=(PlotPackage &&other) noexcept = default;
 
         void predict(const Ephemeris &ephemeris);
+
+        void predictPass(const Ephemeris &ephemeris, const Observer &observer);
     };
 }
 
