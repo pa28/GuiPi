@@ -79,7 +79,7 @@ namespace guipi {
                 PlotPackageConfig{"NOAA_15", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
                                   30, {0, 255, 0, 255}},
                 PlotPackageConfig{"NOAA_18", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
-                                  30, {127, 127, 255, 255}},
+                                  30, {127+63, 127+63, 255, 255}},
                 PlotPackageConfig{"NOAA_19", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
                                   30, {255, 0, 255, 255}},
                 PlotPackageConfig{"NOAA_20", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
