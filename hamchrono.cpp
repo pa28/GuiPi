@@ -116,10 +116,6 @@ namespace guipi {
                         case CELESTIAL_BODY_MOON:
                         case EARTH_SATELLITE:
                             plot = PlotPackage{conf.name, conf.itemType};
-                            if (plot.mPlotItemType != CELESTIAL_BODY_SUN) {
-                                plot.predict(mEphemeris);
-                                plot.predictPass(mEphemeris, observer);
-                            }
                             break;
                         default:
                             throw (logic_error("Can't configure PlotPackage/Icon as defined."));
@@ -138,8 +134,7 @@ namespace guipi {
 
         HamChrono(SDL_Window *pwindow, int rwidth, int rheight)
                 : GuiPiApplication(pwindow, rwidth, rheight, "HamChrono")
-                , mTimer(*this, &HamChrono::timerCallback, 5000)
-                {
+                , mTimer(*this, &HamChrono::timerCallback, 5000) {
             mIconRepository = new ImageRepository{};
 
             qthLatLon = Vector2f(deg2rad(-77.), deg2rad(45.));
@@ -224,6 +219,7 @@ namespace guipi {
 
             auto plotPackage = buildPlotPackage();
             mGeoChrono->setPlotPackage(plotPackage);
+            timerCallback(0); // TODO: should clean this up, hoist the prediction/sorting functin.
 
             auto switches = topArea->add<Widget>()
                     ->withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 0, 0);
@@ -231,34 +227,34 @@ namespace guipi {
                     ->withFixedSize(Vector2i(40, topAreaSize.y))
                     ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 10, 12)
                     ->add<ToolButton>(ENTYPO_ICON_ROCKET, Button::Flags::ToggleButton)
-                            ->withPushed(mGeoChrono->satelliteDisplay())
-                            ->withChangeCallback([&](bool state) {
-                                mGeoChrono->setSatelliteDisplay(state);
-                                if (state)
-                                    if (auto rocket = this->find("Location", true)) {
-                                        dynamic_cast<ToolButton*>(rocket)->withPushed(false);
-                                    }
-                            })
-                            ->withId("Rocket")->_and()
+                    ->withPushed(mGeoChrono->satelliteDisplay())
+                    ->withChangeCallback([&](bool state) {
+                        mGeoChrono->setSatelliteDisplay(state);
+                        if (state)
+                            if (auto rocket = this->find("Location", true)) {
+                                dynamic_cast<ToolButton *>(rocket)->withPushed(false);
+                            }
+                    })
+                    ->withId("Rocket")->_and()
                     ->add<ToolButton>(ENTYPO_ICON_MOON, Button::Flags::ToggleButton)
-                            ->withPushed(mGeoChrono->sunMoonDisplay())
-                            ->withChangeCallback([&](bool state) { mGeoChrono->setSunMoonDisplay(state); })
-                            ->_and()
+                    ->withPushed(mGeoChrono->sunMoonDisplay())
+                    ->withChangeCallback([&](bool state) { mGeoChrono->setSunMoonDisplay(state); })
+                    ->_and()
                     ->add<ToolButton>(ENTYPO_ICON_GLOBE, Button::Flags::ToggleButton)
-                            ->withPushed(mGeoChrono->azmuthalDisplay())
-                            ->withChangeCallback([&](bool state) { mGeoChrono->setAzmuthalDisplay(state); });
+                    ->withPushed(mGeoChrono->azmuthalDisplay())
+                    ->withChangeCallback([&](bool state) { mGeoChrono->setAzmuthalDisplay(state); });
 
             switches->add<Widget>()->withPosition(Vector2i(620, 0))
                     ->withFixedSize(Vector2i(40, topAreaSize.y))
                     ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 10, 12)
                     ->add<ToolButton>(ENTYPO_ICON_LOCATION, Button::Flags::ToggleButton)
-                            ->withChangeCallback([&](bool state) {
-                                if (state)
-                                    if (auto rocket = this->find("Rocket", true)) {
-                                        dynamic_cast<ToolButton*>(rocket)->withPushed(false);
-                                        mGeoChrono->setSatelliteDisplay(false);
-                                    }
-                            })->withId("Location")->_and()
+                    ->withChangeCallback([&](bool state) {
+                        if (state)
+                            if (auto rocket = this->find("Rocket", true)) {
+                                dynamic_cast<ToolButton *>(rocket)->withPushed(false);
+                                mGeoChrono->setSatelliteDisplay(false);
+                            }
+                    })->withId("Location")->_and()
                     ->add<ToolButton>(ENTYPO_ICON_NETWORK, Button::Flags::ToggleButton)->_and()
                     ->add<ToolButton>(ENTYPO_ICON_COMPASS, Button::Flags::ToggleButton);
 
@@ -268,6 +264,29 @@ namespace guipi {
                     ->add<ToolButton>(ENTYPO_ICON_THREE_DOTS, Button::Flags::ToggleButton)->_and()
                     ->add<ToolButton>(ENTYPO_ICON_LIGHT_DOWN, Button::Flags::ToggleButton)->_and()
                     ->add<ToolButton>(ENTYPO_ICON_HAIR_CROSS, Button::Flags::ToggleButton);
+
+//            auto esv = sideBar->add<Widget>()->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 0, 0);
+//
+//            for (auto &plot : mGeoChrono->getPlotPackage()) {
+//                if (plot.mPlotItemType == EARTH_SATELLITE) {
+//                    esv->add<Widget>()->withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 0, 0)
+//                            ->add<Label>(plot.mName)->withFont(mTheme->mBoldFont)->withFontSize(15);
+//                }
+//            }
+
+            auto tab = sideBar->add<TabWidget>();
+
+            Widget *layer = tab->createTab("S", ENTYPO_ICON_ROCKET);
+            layer->setLayout(new BoxLayout(Orientation::Vertical, Alignment::Minimum, 0, 0));
+
+            // Use overloaded variadic add to fill the tab widget with Different tabs.
+            layer->add<Label>("Satellites", "sans-bold")->withFixedWidth(sideBarSize.x-20);
+
+            layer = tab->createTab("D", ENTYPO_ICON_LOCATION);
+            layer->setLayout(new BoxLayout(Orientation::Vertical, Alignment::Minimum, 0, 0));
+
+            // Use overloaded variadic add to fill the tab widget with Different tabs.
+            layer->add<Label>("Stations", "sans-bold")->withFixedWidth(sideBarSize.x-20);
         }
 
         void drawContents() override {
