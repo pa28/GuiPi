@@ -50,30 +50,30 @@ int TabWidget::tabCount() const
     return mHeader->tabCount();
 }
 
-Widget* TabWidget::createTab(int index, const std::string &label) 
+Widget * TabWidget::createTab(int index, const std::string &label, int icon)
 {
     Widget* tab = new Widget(nullptr);
-    addTab(index, label, tab);
+    addTab(index, label, tab, icon);
     return tab;
 }
 
-Widget* TabWidget::createTab(const std::string &label) 
+Widget * TabWidget::createTab(const std::string &label, int icon)
 {
-    return createTab(tabCount(), label);
+    return createTab(tabCount(), label, icon);
 }
 
-void TabWidget::addTab(const std::string &name, Widget *tab) 
+void TabWidget::addTab(const std::string &name, Widget *tab, int icon)
 {
-    addTab(tabCount(), name, tab);
+    addTab(tabCount(), name, tab, icon);
 }
 
-void TabWidget::addTab(int index, const std::string &label, Widget *tab) 
+void TabWidget::addTab(int index, const std::string &label, Widget *tab, int icon)
 {
     assert(index <= tabCount());
     // It is important to add the content first since the callback
     // of the header will automatically fire when a new tab is added.
     mContent->addChild(index, tab);
-    mHeader->addTab(index, label);
+    mHeader->addTab(index, label, icon);
     assert(mHeader->tabCount() == mContent->childCount());
 }
 

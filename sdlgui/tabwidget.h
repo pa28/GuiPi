@@ -44,14 +44,14 @@ public:
     const std::function<void(int)> &callback() const { return mCallback; }
 
     /// Creates a new tab with the specified name and returns a pointer to the layer.
-    Widget* createTab(const std::string &label);
-    Widget* createTab(int index, const std::string &label);
+    Widget *createTab(const std::string &label, int icon);
+    Widget *createTab(int index, const std::string &label, int icon);
 
     /// Inserts a tab at the end of the tabs collection and associates it with the provided widget.
-    void addTab(const std::string &label, Widget *tab);
+    void addTab(const std::string &name, Widget *tab, int icon);
 
     /// Inserts a tab into the tabs collection at the specified index and associates it with the provided widget.
-    void addTab(int index, const std::string &label, Widget *tab);
+    void addTab(int index, const std::string &label, Widget *tab, int icon);
 
     /**
      * Removes the tab with the specified label and returns the index of the label.

@@ -49,10 +49,10 @@ public:
     int tabCount() const { return (int) mTabButtons.size();  }
 
     /// Inserts a tab at the end of the tabs collection.
-    void addTab(const std::string& label);
+    void addTab(const std::string &label, int icon);
 
     /// Inserts a tab into the tabs collection at the specified index.
-    void addTab(int index, const std::string& label);
+    void addTab(int index, const std::string &label, int icon);
 
     /**
      * Removes the tab with the specified label and returns the index of the label.
@@ -109,12 +109,15 @@ private:
     public:
         constexpr static const char* dots = "...";
 
-        TabButton(TabHeader& header, const std::string& label);
+        TabButton(TabHeader &header, const std::string &label, int icon);
 
         void setLabel(const std::string& label) { mLabel = label; }
-        const std::string& label() const { return mLabel; }
+        [[nodiscard]] const std::string& label() const { return mLabel; }
+        void setIcon(int icon) { mIcon = icon; }
+        [[nodiscard]] int icon() const { return mIcon; }
+
         void setSize(const Vector2i& size) { mSize = size; }
-        const Vector2i& size() const { return mSize; }
+        [[nodiscard]] const Vector2i& size() const { return mSize; }
 
         Vector2i preferredSize(SDL_Renderer* ctx) const;
         void calculateVisibleString(SDL_Renderer* renderer);
@@ -125,6 +128,7 @@ private:
     private:
         TabHeader* mHeader;
         std::string mLabel;
+        int mIcon;
         Vector2i mSize;
 
         /**
