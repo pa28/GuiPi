@@ -46,6 +46,10 @@ namespace guipi {
             satelliteEphemerisMap = SatelliteEphemerisFetch::fetchAll();
         }
 
+        auto begin() noexcept { return satelliteEphemerisMap.begin(); }
+
+        auto end() noexcept { return satelliteEphemerisMap.end(); }
+
         [[nodiscard]] bool haveEphemeris(const string &name) const {
             return satelliteEphemerisMap.find(name) != satelliteEphemerisMap.cend();
         }
@@ -74,6 +78,8 @@ namespace guipi {
             earthsat.FindNextPass(Satellite{satelliteEphemerisMap.at(name)}, observer);
             return earthsat;
         }
+
+        [[nodiscard]] bool empty() const { return satelliteEphemerisMap.empty(); }
     };
 
     enum PlotItemType {
