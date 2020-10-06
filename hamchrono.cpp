@@ -10,10 +10,10 @@
 */
 
 #include <algorithm>
+#include <mutex>
 #include <string_view>
+#include <thread>
 #include <SDL2/SDL.h>
-#include <guipi/GuiPiApplication.h>
-#include <guipi/Ephemeris.h>
 #include <sdlgui/entypo.h>
 #include <guipi/GeoChrono.h>
 #include <sdlgui/ImageRepository.h>
@@ -24,6 +24,9 @@
 #include <sdlgui/widget.h>
 #include <sdlgui/tabwidget.h>
 #include <sdlgui/TimeBox.h>
+#include <guipi/GuiPiApplication.h>
+#include <guipi/Ephemeris.h>
+#include <guipi/SatelliteDataDisplay.h>
 
 using namespace sdlgui;
 
@@ -45,9 +48,12 @@ namespace guipi {
         sdlgui::ref<ImageRepository> mImageRepository;
 
         Ephemeris mEphemeris;
+        thread mEphemerisThread;
+        mutex mEphemerisMutex;
         Timer<HamChrono> mTimer;
 
         ref<ImageRepository> mIconRepository;
+        ref<SatelliteDataDisplay> mSatelliteDataDisplay;
 
     public:
         ~HamChrono() override = default;
@@ -145,7 +151,7 @@ namespace guipi {
             Vector2i botAreaSize(mScreenSize.x, mScreenSize.y - topAreaSize.y);
             Vector2i sideBarSize(mScreenSize.x - mapAreaSize.x, mapAreaSize.y);
 
-            mEphemeris.loadEphemeris();
+            timerCallback(0);
 
             mMainWindow = add<Window>("", Vector2i::Zero())->withBlank(true)
                     ->withFixedSize(mScreenSize)
@@ -280,17 +286,15 @@ namespace guipi {
             layer->setLayout(new BoxLayout(Orientation::Vertical, Alignment::Minimum, 0, 0));
 
             // Use overloaded variadic add to fill the tab widget with Different tabs.
-            layer->add<Label>("Satellites", "sans-bold")->withFixedWidth(sideBarSize.x-20);
-            for (auto &plot : mGeoChrono->getPlotPackage()) {
-                if (plot.mPlotItemType == EARTH_SATELLITE)
-                    layer->add<Label>(plot.mName);
-            }
+            mSatelliteDataDisplay = layer->add<SatelliteDataDisplay>(mGeoChrono)->withFixedWidth(sideBarSize.x - 20);
 
             layer = tab->createTab("D", ENTYPO_ICON_LOCATION);
             layer->setLayout(new BoxLayout(Orientation::Vertical, Alignment::Minimum, 0, 0));
 
             // Use overloaded variadic add to fill the tab widget with Different tabs.
             layer->add<Label>("Stations", "sans-bold")->withFixedWidth(sideBarSize.x-20);
+
+            tab->setActiveTab(0);
         }
 
         void drawContents() override {
@@ -302,7 +306,32 @@ namespace guipi {
          * @param interval
          * @return the new interval
          */
+
+        static constexpr array<string_view, 8> initialSatelliteList{ "ISS",
+                                                                     "NOAA_15",
+                                                                     "NOAA_18",
+                                                                     "NOAA_19",
+                                                                     "NOAA_20",
+                                                                     "AO-7",
+                                                                     "AO-27",
+                                                                     "AO-73" };
+
         Uint32 timerCallback(Uint32 interval) {
+            if (mEphemerisThread.joinable()) {
+                mEphemerisThread.join();
+            }
+
+            if (mEphemeris.empty()) {
+                mEphemerisThread = thread([this]() {
+                    lock_guard<mutex> lockGuard(mEphemerisMutex);
+                    mEphemeris.loadEphemeris();
+                });
+
+                return interval;
+            }
+
+            lock_guard<mutex> lockGuard(mEphemerisMutex);
+
             for (auto & plotItem : mGeoChrono->getPlotPackage()) {
                 if (plotItem.mPlotItemType == CELESTIAL_BODY_MOON || plotItem.mPlotItemType == EARTH_SATELLITE) {
                     plotItem.predict(mEphemeris);
@@ -318,6 +347,33 @@ namespace guipi {
             });
 
             if (changed) {
+                vector<pair<string,Earthsat>> passList;
+                for (auto & sat : initialSatelliteList) {
+                    Earthsat earthsat{};
+                    earthsat = mEphemeris.nextPass(string(sat), mObserver);
+                    passList.emplace_back(pair<string,Earthsat>{string(sat),earthsat});
+                }
+
+                sort(passList.begin(), passList.end(), [](auto p0, auto p1) {
+                    return p0.second.riseTime() < p1.second.riseTime();
+                });
+
+                for (auto & pass : passList) {
+                    std::cout << pass.first << ": " << pass.second.riseTime() << '\n';
+                }
+
+                auto pass = passList.begin();
+                for (auto & plotItem : mGeoChrono->getPlotPackage()) {
+                    if (pass == passList.end())
+                        break;
+                    if (plotItem.mPlotItemType == EARTH_SATELLITE) {
+                        plotItem.mName = pass->first;
+                        plotItem.mEarthsat = pass->second;
+                        plotItem.predict(mEphemeris);
+                        ++pass;
+                    }
+                }
+
                 std::cout << "Changed\n";
 
                 for (auto &plotItem : mGeoChrono->getPlotPackage()) {
@@ -332,6 +388,8 @@ namespace guipi {
                 }
             }
 
+            if (changed && mSatelliteDataDisplay)
+                mSatelliteDataDisplay->updateSatelliteData();
             return interval;
         }
 
