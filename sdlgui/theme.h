@@ -65,10 +65,13 @@ public:
     float mTabBorderWidth;
     int mTabInnerMargin;
     int mTabMinButtonWidth;
+    int mTabMinIconButtonWidth;
     int mTabMaxButtonWidth;
     int mTabControlWidth;
     int mTabButtonHorizontalPadding;
     int mTabButtonVerticalPadding;
+    int mTabButtonIconHorPadding;
+    int mTabButtonIconVerPadding;
     int mScrollBarWidth;
     int mScrollBarGutter;
     int mMinBrightness;

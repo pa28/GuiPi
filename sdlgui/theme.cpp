@@ -53,11 +53,14 @@ NAMESPACE_BEGIN(sdlgui)
         mButtonCornerRadius = 2;
         mTabBorderWidth = 0.75f;
         mTabInnerMargin = 5;
-        mTabMinButtonWidth = 30;
+        mTabMinButtonWidth = 40;
+        mTabMinIconButtonWidth = 40;
         mTabMaxButtonWidth = 180;
         mTabControlWidth = 20;
         mTabButtonHorizontalPadding = 10;
         mTabButtonVerticalPadding = 2;
+        mTabButtonIconHorPadding = 2;
+        mTabButtonIconVerPadding = 2;
         mScrollBarWidth = 20;
         mScrollBarGutter = 2;
         mMinBrightness = 16;

@@ -149,11 +149,20 @@ NAMESPACE_BEGIN(sdlgui)
         }
 
         if (_labelTex.tex) {
-            int textX = mHeader->getAbsoluteLeft() + xPos + mHeader->theme()->mTabButtonHorizontalPadding;
-            int textY =
-                    mHeader->getAbsoluteTop() + yPos + mHeader->theme()->mTabButtonVerticalPadding + (active ? 1 : -2);
+            if (mIcon) {
+                int iconX = mHeader->getAbsoluteLeft() + xPos + (mSize.x - _labelTex.w()) / 2 +
+                        mHeader->theme()->mTabButtonIconHorPadding;
+                int iconY = mHeader->getAbsoluteTop() + yPos + (mSize.y - _labelTex.h()) / 2 + (active ? 1 : -2) +
+                        mHeader->theme()->mTabButtonIconVerPadding;
+                SDL_RenderCopy(renderer, _labelTex, Vector2i(iconX, iconY));
+            } else {
+                int textX = mHeader->getAbsoluteLeft() + xPos + mHeader->theme()->mTabButtonHorizontalPadding;
+                int textY =
+                        mHeader->getAbsoluteTop() + yPos + mHeader->theme()->mTabButtonVerticalPadding +
+                        (active ? 1 : -2);
 
-            SDL_RenderCopy(renderer, _labelTex, Vector2i(textX, textY));
+                SDL_RenderCopy(renderer, _labelTex, Vector2i(textX, textY));
+            }
         }
     }
 
