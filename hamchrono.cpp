@@ -281,6 +281,10 @@ namespace guipi {
 
             // Use overloaded variadic add to fill the tab widget with Different tabs.
             layer->add<Label>("Satellites", "sans-bold")->withFixedWidth(sideBarSize.x-20);
+            for (auto &plot : mGeoChrono->getPlotPackage()) {
+                if (plot.mPlotItemType == EARTH_SATELLITE)
+                    layer->add<Label>(plot.mName);
+            }
 
             layer = tab->createTab("D", ENTYPO_ICON_LOCATION);
             layer->setLayout(new BoxLayout(Orientation::Vertical, Alignment::Minimum, 0, 0));
