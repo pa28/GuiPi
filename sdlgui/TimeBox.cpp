@@ -58,17 +58,10 @@ namespace sdlgui {
         auto now = std::chrono::system_clock::now();
         std::chrono::duration<double> elapsed_seconds = now - mEpoch;
         auto delta_seconds = elapsed_seconds - mElapsedSeconds;
-        if (delta_seconds.count() > 0.9) {
-            mElapsedSeconds = elapsed_seconds;
-            renderTime(now);
-        }
+        mElapsedSeconds = elapsed_seconds;
+        renderTime(now);
 
-        if (delta_seconds.count() > 1.0)
-            fmod(delta_seconds.count(), 1.0) * 1000.0;
-        else if (delta_seconds.count() < 0.990)
-            return 1000.0 - (delta_seconds.count() * 1000.0);
-
-        return 1000;
+        return 1005 - chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count() % 1000;
     }
 
     TimeBox::TimeBox(Widget *parent, bool small, bool localTime)
