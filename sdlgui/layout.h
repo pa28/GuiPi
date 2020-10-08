@@ -251,11 +251,11 @@ public:
      * \brief Helper struct to coordinate anchor points for the layout.
      */
     struct Anchor {
-        uint8_t pos[2];
-        uint8_t size[2];
-        Alignment align[2];
+        uint8_t pos[2]{};
+        uint8_t size[2]{};
+        Alignment align[2]{};
 
-        Anchor() { }
+        Anchor() = default;
 
         Anchor(int x, int y, Alignment horiz = Alignment::Fill,
               Alignment vert = Alignment::Fill) {
@@ -272,15 +272,15 @@ public:
             align[0] = horiz; align[1] = vert;
         }
 
-        operator std::string() const {
-            char buf[50];
-            SDLGUI_SNPRINTF(buf, 50, "Format[pos=(%i, %i), size=(%i, %i), align=(%i, %i)]",
+        explicit operator std::string() const {
+            char buf[100];
+            SDLGUI_SNPRINTF(buf, 100, "Format[pos=(%i, %i), size=(%i, %i), align=(%i, %i)]",
                 pos[0], pos[1], size[0], size[1], (int) align[0], (int) align[1]);
             return buf;
         }
     };
 
-    AdvancedGridLayout(const std::vector<int> &cols = {}, const std::vector<int> &rows = {}, int margin = 0);
+    explicit AdvancedGridLayout(const std::vector<int> &cols = {}, const std::vector<int> &rows = {}, int margin = 0);
 
     int margin() const { return mMargin; }
     void setMargin(int margin) { mMargin = margin; }

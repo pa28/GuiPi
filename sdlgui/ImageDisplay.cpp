@@ -159,30 +159,32 @@ namespace sdlgui {
                                  const Vector2i &position, const Vector2i &fixedSize)
                                  : Window(parent, "Repeater", position) {
         withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 0, 0);
-        buttonPanel()->withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 0, 0)
-                ->withFixedHeight(35)
-                ->add<ToolButton>(ENTYPO_ICON_SQUARED_CROSS, Button::Flags::NormalButton)
-                        ->withCallback([&]() {
-                            window()->setVisible(false);
-                        });
+        if (buttonPanel())
+            buttonPanel()->withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 0, 0)
+                    ->withFixedHeight(35)
+                    ->add<ToolButton>(ENTYPO_ICON_SQUARED_CROSS, Button::Flags::NormalButton)
+                            ->withCallback([&]() {
+                                window()->setVisible(false);
+                            });
         mImageDisplay = add<ImageDisplay>()->withFixedSize(fixedSize);
         setVisible(false);
     }
 
-//    void ImageRepeater::setTexture(SDL_Texture *texture, const string &caption) {
-//        mImageDisplay->setTexture(texture);
-//        window()->setTitle(caption);
-//    }
+    void ImageRepeater::setTexture(SDL_Texture *texture, const string &caption) {
+        mImageDisplay->setTexture(texture);
+        window()->setTitle(caption);
+    }
 
     void ImageRepeater::repeateFromRepository(const ref<ImageDisplay>& imageDisplay, ref<ImageRepository> imageRepository,
                                               ImageRepository::ImageStoreIndex imageStoreIndex) {
+        std::cerr << __PRETTY_FUNCTION__ << '\n';
+        auto name = imageRepository->imageName(imageStoreIndex);
+        auto idx = name.find_last_of('.');
         mImageDisplay->mImageRepository = std::move(imageRepository);
         mImageDisplay->mImageStoreIndex = imageStoreIndex;
-        mImageDisplay->mTextureDirty = true;
-        auto name = mImageDisplay->mImageRepository->imageName(imageStoreIndex);
-        auto idx = name.find_last_of('.');
         window()->setTitle(name.substr(0, idx));
-        dynamic_cast<Screen*>(window()->parent())->moveWindowToFront(window());
         window()->setVisible(true);
+        dynamic_cast<Screen*>(window()->parent())->moveWindowToFront(window());
+        mImageDisplay->mTextureDirty = true;
     }
 }

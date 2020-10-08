@@ -25,7 +25,7 @@ class  Window : public Widget
 {
     friend class Popup;
 public:
-    explicit Window(Widget *parent, const std::string &title = "Untitled");
+    explicit Window(Widget *parent, std::string title = "Untitled");
     Window(Widget *parent, const std::string &title, const Vector2i& pos)
       : Window(parent, title) { setPosition(pos); }
 
@@ -82,7 +82,7 @@ protected:
 
     bool mModal;
     bool mDrag;
-    bool mBlank;
+    bool mBlank{};
 
     struct AsyncTexture;
     typedef std::shared_ptr<AsyncTexture> AsyncTexturePtr;

@@ -22,6 +22,7 @@
 #endif
 
 #include <thread>
+#include <utility>
 
 #include "nanovg.h"
 
@@ -37,9 +38,9 @@ NAMESPACE_BEGIN(sdlgui)
         Texture tex;
         NVGcontext *ctx = nullptr;
 
-        bool ready() const { return tex.tex != nullptr; }
+        [[nodiscard]] bool ready() const { return tex.tex != nullptr; }
 
-        AsyncTexture(int _id) : id(_id) {};
+        explicit AsyncTexture(int _id) : id(_id) {};
 
         void load(Window *ptr, int dx, int dy, bool mouseFocus, bool blank) {
             Window *wnd = ptr;
@@ -151,8 +152,8 @@ NAMESPACE_BEGIN(sdlgui)
 
     };
 
-    Window::Window(Widget *parent, const std::string &title)
-            : Widget(parent), mTitle(title), mButtonPanel(nullptr), mModal(false), mDrag(false) {
+    Window::Window(Widget *parent, std::string title)
+            : Widget(parent), mTitle(std::move(title)), mButtonPanel(nullptr), mModal(false), mDrag(false) {
         _titleTex.dirty = true;
     }
 

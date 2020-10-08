@@ -429,8 +429,14 @@ void Screen::centerWindow(Window *window)
 }
 
 void Screen::moveWindowToFront(Window *window) {
-    mChildren.erase(std::remove(mChildren.begin(), mChildren.end(), window), mChildren.end());
-    mChildren.push_back(window);
+    std::cerr << __PRETTY_FUNCTION__ << '\n';
+//    mChildren.erase(std::remove(mChildren.begin(), mChildren.end(), window), mChildren.end());
+//    mChildren.push_back(window);
+
+    std::sort(mChildren.begin(), mChildren.end(), [window](auto p0, auto p1){
+       if (p1 == window) return true;
+       return false;
+    });
     /* Brute force topological sort (no problem for a few windows..) */
     bool changed = false;
     do {

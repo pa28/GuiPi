@@ -441,8 +441,8 @@ Sun::predict(const DateTime &dt) {
     C = cos(TAS);
     S = sin(TAS);
     SUN[0] = C;
-    SUN[1] = S * CNS;
-    SUN[2] = S * SNS;
+    SUN[1] = S * P13::CNS;
+    SUN[2] = S * P13::SNS;
     C = cos(-GHAE);
     S = sin(-GHAE);
     H[0] = SUN[0] * C - SUN[1] * S;
