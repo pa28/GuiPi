@@ -75,11 +75,21 @@ namespace sdlgui {
 
     class TimeBox : public Widget {
     private:
+#if __cplusplus == 201703L
         static constexpr array<string_view, 7> mDays = {
                 "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
         static constexpr array<string_view, 12> mMonths = {
                 "Jan", "Feb", "Mar", "Apr", "May", "Jun",
                 "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
+#else
+        static constexpr array<const char*, 7> mDays {
+                "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"
+        };
+        static constexpr array<const char*, 12> mMonths = {
+                "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+        };
+#endif
 
         Timer<TimeBox> mTimer;
         const time_put<char> &locale_time_put;

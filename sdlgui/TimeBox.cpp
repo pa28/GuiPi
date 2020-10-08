@@ -9,6 +9,7 @@
 #include <iostream>
 #include <algorithm>
 #include <functional>
+#include <sdlgui/common.h>
 #include <sdlgui/layout.h>
 #include "TimeBox.h"
 
@@ -132,7 +133,7 @@ namespace sdlgui {
     bool TimeBox::mouseMotionEvent(const Vector2i &p, const Vector2i &rel, int button,
                                         int modifiers) {
         if (button) {
-            auto level = std::clamp((float)p.x / (float)width(), 0.0F, 1.0F);
+            auto level = sdlgui::clamp((float)p.x / (float)width(), 0.0F, 1.0F);
             if (mCallback) {
                 mCallback(*this, level);
             }

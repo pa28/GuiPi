@@ -482,8 +482,16 @@ namespace guipi {
         for (int y = 0; y < mDayMap->h; y += 1) {
             for (int x = 0; x < mDayMap->w; x += 1) {
                 // Radius from centre of the hempishpere
+#if __cplusplus == 201703L
                 auto[valid, lat, lon] = xyToAzLatLong(x, y, Vector2i(EARTH_BIG_W, EARTH_BIG_H), mStationLocation, siny,
                                                       cosy);
+#else
+                auto _t = xyToAzLatLong(x, y, Vector2i(EARTH_BIG_W, EARTH_BIG_H), mStationLocation, siny,
+                                        cosy);
+                auto valid = std::get<0>(_t);
+                auto lat = std::get<1>(_t);
+                auto lon = std::get<2>(_t);
+#endif
                 auto lat_d = rad2deg(lat);
                 auto lon_d = rad2deg(lon);
 
@@ -562,7 +570,13 @@ namespace guipi {
         SDL_SetSurfaceBlendMode(mDayMap.get(), SDL_BLENDMODE_BLEND);
         SDL_BlitSurface(mDayMap.get(), nullptr, mTransparentMap.get(), nullptr);
 
+#if __cplusplus == 201703L
         auto[latS, lonS] = subSolar();
+#else
+        auto _t = subSolar();
+        auto latS = std::get<0>(_t);
+        auto lonS = std::get<1>(_t);
+#endif
         Vector2f mSubSolar;
         mSubSolar.x = lonS;
         mSubSolar.y = latS;
@@ -629,6 +643,6 @@ namespace guipi {
     }
 
     GeoChrono::GeoChrono(Widget *parent) : Widget(parent), mTimer(*this, &GeoChrono::timerCallback, 60000),
-                                           mDayMap{nullptr}, mNightMap{nullptr}, mTransparentMap{nullptr},
+                                           mDayMap{}, mNightMap{}, mTransparentMap{},
                                            mStationLocation{0} {}
 }

@@ -45,7 +45,9 @@
 #include <iostream>
 #include <iomanip>
 #include <map>
+#if __cplusplus == 201703L
 #include "constexpertrig.h"
+#endif
 
 //----------------------------------------------------------------------
 
@@ -84,8 +86,13 @@ struct P13 {
     constexpr static double EQC1 = 0.03340;
     constexpr static double EQC2 = 0.00035;
     constexpr static double INS = RADIANS(23.4375);
+#if __cplusplus == 201703L
     constexpr static double CNS = math::cos(INS);
     constexpr static double SNS = math::sin(INS);
+#else
+#define CNS cos(RADIANS(23.4375))
+#define SNS sin(RADIANS(23.4375))
+#endif
 
     /*
     constexpr static SatelliteEphemeris ISS =
@@ -110,13 +117,23 @@ struct P13 {
 
     template<typename T>
     [[maybe_unused]] [[nodiscard]] static constexpr T to_integer(const T x) {
+#if __cplusplus == 201703L
         auto[f, i] = mod(x);
+#else
+        auto t = mod(x);
+        auto i = std::get<1>(t);
+#endif
         return i;
     }
 
     template<typename T>
     [[maybe_unused]] [[nodiscard]] static constexpr T to_fraction(const T x) {
+#if __cplusplus == 201703L
         auto[f, i] = mod(x);
+#else
+        auto t = mod(x);
+        auto f= std::get<0>(t);
+#endif
         return f;
     }
 };
@@ -236,7 +253,17 @@ public:
     }
 
     [[maybe_unused]] std::ostream &print_on(std::ostream &os) const {
+#if __cplusplus == 201703L
         auto[yr, mo, da, h, m, s] = gettime();
+#else
+        auto t = gettime();
+        auto yr = std::get<0>(t);
+        auto mo = std::get<1>(t);
+        auto da = std::get<2>(t);
+        auto h = std::get<3>(t);
+        auto m = std::get<4>(t);
+        auto s = std::get<5>(t);
+#endif
         os << yr << '-' << (long) mo << '-' << (long) da << ' ' << (long) h << ':' << (long) m << ':' << (long) s;
         return os;
     }
@@ -284,7 +311,11 @@ public:
 
 class Satellite {
     bool isMoon{};
+#if __cplusplus == 201703L
     std::string_view name;
+#else
+    std::string name;
+#endif
     long N{};
     long YE{};
     double IN{};
@@ -311,7 +342,12 @@ class Satellite {
      * @param l1 line 1
      * @param l2 line 2
      */
+#if __cplusplus == 201703L
     void tle(const std::string_view &l1, const std::string_view &l2);
+#else
+    void tle(const std::string &l1, const std::string &l2);
+#endif
+
 
 public:
     long DE{};
@@ -340,7 +376,11 @@ public:
      * Access the satellite name.
      * @return
      */
+#if __cplusplus == 201703L
     [[nodiscard]] std::string_view getName() const {
+#else
+    [[nodiscard]] std::string getName() const {
+#endif
         return name;
     }
 

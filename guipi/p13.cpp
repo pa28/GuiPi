@@ -3,6 +3,7 @@
 //
 
 #include <tuple>
+#include <cmath>
 #include "p13.h"
 
 //
@@ -108,7 +109,14 @@ double DateTime::operator-(const DateTime &rhs) const {
 [[maybe_unused]] std::tuple<int, uint8_t, uint8_t, uint8_t, uint8_t, uint8_t>
 DateTime::gettime() const {
     uint8_t h, m, s;
+#if __cplusplus == 201703L
     auto[year, month, day] = fndate(DN);
+#else
+    auto tu = fndate(DN);
+    auto year = std::get<0>(tu);
+    auto month = std::get<1>(tu);
+    auto day = std::get<2>(tu);
+#endif
     double t = TN;
     t *= 24;
     h = (uint8_t) t;
@@ -165,7 +173,11 @@ Observer::Observer(double const &latitude, double const &longitude, double const
 }
 
 static double
+#if __cplusplus == 201703L
 getfloat(const std::string_view &c, int i0, int i1) {
+#else
+getfloat(const std::string &c, int i0, int i1) {
+#endif
     char buf[20];
     int i;
     for (i = 0; i0 + i < i1; i++)
@@ -175,7 +187,11 @@ getfloat(const std::string_view &c, int i0, int i1) {
 }
 
 static long
+#if __cplusplus == 201703L
 getlong(const std::string_view &c, int i0, int i1) {
+#else
+getlong(const std::string &c, int i0, int i1) {
+#endif
     char buf[20];
     int i;
     for (i = 0; i0 + i < i1; i++)
@@ -192,7 +208,11 @@ Satellite::Satellite(const SatelliteEphemeris &ephemeris)
 }
 
 void
+#if __cplusplus == 201703L
 Satellite::tle(const std::string_view &l1, const std::string_view &l2) {
+#else
+Satellite::tle(const std::string &l1, const std::string &l2) {
+#endif
     // direct quantities from the orbital elements
 
     N = getlong(l2, 2, 7);
@@ -421,8 +441,8 @@ Sun::predict(const DateTime &dt) {
     C = cos(TAS);
     S = sin(TAS);
     SUN[0] = C;
-    SUN[1] = S * P13::CNS;
-    SUN[2] = S * P13::SNS;
+    SUN[1] = S * CNS;
+    SUN[2] = S * SNS;
     C = cos(-GHAE);
     S = sin(-GHAE);
     H[0] = SUN[0] * C - SUN[1] * S;

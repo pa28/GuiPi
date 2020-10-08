@@ -8,7 +8,7 @@
 #include <functional>
 #include <atomic>
 #include <vector>
-#include <math.h>
+#include <cmath>
 #include <assert.h>
 #include <istream>
 
@@ -60,18 +60,30 @@ struct NVGcontext;
 //#pragma warning(disable : 4714) // warning C4714: funtion X marked as __forceinline not inlined
 #endif
 
-NAMESPACE_BEGIN(sdlgui)
+
+namespace sdlgui {
+
+#if __cplusplus == 201703L
+    template<typename T>
+    constexpr const T &clamp(const T &v, const T &lo, const T &hi) { return std::clamp(v, lo, hi); }
+#else
+    template<typename T>
+    constexpr const T &clamp(const T &v, const T &lo, const T &hi) {
+        assert(!(hi < lo));
+        return (v < lo) ? lo : (hi < v) ? hi : v;
+    }
+#endif
 
     template<typename T>
     int roundToInt(T value) {
-        static_assert(std::is_floating_point_v<T>, "value must be floating point." );
+        static_assert(std::is_floating_point<T>::value, "value must be floating point.");
         return (int) round(value);
     }
 
     template<typename R, typename V>
     R roundTo(V value) {
-        static_assert(std::is_unsigned_v<R>, "return value must be an unsigned type.");
-        static_assert(std::is_floating_point_v<V>, "value must be floating point." );
+        static_assert(std::is_unsigned<R>::value, "return value must be an unsigned type.");
+        static_assert(std::is_floating_point<V>::value, "value must be floating point.");
         return (R) round(value) & std::numeric_limits<R>::max();
     }
 
@@ -195,7 +207,7 @@ NAMESPACE_BEGIN(sdlgui)
         /// dynamically cast to this type.
         template<typename O>
         ref &operator=(const ref<O> &r) noexcept {
-            T *t_ptr = const_cast<T*>(dynamic_cast<const T*>(r.get()));
+            T *t_ptr = const_cast<T *>(dynamic_cast<const T *>(r.get()));
             if (m_ptr != t_ptr) {
                 if (t_ptr)
                     ((Object *) t_ptr)->incRef();
@@ -813,6 +825,6 @@ NAMESPACE_BEGIN(sdlgui)
 /// Determine whether an icon ID is a font-based icon (e.g. from the entypo.ttf font)
     inline bool nvgIsFontIcon(int value) { return value >= 1024; }
 
-NAMESPACE_END(sdlgui)
+}
 
 #endif

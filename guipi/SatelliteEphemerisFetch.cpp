@@ -6,6 +6,7 @@
 #include <curlpp/Easy.hpp>
 #include <curlpp/Options.hpp>
 #include <curlpp/Exception.hpp>
+#include <vector>
 #include "SatelliteEphemerisFetch.h"
 
 

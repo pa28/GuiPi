@@ -25,6 +25,7 @@
 #include <string>
 #include <vector>
 #include <optional>
+#include <utility>
 #include <sdlgui/common.h>
 #include <sdlgui/Image.h>
 #include <sdlgui/ImageRepository.h>
@@ -36,6 +37,31 @@ namespace guipi {
     using namespace sdlgui;
     using namespace std;
     using sdlgui::ref;
+
+#if __cplusplus == 201703L
+
+#else
+    template<typename T>
+    class optional {
+    protected:
+        bool valid{false};
+        T content{};
+
+    public:
+        ~optional() = default;
+        optional() = default;
+        explicit optional(const T &v) : valid(true), content(v) {}
+        explicit optional(T &&v) : valid(true), content(move(v)) {}
+        optional(const optional<T> &o) : valid(o.valid), content(o.content) {}
+        optional(optional<T> &&o)  noexcept : valid(o.valid), content(move(o.content)) {}
+        optional<T> &operator=(const optional<T> &o) { valid = o.valid; content = o.content; return *this; }
+        optional<T> &operator=(optional<T> &&o)  noexcept { valid = o.valid; content = move(o.content); return *this; }
+
+        explicit operator bool() { return valid; }
+        T value() { return content; }
+        T value() const { return content; }
+    };
+#endif
 
     class Ephemeris {
     protected:
@@ -50,7 +76,7 @@ namespace guipi {
 
         auto end() noexcept { return satelliteEphemerisMap.end(); }
 
-        [[nodiscard]] bool haveEphemeris(const string &name) const {
+        [[nodiscard]] bool haveEphemeris(const std::string &name) const {
             return satelliteEphemerisMap.find(name) != satelliteEphemerisMap.cend();
         }
 
@@ -64,12 +90,18 @@ namespace guipi {
             try {
                 Satellite satellite{satelliteEphemerisMap.at(name)};
                 satellite.predict(predictionTime);
+#if __cplusplus == 201703L
                 auto[lat, lon] = satellite.geo();
-                return Vector2f{(float) lon, (float) lat};
+#else
+                auto _t = satellite.geo();
+                auto lat = std::get<0>(_t);
+                auto lon = std::get<1>( _t);
+#endif
+                return optional<Vector2f>{Vector2f{(float) lon, (float) lat}};
             }
 
             catch (const out_of_range &e) {
-                return nullopt;
+                return optional<Vector2f>{};
             }
         }
 
@@ -115,11 +147,19 @@ namespace guipi {
 
         PlotPackage(string plotName, PlotItemType itemType);
 
+#if __cplusplus == 201703L
         PlotPackage(string_view plotName, PlotItemType itemType) : PlotPackage(string(plotName), itemType) {}
+#else
+        PlotPackage(const char *plotName, PlotItemType itemType) : PlotPackage(string(plotName), itemType) {}
+#endif
 
         PlotPackage(string name, PlotItemType itemType, const Vector2f& geoCoord);
 
+#if __cplusplus == 201703L
         PlotPackage(string_view name, PlotItemType itemType, const Vector2f& geoCoord)
+#else
+        PlotPackage(const char *name, PlotItemType itemType, const Vector2f& geoCoord)
+#endif
             : PlotPackage(string(name), itemType, geoCoord) {}
 
         PlotPackage &operator=(const PlotPackage &) = default;

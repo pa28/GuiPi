@@ -58,7 +58,11 @@ namespace guipi {
     class GuiPiApplication : public Screen {
     protected:
 
+#if __cplusplus == 201703L
         static constexpr std::string_view brightnessDevice = "/sys/class/backlight/rpi_backlight/brightness";
+#else
+#define brightnessDevice "/sys/class/backlight/rpi_backlight/brightness"
+#endif
         bool mHasBrightnessControl{true};
         bool mRunEventLoop{true};
         Vector2i mScreenSize;

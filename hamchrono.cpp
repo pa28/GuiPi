@@ -61,13 +61,23 @@ namespace guipi {
         template<typename T>
         constexpr T deg2rad(T deg) { return deg * M_PI / 180.; }
 
+#if __cplusplus == 201703L
         static constexpr string_view map_path = "maps/";
         static constexpr string_view image_path = "images/";
         static constexpr string_view background_path = "backgrounds/";
         static constexpr string_view day_map = "day_earth_660x330.png";
         static constexpr string_view night_map = "night_earth_660x330.png";
         static constexpr string_view backdrop = "NASA_Nebula.png";
+#else
+        const char *map_path = "maps/";
+        const char *image_path = "images/";
+        const char *background_path = "backgrounds/";
+        const char *day_map = "day_earth_660x330.png";
+        const char *night_map = "night_earth_660x330.png";
+        const char *backdrop = "NASA_Nebula.png";
+#endif
 
+#if __cplusplus == 201703L
         struct PlotPackageConfig {
             string_view name;
             PlotItemType itemType;
@@ -96,20 +106,51 @@ namespace guipi {
                 PlotPackageConfig{"ISS", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
                                   30, {255, 0, 0, 255}}
         };
+#else
+        struct PlotPackageConfig {
+            const char *name;
+            PlotItemType itemType;
+            int icon;
+            int size;
+            array<uint8_t, 4> color;
+        };
+
+        vector<guipi::HamChrono::PlotPackageConfig> mPlotPackageConfig{
+                PlotPackageConfig{"QTH", PlotItemType::GEO_LOCATION_QTH, ENTYPO_ICON_HAIR_CROSS,
+                                  50, {0, 255, 0, 255}},
+                PlotPackageConfig{"A_QTH", PlotItemType::GEO_LOCATION_ANTIPODE, ENTYPO_ICON_HAIR_CROSS,
+                                  50, {255, 0, 0, 255}},
+                PlotPackageConfig{"Moon", PlotItemType::CELESTIAL_BODY_MOON, ENTYPO_ICON_MOON,
+                                  50, {255, 255, 255, 255}},
+                PlotPackageConfig{"Sun", PlotItemType::CELESTIAL_BODY_SUN, ENTYPO_ICON_LIGHT_UP,
+                                  50, {255, 255, 0, 255}},
+                PlotPackageConfig{"NOAA_15", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
+                                  30, {0, 255, 0, 255}},
+                PlotPackageConfig{"NOAA_18", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
+                                  30, {255, 128, 128, 255}},
+                PlotPackageConfig{"NOAA_19", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
+                                  30, {255, 0, 255, 255}},
+                PlotPackageConfig{"NOAA_20", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
+                                  30, {128, 64, 255, 255}},
+                PlotPackageConfig{"ISS", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
+                                  30, {255, 0, 0, 255}}
+        };
+#endif
 
         static Vector2f antipode(const Vector2f &location) {
-            return Vector2f {(location.x < 0 ? 1.f : -1.f) * ((float)M_PI - abs(location.x)), -location.y};
+            return Vector2f{(location.x < 0 ? 1.f : -1.f) * ((float) M_PI - abs(location.x)), -location.y};
         }
 
         vector<PlotPackage> buildPlotPackage() {
             vector<PlotPackage> plotPackage;
 
-            ImageRepository::ImageStoreIndex idx{0,0};
-            for( auto & conf : mPlotPackageConfig) {
+            ImageRepository::ImageStoreIndex idx{0, 0};
+            for (auto &conf : mPlotPackageConfig) {
                 if (conf.icon) {
                     ImageData imageData{createIcon(conf.icon, conf.size,
-                               Color{get<0>(conf.color), get<1>(conf.color), get<2>(conf.color), get<3>(conf.color)})};
-                    mIconRepository->push_back(idx.first,move(imageData));
+                                                   Color{get<0>(conf.color), get<1>(conf.color), get<2>(conf.color),
+                                                         get<3>(conf.color)})};
+                    mIconRepository->push_back(idx.first, move(imageData));
                     PlotPackage plot;
                     switch (conf.itemType) {
                         case GEO_LOCATION_QTH:
@@ -139,8 +180,8 @@ namespace guipi {
         }
 
         HamChrono(SDL_Window *pwindow, int rwidth, int rheight)
-                : GuiPiApplication(pwindow, rwidth, rheight, "HamChrono")
-                , mTimer(*this, &HamChrono::timerCallback, 5000) {
+                : GuiPiApplication(pwindow, rwidth, rheight, "HamChrono"),
+                  mTimer(*this, &HamChrono::timerCallback, 5000) {
             mIconRepository = new ImageRepository{};
 
             qthLatLon = Vector2f(deg2rad(-77.), deg2rad(45.));
@@ -292,7 +333,7 @@ namespace guipi {
             layer->setLayout(new BoxLayout(Orientation::Vertical, Alignment::Minimum, 0, 0));
 
             // Use overloaded variadic add to fill the tab widget with Different tabs.
-            layer->add<Label>("Stations", "sans-bold")->withFixedWidth(sideBarSize.x-20);
+            layer->add<Label>("Stations", "sans-bold")->withFixedWidth(sideBarSize.x - 20);
 
             tab->setActiveTab(0);
         }
@@ -307,14 +348,29 @@ namespace guipi {
          * @return the new interval
          */
 
-        static constexpr array<string_view, 8> initialSatelliteList{ "ISS",
-                                                                     "NOAA_15",
-                                                                     "NOAA_18",
-                                                                     "NOAA_19",
-                                                                     "NOAA_20",
-                                                                     "AO-7",
-                                                                     "AO-27",
-                                                                     "AO-73" };
+#if __cplusplus == 201703L
+        static constexpr array<string_view, 8> initialSatelliteList{
+                "ISS",
+                "NOAA_15",
+                "NOAA_18",
+                "NOAA_19",
+                "NOAA_20",
+                "AO-7",
+                "AO-27",
+                "AO-73"
+        };
+#else
+        vector<char const *> initialSatelliteList{
+            "ISS",
+                    "NOAA_15",
+                    "NOAA_18",
+                    "NOAA_19",
+                    "NOAA_20",
+                    "AO-7",
+                    "AO-27",
+                    "AO-73"
+        };
+#endif
 
         Uint32 timerCallback(Uint32 interval) {
             if (mEphemerisThread.joinable()) {
@@ -332,7 +388,7 @@ namespace guipi {
 
             lock_guard<mutex> lockGuard(mEphemerisMutex);
 
-            for (auto & plotItem : mGeoChrono->getPlotPackage()) {
+            for (auto &plotItem : mGeoChrono->getPlotPackage()) {
                 if (plotItem.mPlotItemType == CELESTIAL_BODY_MOON || plotItem.mPlotItemType == EARTH_SATELLITE) {
                     plotItem.predict(mEphemeris);
                     plotItem.predictPass(mEphemeris, mObserver);
@@ -340,30 +396,31 @@ namespace guipi {
             }
 
             bool changed = false;
-            sort(mGeoChrono->getPlotPackage().begin(), mGeoChrono->getPlotPackage().end(), [&changed](PlotPackage &p0, PlotPackage &p1) {
-                auto r = p0.compareLt(p1);
-                changed |= r;
-                return r;
-            });
+            sort(mGeoChrono->getPlotPackage().begin(), mGeoChrono->getPlotPackage().end(),
+                 [&changed](PlotPackage &p0, PlotPackage &p1) {
+                     auto r = p0.compareLt(p1);
+                     changed |= r;
+                     return r;
+                 });
 
             if (changed) {
-                vector<pair<string,Earthsat>> passList;
-                for (auto & sat : initialSatelliteList) {
+                vector<pair<string, Earthsat>> passList;
+                for (auto &sat : initialSatelliteList) {
                     Earthsat earthsat{};
                     earthsat = mEphemeris.nextPass(string(sat), mObserver);
-                    passList.emplace_back(pair<string,Earthsat>{string(sat),earthsat});
+                    passList.emplace_back(pair<string, Earthsat>{string(sat), earthsat});
                 }
 
                 sort(passList.begin(), passList.end(), [](auto p0, auto p1) {
                     return p0.second.riseTime() < p1.second.riseTime();
                 });
 
-                for (auto & pass : passList) {
+                for (auto &pass : passList) {
                     std::cout << pass.first << ": " << pass.second.riseTime() << '\n';
                 }
 
                 auto pass = passList.begin();
-                for (auto & plotItem : mGeoChrono->getPlotPackage()) {
+                for (auto &plotItem : mGeoChrono->getPlotPackage()) {
                     if (pass == passList.end())
                         break;
                     if (plotItem.mPlotItemType == EARTH_SATELLITE) {
@@ -401,6 +458,13 @@ namespace guipi {
 using namespace guipi;
 
 int main(int /* argc */, char ** /* argv */) {
+#if __cplusplus == 201703L
+    std::cerr << "C++17\n";
+#elif __cplusplus == 201402L
+    std::cerr << "C++14\n";
+#else
+    std::cerr << "C++ unkonwn\n";
+#endif
     char rendername[256] = {0};
     SDL_RendererInfo info;
 
