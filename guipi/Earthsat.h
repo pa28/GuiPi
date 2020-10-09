@@ -30,6 +30,8 @@ namespace guipi {
         [[nodiscard]] auto riseAzimuth() const { return rise_az; }
 
         [[nodiscard]] auto setAzimuth() const { return set_az; }
+
+        void roundPassTimes();
     };
 
 }

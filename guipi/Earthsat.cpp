@@ -2,6 +2,7 @@
 // Created by richard on 2020-08-27.
 //
 
+#include <cmath>
 #include "Earthsat.h"
 
 namespace guipi {
@@ -98,5 +99,10 @@ namespace guipi {
             t_srch += dt;
             prevElevation = tel;
         }
+    }
+
+    void Earthsat::roundPassTimes() {
+        rise_time.TN = round(rise_time.TN * 86400.) / 86400.;
+        set_time.TN = round(set_time.TN * 86400.) / 86400.;
     }
 }
