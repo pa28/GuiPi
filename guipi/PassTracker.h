@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <thread>
 #include <sdlgui/common.h>
 #include <sdlgui/widget.h>
 #include <sdlgui/Image.h>
@@ -30,6 +31,7 @@
 
 namespace guipi {
     using namespace sdlgui;
+    using namespace std;
     /**
      * @class PassTracker
      * A helper Widget for GeoChrono that provides Azimuth-Elevation tracking for
@@ -38,6 +40,8 @@ namespace guipi {
     class PassTracker : public Widget {
     protected:
 
+        mutex mBackgroundMutex;
+        thread mBackgroundThread;
         ImageData mForeground;      //< The foreground image - items being tracked
         ImageData mBackground;      //< The background image - the Az-El grid
 
@@ -71,6 +75,7 @@ namespace guipi {
          */
         void draw(SDL_Renderer *renderer) override;
 
+        void drawBackground();
     };
 }
 

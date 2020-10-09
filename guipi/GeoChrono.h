@@ -14,6 +14,7 @@
 #include <sdlgui/widget.h>
 #include <sdlgui/TimeBox.h>
 #include <sdlgui/Image.h>
+#include <guipi/GfxPrimitives.h>
 
 
 #define USE_COMPILED_MAPS 0
@@ -47,34 +48,6 @@ namespace guipi {
         Timer<GeoChrono> mTimer;
 
     private:
-        struct SurfaceDeleter {
-            void operator()(SDL_Surface *surface) {
-                SDL_FreeSurface(surface);
-            }
-        };
-
-        struct Surface : public unique_ptr<SDL_Surface,SurfaceDeleter> {
-            auto &pixel(int x, int y) {
-                auto *pixels = (Uint32 *) get()->pixels;
-                return pixels[(y * get()->w) + x];
-            }
-        };
-
-        class SurfaceLock {
-        protected:
-            SDL_Surface *mSurface;
-
-        public:
-            ~SurfaceLock() {
-                SDL_UnlockSurface(mSurface);
-            }
-
-            SurfaceLock() = delete;
-            explicit SurfaceLock(SDL_Surface *surface) : mSurface(surface) {
-                SDL_LockSurface(mSurface);
-            }
-        };
-
         mutex mTransparentMutex;
         thread mTransparentThread;
         atomic<bool> mTransparentReady{false};

@@ -47,11 +47,12 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}
 
 INCLUDE(sdlgui/CMakeLists.txt)
 INCLUDE(guipi/CMakeLists.txt)
+INCLUDE(SDL_gfx/CMakeLists.txt)
 
 option(BUILD_EXAMPLE "Build example application" ON)
 if (BUILD_EXAMPLE)
 
-    add_executable(hamchrono ${GUIPI_SOURCES} ${SDLGUI_SOURCES} hamchrono.cpp)
+    add_executable(hamchrono ${GUIPI_SOURCES} ${SDLGUI_SOURCES} ${SDL_GFX_SOURCES} hamchrono.cpp)
     set_target_properties(
             hamchrono PROPERTIES
             VS_DEBUGGER_WORKING_DIRECTORY "${CMAKE_SOURCE_DIR}/build/debug")
