@@ -60,6 +60,21 @@ namespace guipi {
             }
         };
 
+        class SurfaceLock {
+        protected:
+            SDL_Surface *mSurface;
+
+        public:
+            ~SurfaceLock() {
+                SDL_UnlockSurface(mSurface);
+            }
+
+            SurfaceLock() = delete;
+            explicit SurfaceLock(SDL_Surface *surface) : mSurface(surface) {
+                SDL_LockSurface(mSurface);
+            }
+        };
+
         mutex mTransparentMutex;
         thread mTransparentThread;
         atomic<bool> mTransparentReady{false};

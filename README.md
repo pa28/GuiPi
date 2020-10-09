@@ -160,6 +160,9 @@ my early workplaces this form of time display graphically conveys a wealth of
 information important to communicators. This version is modeled closely on the
 implementation in [HamClock](https://www.clearskyinstitute.com/ham/HamClock/).
 
+1. **PassTracker** A helper Widget for GeoChrono which displays the Azimuth-Elevation
+of objects being tracked.
+
 # Dependencies
 
 ## Libraries
@@ -187,6 +190,9 @@ Unfortunately I found the following:
     the repository and begin taking it in the direction I need. My port of NanoGUI-SDL
     is included in the project.
     1. Install on Debian derivatives: `sudo apt install libsdl2-dev libsdl2-ttf-def libsdl2-image-dev`
+    
+1. [SDL2_gfx](https://www.ferzkopp.net/Software/SDL2_gfx/Docs/html/index.html) a graphics
+primitive library that adds additional drawing capability to SDL2. Under consideration.
 
 1. [GNU CGICC](https://www.gnu.org/software/cgicc/doc/index.html)
 a [Common Gateway Interface](https://en.wikipedia.org/wiki/Common_Gateway_Interface)
