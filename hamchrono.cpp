@@ -184,8 +184,8 @@ namespace guipi {
                   mTimer(*this, &HamChrono::timerCallback, 5000) {
             mIconRepository = new ImageRepository{};
 
-            qthLatLon = Vector2f(deg2rad(-77.), deg2rad(45.));
-            mObserver = Observer{45., -77., 126.};
+            qthLatLon = Vector2f(deg2rad(-76.0123), deg2rad(44.9016));
+            mObserver = Observer{44.9016, -76.0123, 0.};
 
             Vector2i mapAreaSize(660, 330);
             Vector2i topAreaSize(mScreenSize.x, mScreenSize.y - mapAreaSize.y);
