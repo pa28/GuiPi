@@ -36,7 +36,7 @@ namespace guipi {
 
         Vector2f qthLatLon;
         Vector2i mScreenSize{800, 480};
-        Observer mObserver;
+        Observer mObserver{};
 
         bool mHasBrightnessControl{true};
         bool mRunEventLoop{true};
@@ -392,6 +392,7 @@ namespace guipi {
                 if (plotItem.mPlotItemType == CELESTIAL_BODY_MOON || plotItem.mPlotItemType == EARTH_SATELLITE) {
                     plotItem.predict(mEphemeris);
                     plotItem.predictPass(mEphemeris, mObserver);
+                    plotItem.mEarthsat.roundPassTimes();
                 }
             }
 
