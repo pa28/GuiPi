@@ -177,7 +177,6 @@ namespace sdlgui {
 
     void ImageRepeater::repeateFromRepository(const ref<ImageDisplay>& imageDisplay, ref<ImageRepository> imageRepository,
                                               ImageRepository::ImageStoreIndex imageStoreIndex) {
-        std::cerr << __PRETTY_FUNCTION__ << '\n';
         auto name = imageRepository->imageName(imageStoreIndex);
         auto idx = name.find_last_of('.');
         mImageDisplay->mImageRepository = std::move(imageRepository);
