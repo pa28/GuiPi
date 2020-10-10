@@ -50,7 +50,6 @@ namespace sdlgui {
 
     Uint32 TimeBoxCallbackStub(Uint32 interval, void *param) {
         interval = static_cast<TimeBox *>(param)->timerCallback(interval);
-        std::cout << "New timer interval " << interval << '\n';
         return interval;
     }
 
