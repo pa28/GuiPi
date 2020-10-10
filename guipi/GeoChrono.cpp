@@ -614,6 +614,7 @@ namespace guipi {
     GeoChrono::GeoChrono(Widget *parent) : Widget(parent), mTimer(*this, &GeoChrono::timerCallback, 120000),
                                            mDayMap{}, mNightMap{}, mTransparentMap{},
                                            mStationLocation{0} {
-        add<PassTracker>(Vector2i(330,0), Vector2i(330,330));
+        mPassTracker = add<PassTracker>(Vector2i(330,0), Vector2i(330,330));
+        mPassTracker->setVisible(false);
     }
 }
