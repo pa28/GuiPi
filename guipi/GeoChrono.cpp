@@ -416,38 +416,6 @@ namespace guipi {
         return result;
     }
 
-//    void GeoChrono::renderMapIcon(SDL_Renderer *renderer, const Vector2i &mapLocation, PlotPackage &plotItem) const {
-//        if (plotItem.getMapCoord().x < plotItem.iconWidth() / 2) {
-//            auto split = plotItem.iconWidth() / 2 - plotItem.getMapCoord().x;
-//            SDL_Rect src{split, 0, plotItem.iconWidth() - split, plotItem.iconHeight()};
-//            SDL_Rect dst{mapLocation.x, mapLocation.y + plotItem.getMapCoord().y - plotItem.iconHeight() / 2,
-//                         plotItem.iconWidth() - split, plotItem.iconHeight()};
-//            SDL_RenderCopy(renderer, plotItem.texture(), &src, &dst);
-//            src = SDL_Rect{0, 0, split, plotItem.iconHeight()};
-//            dst = SDL_Rect{mapLocation.x + mForeground.w - split,
-//                           mapLocation.y + plotItem.getMapCoord().y - plotItem.iconHeight() / 2,
-//                           plotItem.iconWidth() - split, plotItem.iconHeight()};
-//            SDL_RenderCopy(renderer, plotItem.texture(), &src, &dst);
-//        } else if (plotItem.getMapCoord().x > mForeground.w - plotItem.iconWidth() / 2) {
-//            auto split = plotItem.iconWidth() + (mForeground.w - plotItem.iconWidth() / 2) - plotItem.getMapCoord().x;
-//            SDL_Rect src{split, 0, plotItem.iconWidth() - split, plotItem.iconHeight()};
-//            SDL_Rect dst{mapLocation.x, mapLocation.y + plotItem.getMapCoord().y - plotItem.iconHeight() / 2,
-//                         plotItem.iconWidth() - split, plotItem.iconHeight()};
-//            SDL_RenderCopy(renderer, plotItem.texture(), &src, &dst);
-//            src = SDL_Rect{0, 0, split, plotItem.iconHeight()};
-//            dst = SDL_Rect{mapLocation.x + mForeground.w - split,
-//                           mapLocation.y + plotItem.getMapCoord().y - plotItem.iconHeight() / 2, split,
-//                           plotItem.iconHeight()};
-//            SDL_RenderCopy(renderer, plotItem.texture(), &src, &dst);
-//        } else {
-//            SDL_Rect src{0, 0, plotItem.iconWidth(), plotItem.iconHeight()};
-//            SDL_Rect dst{mapLocation.x + plotItem.getMapCoord().x - plotItem.iconWidth() / 2,
-//                         mapLocation.y + plotItem.getMapCoord().y - plotItem.iconHeight() / 2, plotItem.iconWidth(),
-//                         plotItem.iconHeight()};
-//            SDL_RenderCopy(renderer, plotItem.texture(), &src, &dst);
-//        }
-//    }
-
     ImageData GeoChrono::createMapIcon(SDL_Renderer *renderer, int iconCode, int iconSize, const Color &iconColor) {
         auto icon = utf8(iconCode);
         Texture texture;
