@@ -233,8 +233,9 @@ namespace guipi {
             // desired display state. Periodically for the sun illumination foot print.
             // Spawn up a thread to get things back in sync in the background.
             if (mTextureDirty) {
+                mTransparentReady = false;
                 mTransparentThread = thread([this, renderer]() {
-                    lock_guard<mutex> lockGuard(mTransparentMutex);
+//                    lock_guard<mutex> lockGuard(mTransparentMutex);
                     transparentForeground();
                     mTextureDirty = false;
                 });
@@ -244,7 +245,7 @@ namespace guipi {
 
             // If they are ready, replace the old ones.
             if (mTransparentReady) {
-                lock_guard<mutex> lockGuard(mTransparentMutex);
+//                lock_guard<mutex> lockGuard(mTransparentMutex);
 
                 mForegroundAz.set(SDL_CreateTextureFromSurface(renderer, mTransparentMapAz.get()));
                 mForegroundAz.h = mTransparentMapAz->h;
@@ -255,14 +256,13 @@ namespace guipi {
                 mForeground.h = mTransparentMap->h;
                 mForeground.w = mTransparentMap->w;
                 mForeground.name = "*autogen*";
-                mTransparentReady = false;
 
                 mTransparentReady = false;
             }
 
             // Display the map with solar illumination by stacking the day map (transparent where it is dark)
             // on top of the night map.
-            if (mAzimuthalDisplay) {
+            if (mAzimuthalDisplay || mPassTracker->visible()) {
                 SDL_BlendMode mode;
                 SDL_GetTextureBlendMode(mForegroundAz.get(), &mode);
                 SDL_SetTextureBlendMode(mForegroundAz.get(), SDL_BLENDMODE_BLEND);
