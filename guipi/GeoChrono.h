@@ -66,6 +66,7 @@ namespace guipi {
         Surface mBackdropImage;
         bool mBackdropDirty{};
         bool mAzimuthalDisplay{false};
+        bool mAzimuthalEffective{false};
         bool mSunMoonDisplay{false};
         bool mSatelliteDisplay{false};
         bool mTextureDirty{true};   //< True when the image needs to be re-drawn
@@ -106,6 +107,14 @@ namespace guipi {
 
         vector<PlotPackage> mPlotPackage{};
         ref<PassTracker> mPassTracker;
+
+        void setAzimuthalEffective() {
+            bool ae = mAzimuthalDisplay | mPassTracker->visible();
+            if (mAzimuthalEffective != ae) {
+                invalidateMapCoordinates();
+                mAzimuthalEffective = ae;
+            }
+        }
 
     public:
         /**
@@ -212,7 +221,7 @@ namespace guipi {
 
         void setAzmuthalDisplay(bool azmuthal) {
             mAzimuthalDisplay = azmuthal;
-            invalidateMapCoordinates();
+            setAzimuthalEffective();
         }
 
         void invalidateMapCoordinates() {

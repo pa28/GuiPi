@@ -164,7 +164,8 @@ namespace guipi {
 
     Vector2i
     GeoChrono::latLongToMap(float lat, float lon) {
-        if (mAzimuthalDisplay || mPassTracker->visible()) {
+        setAzimuthalEffective();
+        if (mAzimuthalEffective) {
             float ca, B;
             solveSphere(lon - mStationLocation.x, M_PI_2 - lat, sin(mStationLocation.y),
                         cos(mStationLocation.y), ca, B);
@@ -262,7 +263,8 @@ namespace guipi {
 
             // Display the map with solar illumination by stacking the day map (transparent where it is dark)
             // on top of the night map.
-            if (mAzimuthalDisplay || mPassTracker->visible()) {
+            setAzimuthalEffective();
+            if (mAzimuthalEffective) {
                 SDL_BlendMode mode;
                 SDL_GetTextureBlendMode(mForegroundAz.get(), &mode);
                 SDL_SetTextureBlendMode(mForegroundAz.get(), SDL_BLENDMODE_BLEND);
