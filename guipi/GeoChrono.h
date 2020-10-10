@@ -15,6 +15,7 @@
 #include <sdlgui/TimeBox.h>
 #include <sdlgui/Image.h>
 #include <guipi/GfxPrimitives.h>
+#include <guipi/PassTracker.h>
 
 
 #define USE_COMPILED_MAPS 0
@@ -76,6 +77,7 @@ namespace guipi {
         Vector2i mMotionEnd{};      //< The ending point of the motion;
 
         Vector2f mStationLocation;  //< The longitude x, latitude y (in radians, West/South negative) of the station.
+        Observer mObserver;
 
         std::function<void(GeoChrono &, EventType)> mCallback;
 
@@ -103,6 +105,7 @@ namespace guipi {
         PlotPackage mSun;
 
         vector<PlotPackage> mPlotPackage{};
+        ref<PassTracker> mPassTracker;
 
     public:
         /**
@@ -172,6 +175,13 @@ namespace guipi {
             return ref<GeoChrono>{this};
         }
 
+        ref<GeoChrono> withObserver(const Observer observer) {
+            mObserver = observer;
+            if (mPassTracker)
+                mPassTracker->withObserver(observer);
+            return ref<GeoChrono>{this};
+        }
+
         /**
          * Get the currently set callback function.
          * @return the callback function.
@@ -202,8 +212,12 @@ namespace guipi {
 
         void setAzmuthalDisplay(bool azmuthal) {
             mAzimuthalDisplay = azmuthal;
-            for (auto plotItem = mPlotPackage.begin(); plotItem != mPlotPackage.end(); ++plotItem ) {
-                plotItem->mMapCoordValid = false;
+            invalidateMapCoordinates();
+        }
+
+        void invalidateMapCoordinates() {
+            for (auto & plotItem : mPlotPackage) {
+                plotItem.mMapCoordValid = false;
             }
         }
 
@@ -217,7 +231,14 @@ namespace guipi {
 
         ref<GeoChrono> withSunMoonDisplay(bool sunMoon) { setSunMoonDisplay(sunMoon); return ref<GeoChrono>{this}; }
 
-        void setSatelliteDisplay(bool satellite) { mSatelliteDisplay = satellite; }
+        void setSatelliteDisplay(bool satellite) {
+            mSatelliteDisplay = satellite;
+            if (satellite) {
+                if (!mPassTracker->empty())
+                    mPassTracker->setVisible(satellite);
+            } else
+                mPassTracker->setVisible(satellite);
+        }
 
         bool satelliteDisplay() const { return mSatelliteDisplay; }
 
@@ -229,6 +250,11 @@ namespace guipi {
 
         ref<GeoChrono> withPlotPackage(vector<PlotPackage> plotPackage) {
             mPlotPackage = move(plotPackage);
+            return ref<GeoChrono>{this};
+        }
+
+        ref<GeoChrono> withImageRepository(ref<ImageRepository> imageRepository) {
+            mPassTracker->withImageRepository(imageRepository);
             return ref<GeoChrono>{this};
         }
 
@@ -261,6 +287,8 @@ namespace guipi {
          * @return a tuple with x and y co-ordinate.
          */
         Vector2i latLongToMap(float lat, float lon);
+
+        auto passTracker() { return mPassTracker; }
 
         vector <pair<SDL_Rect, SDL_Rect>>
         renderMapIconRect(const Vector2i &mapLocation, const Vector2i &geoCoord, const Vector2i &iconsSize);
