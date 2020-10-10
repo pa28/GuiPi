@@ -439,10 +439,10 @@ namespace guipi {
                     return p0.second.riseTime() < p1.second.riseTime();
                 });
 
-                // Debugging display
-                for (auto &pass : passList) {
-                    std::cout << pass.first << ": " << pass.second.riseTime() << '\n';
-                }
+//                // Debugging display
+//                for (auto &pass : passList) {
+//                    std::cout << pass.first << ": " << pass.second.riseTime() << '\n';
+//                }
 
                 // Move the new list into the GeoChrono and predict the current location.
                 auto pass = passList.begin();
@@ -458,18 +458,18 @@ namespace guipi {
                 }
 
                 // Debugging output.
-                std::cout << "Changed\n";
-
-                for (auto &plotItem : mGeoChrono->getPlotPackage()) {
-                    std::cout << plotItem.mName << '\n';
-                    if (plotItem.mEarthsat.passFound()) {
-                        std::cout << "Rise: " << plotItem.mEarthsat.riseTime() << " @ "
-                                  << plotItem.mEarthsat.riseAzimuth() << '\n'
-                                  << "Set:  " << plotItem.mEarthsat.setTime() << " @ "
-                                  << plotItem.mEarthsat.setAzimuth() << "\n\n";
-                    } else
-                        std::cout << "No pass\n\n";
-                }
+//                std::cout << "Changed\n";
+//
+//                for (auto &plotItem : mGeoChrono->getPlotPackage()) {
+//                    std::cout << plotItem.mName << '\n';
+//                    if (plotItem.mEarthsat.passFound()) {
+//                        std::cout << "Rise: " << plotItem.mEarthsat.riseTime() << " @ "
+//                                  << plotItem.mEarthsat.riseAzimuth() << '\n'
+//                                  << "Set:  " << plotItem.mEarthsat.setTime() << " @ "
+//                                  << plotItem.mEarthsat.setAzimuth() << "\n\n";
+//                    } else
+//                        std::cout << "No pass\n\n";
+//                }
             }
 
             // Update the satellite display

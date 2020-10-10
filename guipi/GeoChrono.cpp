@@ -236,7 +236,7 @@ namespace guipi {
             if (mTextureDirty) {
                 mTransparentReady = false;
                 mTransparentThread = thread([this, renderer]() {
-//                    lock_guard<mutex> lockGuard(mTransparentMutex);
+                    lock_guard<mutex> lockGuard(mTransparentMutex);
                     transparentForeground();
                     mTextureDirty = false;
                 });
@@ -246,7 +246,7 @@ namespace guipi {
 
             // If they are ready, replace the old ones.
             if (mTransparentReady) {
-//                lock_guard<mutex> lockGuard(mTransparentMutex);
+                lock_guard<mutex> lockGuard(mTransparentMutex);
 
                 mForegroundAz.set(SDL_CreateTextureFromSurface(renderer, mTransparentMapAz.get()));
                 mForegroundAz.h = mTransparentMapAz->h;
@@ -615,7 +615,7 @@ namespace guipi {
         mTransparentReady = true;
     }
 
-    GeoChrono::GeoChrono(Widget *parent) : Widget(parent), mTimer(*this, &GeoChrono::timerCallback, 120000),
+    GeoChrono::GeoChrono(Widget *parent) : Widget(parent), mTimer(*this, &GeoChrono::timerCallback, 60000),
                                            mDayMap{}, mNightMap{}, mTransparentMap{},
                                            mStationLocation{0} {
         mPassTracker = add<PassTracker>(Vector2i(330,0), Vector2i(330,330));
