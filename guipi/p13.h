@@ -290,6 +290,10 @@ public:
      */
     Observer(double const &latitude, double const &longitude, double const &elevation);
 
+    Observer(const Observer &observer) = default;
+
+    Observer &operator=(const Observer &observer) = default;
+
     ~Observer() = default;
 };
 
