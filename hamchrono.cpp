@@ -176,12 +176,13 @@ namespace guipi {
                 }
             }
 
+            mGeoChrono->withImageRepository(mIconRepository);
             return move(plotPackage);
         }
 
         HamChrono(SDL_Window *pwindow, int rwidth, int rheight)
                 : GuiPiApplication(pwindow, rwidth, rheight, "HamChrono"),
-                  mTimer(*this, &HamChrono::timerCallback, 5000) {
+                  mTimer(*this, &HamChrono::timerCallback, 60000) {
             mIconRepository = new ImageRepository{};
 
             qthLatLon = Vector2f(deg2rad(-76.0123), deg2rad(44.9016));
@@ -258,6 +259,7 @@ namespace guipi {
                     ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 0, 0);
 
             mGeoChrono = mapArea->add<GeoChrono>()
+                    ->withObserver(mObserver)
                     ->withStationCoordinates(qthLatLon)
                     ->withBackgroundFile(string(map_path) + string(night_map))
                     ->withForegroundFile(string(map_path) + string(day_map))
@@ -392,15 +394,28 @@ namespace guipi {
 
             lock_guard<mutex> lockGuard(mEphemerisMutex);
 
+            // Predict location and next pass for each currently predicted satellite.
+            DateTime now;
+            bool changed = false;
+            now.userNow();
             for (auto &plotItem : mGeoChrono->getPlotPackage()) {
-                if (plotItem.mPlotItemType == CELESTIAL_BODY_MOON || plotItem.mPlotItemType == EARTH_SATELLITE) {
+                if (plotItem.mName.empty()) {
+                    changed = true;
+                } else if (plotItem.mPlotItemType == EARTH_SATELLITE && !plotItem.mName.empty()) {
                     plotItem.predict(mEphemeris);
                     plotItem.predictPass(mEphemeris, mObserver);
                     plotItem.mEarthsat.roundPassTimes();
+
+                    // If the predicted rise time is less than two minutes away
+                    if (auto timeToRise = (plotItem.mEarthsat.riseTime() - now) * 86400.; timeToRise < 120) {
+                        auto satellite = mEphemeris.satellite(plotItem.mName);
+                        if (satellite)
+                            mGeoChrono->passTracker()->addSatellite(satellite.value());
+                    }
                 }
             }
 
-            bool changed = false;
+            // Sort in order of increasing rise time, and look for changes in order.
             sort(mGeoChrono->getPlotPackage().begin(), mGeoChrono->getPlotPackage().end(),
                  [&changed](PlotPackage &p0, PlotPackage &p1) {
                      auto r = p0.compareLt(p1);
@@ -408,7 +423,10 @@ namespace guipi {
                      return r;
                  });
 
+            // If the order has changed it means that the list should be refreshed.
             if (changed) {
+                // Get ephemeris for the list of satellites the user wants tracked,
+                // and predict the next pass.
                 vector<pair<string, Earthsat>> passList;
                 for (auto &sat : initialSatelliteList) {
                     Earthsat earthsat{};
@@ -416,14 +434,17 @@ namespace guipi {
                     passList.emplace_back(pair<string, Earthsat>{string(sat), earthsat});
                 }
 
+                // Sort the list by rise time.
                 sort(passList.begin(), passList.end(), [](auto p0, auto p1) {
                     return p0.second.riseTime() < p1.second.riseTime();
                 });
 
+                // Debugging display
                 for (auto &pass : passList) {
                     std::cout << pass.first << ": " << pass.second.riseTime() << '\n';
                 }
 
+                // Move the new list into the GeoChrono and predict the current location.
                 auto pass = passList.begin();
                 for (auto &plotItem : mGeoChrono->getPlotPackage()) {
                     if (pass == passList.end())
@@ -436,6 +457,7 @@ namespace guipi {
                     }
                 }
 
+                // Debugging output.
                 std::cout << "Changed\n";
 
                 for (auto &plotItem : mGeoChrono->getPlotPackage()) {
@@ -450,14 +472,12 @@ namespace guipi {
                 }
             }
 
+            // Update the satellite display
             if (changed && mSatelliteDataDisplay)
                 mSatelliteDataDisplay->updateSatelliteData();
             return interval;
         }
-
-    private:
     };
-
 }
 
 using namespace guipi;
