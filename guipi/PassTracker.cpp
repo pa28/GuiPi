@@ -39,15 +39,12 @@ void guipi::PassTracker::draw(SDL_Renderer *renderer) {
 
         SDL_Rect src{0, 0, mSize.x, mSize.y};
         SDL_Rect dst{ ax, ay, mSize.x, mSize.y};
+        dst = clip_rects(dst,clipRect);
+
         if (mBackground) {
             SDL_RenderCopy(renderer, mBackground.get(), &src, &dst);
-            SDL_RenderPresent(renderer);
         } else {
-//            mBackgroundThread = thread([this, renderer, ax, ay]() {
-//                lock_guard<mutex> lockGuard(mBackgroundMutex);
-//                drawBackground(renderer, ax, ay);
-//            });
-                drawBackground(renderer, ax, ay);
+            drawBackground(renderer, ax, ay);
         }
     }
 }
