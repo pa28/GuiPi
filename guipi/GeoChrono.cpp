@@ -164,7 +164,7 @@ namespace guipi {
 
     Vector2i
     GeoChrono::latLongToMap(float lat, float lon) {
-        if (mAzimuthalDisplay) {
+        if (mAzimuthalDisplay || mPassTracker->visible()) {
             float ca, B;
             solveSphere(lon - mStationLocation.x, M_PI_2 - lat, sin(mStationLocation.y),
                         cos(mStationLocation.y), ca, B);
@@ -294,6 +294,8 @@ namespace guipi {
             }
 
             if (mForeground) {
+                auto passTrackerVisible = mPassTracker->visible();
+
                 for (auto &plotItem : mPlotPackage) {
                     switch (plotItem.mPlotItemType) {
                         case CELESTIAL_BODY:
