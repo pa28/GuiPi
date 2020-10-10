@@ -75,7 +75,7 @@ namespace guipi {
          */
         void draw(SDL_Renderer *renderer) override;
 
-        void drawBackground();
+        void drawBackground(SDL_Renderer *renderer, int ax, int ay);
     };
 }
 

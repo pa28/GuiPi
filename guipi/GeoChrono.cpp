@@ -14,6 +14,7 @@
 #include <sdlgui/entypo.h>
 #include <sdlgui/screen.h>
 #include <sdlgui/Image.h>
+#include <guipi/PassTracker.h>
 #include "GeoChrono.h"
 
 #include "sdlgui/nanovg.h"
@@ -644,5 +645,7 @@ namespace guipi {
 
     GeoChrono::GeoChrono(Widget *parent) : Widget(parent), mTimer(*this, &GeoChrono::timerCallback, 60000),
                                            mDayMap{}, mNightMap{}, mTransparentMap{},
-                                           mStationLocation{0} {}
+                                           mStationLocation{0} {
+        add<PassTracker>(Vector2i(330,0), Vector2i(330,330));
+    }
 }
