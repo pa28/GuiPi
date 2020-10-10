@@ -47,20 +47,27 @@ namespace guipi {
 
         Observer mObserver{};       //< Location of the observer
 
-        vector<PlotPackage> mPlotPackage{};     //< A list of items being tracked
+        Timer<PassTracker> mTimer;
+
+        struct PassPlot {
+            string name;
+            int x;
+            int y;
+            double elevation;
+            double azimuth;
+            bool passStarted;
+            Satellite satellite;
+        };
+
+        map<string,PassPlot> mPassPlotMap;
+        ref<ImageRepository> mImageRepository;
 
     public:
 
         ~PassTracker() override = default;
         PassTracker() = delete;
-        explicit PassTracker(Widget *parent) : Widget(parent) {}
+        explicit PassTracker(Widget *parent);
         PassTracker(Widget *parent, const Vector2i &position, const Vector2i &fixedSize);
-
-        void trackObject(const PlotPackage &plotPackage) { mPlotPackage.push_back(plotPackage); }
-
-        void setObserver(const Observer &observer) { mObserver = observer; }
-        sdlgui::ref<PassTracker> withObserver(const Observer &observer) { setObserver(observer); return sdlgui::ref{this}; }
-        Observer observer() const { return mObserver; }
 
         /**
          * The timer callback
@@ -68,6 +75,20 @@ namespace guipi {
          * @return the new interval
          */
         Uint32 timerCallback(Uint32 interval);
+
+        void setObserver(const Observer &observer) { mObserver = observer; }
+        sdlgui::ref<PassTracker> withObserver(const Observer &observer) { setObserver(observer); return sdlgui::ref{this}; }
+        Observer observer() const { return mObserver; }
+
+        void setImageRepository(ref<ImageRepository> imageRepository) { mImageRepository = imageRepository; }
+        sdlgui::ref<PassTracker> withImageRepository(ref<ImageRepository> imageRepository ) {
+            setImageRepository(imageRepository);
+            return ref<PassTracker>{this};
+        }
+
+        void addSatellite(Satellite &satellite);
+
+        bool empty() const { return mPassPlotMap.empty(); }
 
         /**
          * Override the Widget draw method.

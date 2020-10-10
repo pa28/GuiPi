@@ -4,19 +4,49 @@
 
 #include <sdlgui/Image.h>
 #include <guipi/GfxPrimitives.h>
+#include <guipi/GeoChrono.h>
 #include "PassTracker.h"
 
 guipi::PassTracker::PassTracker(sdlgui::Widget *parent, const sdlgui::Vector2i &position,
-                                const sdlgui::Vector2i &fixedSize) : Widget(parent){
+                                const sdlgui::Vector2i &fixedSize) : Widget(parent),
+                                mTimer(*this, &PassTracker::timerCallback, 2000){
     setPosition(position);
     setFixedSize(fixedSize);
 }
 
+
+guipi::PassTracker::PassTracker(sdlgui::Widget *parent) : Widget(parent),
+        mTimer(*this, &PassTracker::timerCallback, 2000) {
+
+}
+
+
 Uint32 guipi::PassTracker::timerCallback(Uint32 interval) {
-    if (visible()) {
-        for (auto &plot : mPlotPackage) {
-            // Compute Azimuth-Elevation.
+    DateTime now{true};
+    for (auto & plot : mPassPlotMap) {
+        plot.second.satellite.predict(now);
+        auto [elevation, azimuth, range, rangeRate] = plot.second.satellite.topo(mObserver);
+        plot.second.elevation = elevation;
+        plot.second.azimuth = azimuth;
+        if (!plot.second.passStarted && elevation > 0.)
+            plot.second.passStarted = true;
+        auto az = RADIANS(plot.second.azimuth);
+        auto el = RADIANS(plot.second.elevation);
+        auto r = (M_PI_2 - el) / M_PI_2 * 150.;
+        plot.second.x = roundToInt(r * sin(az)) + 165;
+        plot.second.y = roundToInt( -r * cos(az)) + 165;
+    }
+
+    for (auto & pass : mPassPlotMap) {
+        if (pass.second.passStarted && pass.second.elevation < 0.) {
+            mPassPlotMap.erase(pass.first);
+            break;
         }
+    }
+
+    if (mPassPlotMap.empty()) {
+        dynamic_cast<GeoChrono*>(parent())->invalidateMapCoordinates();
+        setVisible(false);
     }
 
     return interval;
@@ -41,8 +71,15 @@ void guipi::PassTracker::draw(SDL_Renderer *renderer) {
         SDL_Rect dst{ ax, ay, mSize.x, mSize.y};
         dst = clip_rects(dst,clipRect);
 
+        ImageRepository::ImageStoreIndex imageStoreIndex{0, 0};
         if (mBackground) {
             SDL_RenderCopy(renderer, mBackground.get(), &src, &dst);
+            for (auto & plot : mPassPlotMap) {
+                auto iconSize = mImageRepository->imageSize(imageStoreIndex);
+                SDL_Rect iconSrc{0, 0, iconSize.x, iconSize.y};
+                SDL_Rect iconDst{ ax + plot.second.x - iconSize.x/2, ay + plot.second.y - iconSize.y/2, iconSize.x, iconSize.y };
+                mImageRepository->renderCopy(renderer, imageStoreIndex, iconSrc, iconDst);
+            }
         } else {
             drawBackground(renderer, ax, ay);
         }
@@ -67,4 +104,16 @@ void guipi::PassTracker::drawBackground(SDL_Renderer *renderer, int ax, int ay) 
     SDL_RenderPresent(renderer);
     SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
     mBackground.set(texture);
+}
+
+void guipi::PassTracker::addSatellite(Satellite &satellite) {
+    bool found = false;
+    string name = std::string(satellite.getName());
+    mPassPlotMap[name] = PassPlot{name, 0, 0, 0, 0, false, satellite};
+
+    auto tracking = dynamic_cast<GeoChrono*>(parent())->satelliteDisplay();
+    if (tracking && !mPassPlotMap.empty()) {
+        setVisible(true);
+        dynamic_cast<GeoChrono*>(parent())->invalidateMapCoordinates();
+    }
 }
