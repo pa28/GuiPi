@@ -19,7 +19,7 @@ namespace guipi {
     \returns Returns 0 on success, -1 on failure.
     */
     int pixel(SDL_Renderer *renderer, Sint16 x, Sint16 y) {
-            return SDL_RenderDrawPoint(renderer, x, y);
+        return SDL_RenderDrawPoint(renderer, x, y);
     }
 
     /*!
@@ -36,8 +36,7 @@ namespace guipi {
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int pixelRGBAWeight(SDL_Renderer *renderer, Sint16 x, Sint16 y, Uint8 r, Uint8 g, Uint8 b, Uint8 a, Uint32 weight)
-    {
+    int pixelRGBAWeight(SDL_Renderer *renderer, Sint16 x, Sint16 y, Uint8 r, Uint8 g, Uint8 b, Uint8 a, Uint32 weight) {
         /*
         * Modify Alpha by weight
         */
@@ -46,7 +45,7 @@ namespace guipi {
         if (ax > 255) {
             a = 255;
         } else {
-            a = (Uint8)(ax & 0x000000ff);
+            a = (Uint8) (ax & 0x000000ff);
         }
 
         return pixelRGBA(renderer, x, y, r, g, b, a);
@@ -80,12 +79,11 @@ namespace guipi {
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int pixelRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+    int pixelRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
         int result = 0;
-            result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
-            result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
-            result |= SDL_RenderDrawPoint(renderer, x, y);
+        result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
+        result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
+        result |= SDL_RenderDrawPoint(renderer, x, y);
 
         return result;
     }
@@ -102,8 +100,7 @@ namespace guipi {
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int hline(SDL_Renderer *renderer, Sint16 x1, Sint16 x2, Sint16 y)
-    {
+    int hline(SDL_Renderer *renderer, Sint16 x1, Sint16 x2, Sint16 y) {
         return SDL_RenderDrawLine(renderer, x1, y, x2, y);;
     }
 
@@ -119,9 +116,8 @@ namespace guipi {
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int hlineColor(SDL_Renderer *renderer, Sint16 x1, Sint16 x2, Sint16 y, Uint32 color)
-    {
-        Uint8 *c = (Uint8 *)&color;
+    int hlineColor(SDL_Renderer *renderer, Sint16 x1, Sint16 x2, Sint16 y, Uint32 color) {
+        Uint8 *c = (Uint8 *) &color;
         return hlineRGBA(renderer, x1, x2, y, c[0], c[1], c[2], c[3]);
     }
 
@@ -139,12 +135,11 @@ namespace guipi {
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int hlineRGBA(SDL_Renderer *renderer, Sint16 x1, Sint16 x2, Sint16 y, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+    int hlineRGBA(SDL_Renderer *renderer, Sint16 x1, Sint16 x2, Sint16 y, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
         int result = 0;
-            result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
-            result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
-            result |= SDL_RenderDrawLine(renderer, x1, y, x2, y);
+        result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
+        result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
+        result |= SDL_RenderDrawLine(renderer, x1, y, x2, y);
         return result;
     }
 
@@ -160,9 +155,8 @@ namespace guipi {
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int vline(SDL_Renderer *renderer, Sint16 x, Sint16 y1, Sint16 y2)
-    {
-            return SDL_RenderDrawLine(renderer, x, y1, x, y2);;
+    int vline(SDL_Renderer *renderer, Sint16 x, Sint16 y1, Sint16 y2) {
+        return SDL_RenderDrawLine(renderer, x, y1, x, y2);;
     }
 
     /*!
@@ -176,9 +170,8 @@ namespace guipi {
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int vlineColor(SDL_Renderer *renderer, Sint16 x, Sint16 y1, Sint16 y2, Uint32 color)
-    {
-        Uint8 *c = (Uint8 *)&color;
+    int vlineColor(SDL_Renderer *renderer, Sint16 x, Sint16 y1, Sint16 y2, Uint32 color) {
+        Uint8 *c = (Uint8 *) &color;
         return vlineRGBA(renderer, x, y1, y2, c[0], c[1], c[2], c[3]);
     }
 
@@ -196,12 +189,11 @@ namespace guipi {
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int vlineRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y1, Sint16 y2, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+    int vlineRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y1, Sint16 y2, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
         int result = 0;
-            result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
-            result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
-            result |= SDL_RenderDrawLine(renderer, x, y1, x, y2);
+        result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
+        result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
+        result |= SDL_RenderDrawLine(renderer, x, y1, x, y2);
         return result;
     }
 
@@ -219,9 +211,8 @@ namespace guipi {
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int rectangleColor(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint32 color)
-    {
-        Uint8 *c = (Uint8 *)&color;
+    int rectangleColor(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint32 color) {
+        Uint8 *c = (Uint8 *) &color;
         return rectangleRGBA(renderer, x1, y1, x2, y2, c[0], c[1], c[2], c[3]);
     }
 
@@ -240,8 +231,8 @@ namespace guipi {
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int rectangleRGBA(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+    int rectangleRGBA(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint8 r, Uint8 g, Uint8 b,
+                      Uint8 a) {
         int result;
         Sint16 tmp;
         SDL_Rect rect;
@@ -291,9 +282,9 @@ namespace guipi {
         * Draw
         */
         result = 0;
-            result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
-            result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
-            result |= SDL_RenderDrawRect(renderer, &rect);
+        result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
+        result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
+        result |= SDL_RenderDrawRect(renderer, &rect);
         return result;
     }
 
@@ -312,9 +303,9 @@ namespace guipi {
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int roundedRectangleColor(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 rad, Uint32 color)
-    {
-        Uint8 *c = (Uint8 *)&color;
+    int roundedRectangleColor(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 rad,
+                              Uint32 color) {
+        Uint8 *c = (Uint8 *) &color;
         return roundedRectangleRGBA(renderer, x1, y1, x2, y2, rad, c[0], c[1], c[2], c[3]);
     }
 
@@ -334,8 +325,8 @@ namespace guipi {
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int roundedRectangleRGBA(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 rad, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+    int roundedRectangleRGBA(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 rad, Uint8 r,
+                             Uint8 g, Uint8 b, Uint8 a) {
         int result = 0;
         Sint16 tmp;
         Sint16 w, h;
@@ -398,12 +389,10 @@ namespace guipi {
         /*
         * Maybe adjust radius
         */
-        if ((rad * 2) > w)
-        {
+        if ((rad * 2) > w) {
             rad = w / 2;
         }
-        if ((rad * 2) > h)
-        {
+        if ((rad * 2) > h) {
             rad = h / 2;
         }
 
@@ -449,9 +438,8 @@ namespace guipi {
 
 \returns Returns 0 on success, -1 on failure.
 */
-    int roundedBoxColor(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 rad, Uint32 color)
-    {
-        Uint8 *c = (Uint8 *)&color;
+    int roundedBoxColor(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 rad, Uint32 color) {
+        Uint8 *c = (Uint8 *) &color;
         return roundedBoxRGBA(renderer, x1, y1, x2, y2, rad, c[0], c[1], c[2], c[3]);
     }
 
@@ -472,8 +460,7 @@ namespace guipi {
     \returns Returns 0 on success, -1 on failure.
     */
     int roundedBoxRGBA(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2,
-                       Sint16 y2, Sint16 rad, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+                       Sint16 y2, Sint16 rad, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
         int result;
         Sint16 w, h, r2, tmp;
         Sint16 cx = 0;
@@ -544,13 +531,11 @@ namespace guipi {
         * Maybe adjust radius
         */
         r2 = rad + rad;
-        if (r2 > w)
-        {
+        if (r2 > w) {
             rad = w / 2;
             r2 = rad + rad;
         }
-        if (r2 > h)
-        {
+        if (r2 > h) {
             rad = h / 2;
         }
 
@@ -564,8 +549,8 @@ namespace guipi {
         * Set color
         */
         result = 0;
-            result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
-            result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
+        result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
+        result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
 
         /*
         * Draw corners
@@ -638,9 +623,8 @@ namespace guipi {
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int boxColor(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint32 color)
-    {
-        Uint8 *c = (Uint8 *)&color;
+    int boxColor(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint32 color) {
+        Uint8 *c = (Uint8 *) &color;
         return boxRGBA(renderer, x1, y1, x2, y2, c[0], c[1], c[2], c[3]);
     }
 
@@ -659,8 +643,8 @@ namespace guipi {
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int boxRGBA(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+    int
+    boxRGBA(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
         int result;
         Sint16 tmp;
         SDL_Rect rect;
@@ -710,9 +694,9 @@ namespace guipi {
         * Draw
         */
         result = 0;
-            result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
-            result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
-            result |= SDL_RenderFillRect(renderer, &rect);
+        result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
+        result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
+        result |= SDL_RenderFillRect(renderer, &rect);
         return result;
     }
 
@@ -729,12 +713,11 @@ namespace guipi {
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int line(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2)
-    {
+    int line(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2) {
         /*
         * Draw
         */
-            return SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
+        return SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
     }
 
     /*!
@@ -749,9 +732,8 @@ namespace guipi {
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int lineColor(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint32 color)
-    {
-        Uint8 *c = (Uint8 *)&color;
+    int lineColor(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint32 color) {
+        Uint8 *c = (Uint8 *) &color;
         return lineRGBA(renderer, x1, y1, x2, y2, c[0], c[1], c[2], c[3]);
     }
 
@@ -770,22 +752,22 @@ namespace guipi {
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int lineRGBA(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+    int
+    lineRGBA(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
         /*
         * Draw
         */
         int result = 0;
-            result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
-            result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
-            result |= SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
+        result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
+        result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
+        result |= SDL_RenderDrawLine(renderer, x1, y1, x2, y2);
         return result;
     }
 
 /* ---- AA Line */
 
-constexpr static uint32_t AAlevels = 256;
-constexpr static uint32_t AAbits = 8;
+    constexpr static uint32_t AAlevels = 256;
+    constexpr static uint32_t AAbits = 8;
 
     /*!
     \brief Internal function to draw anti-aliased line with alpha blending and endpoint control.
@@ -810,8 +792,9 @@ constexpr static uint32_t AAbits = 8;
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int _aalineRGBA(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int draw_endpoint)
-    {
+    int
+    _aalineRGBA(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint8 r, Uint8 g, Uint8 b, Uint8 a,
+                int draw_endpoint) {
         Sint32 xx0, yy0, xx1, yy1;
         int result;
         Uint32 intshift, erracc, erradj;
@@ -861,8 +844,7 @@ constexpr static uint32_t AAbits = 8;
             /*
             * Vertical line
             */
-            if (draw_endpoint)
-            {
+            if (draw_endpoint) {
                 return (vlineRGBA(renderer, x1, y1, y2, r, g, b, a));
             } else {
                 if (dy > 0) {
@@ -875,8 +857,7 @@ constexpr static uint32_t AAbits = 8;
             /*
             * Horizontal line
             */
-            if (draw_endpoint)
-            {
+            if (draw_endpoint) {
                 return (hlineRGBA(renderer, x1, x2, y1, r, g, b, a));
             } else {
                 if (dx > 0) {
@@ -947,7 +928,7 @@ constexpr static uint32_t AAbits = 8;
                     xx0 = x0pxdir;
                     x0pxdir += xdir;
                 }
-                yy0++;		/* y-major so always advance Y */
+                yy0++;        /* y-major so always advance Y */
 
                 /*
                 * the AAbits most significant bits of erracc give us the intensity
@@ -955,8 +936,8 @@ constexpr static uint32_t AAbits = 8;
                 * the paired pixel.
                 */
                 wgt = (erracc >> intshift) & 255;
-                result |= pixelRGBAWeight (renderer, xx0, yy0, r, g, b, a, 255 - wgt);
-                result |= pixelRGBAWeight (renderer, x0pxdir, yy0, r, g, b, a, wgt);
+                result |= pixelRGBAWeight(renderer, xx0, yy0, r, g, b, a, 255 - wgt);
+                result |= pixelRGBAWeight(renderer, x0pxdir, yy0, r, g, b, a, wgt);
             }
 
         } else {
@@ -986,15 +967,15 @@ constexpr static uint32_t AAbits = 8;
                     yy0 = y0p1;
                     y0p1++;
                 }
-                xx0 += xdir;	/* x-major so always advance X */
+                xx0 += xdir;    /* x-major so always advance X */
                 /*
                 * the AAbits most significant bits of erracc give us the intensity
                 * weighting for this pixel, and the complement of the weighting for
                 * the paired pixel.
                 */
                 wgt = (erracc >> intshift) & 255;
-                result |= pixelRGBAWeight (renderer, xx0, yy0, r, g, b, a, 255 - wgt);
-                result |= pixelRGBAWeight (renderer, xx0, y0p1, r, g, b, a, wgt);
+                result |= pixelRGBAWeight(renderer, xx0, yy0, r, g, b, a, 255 - wgt);
+                result |= pixelRGBAWeight(renderer, xx0, y0p1, r, g, b, a, wgt);
             }
         }
 
@@ -1006,7 +987,7 @@ constexpr static uint32_t AAbits = 8;
             * Draw final pixel, always exactly intersected by the line and doesn't
             * need to be weighted.
             */
-            result |= pixelRGBA (renderer, x2, y2, r, g, b, a);
+            result |= pixelRGBA(renderer, x2, y2, r, g, b, a);
         }
 
         return (result);
@@ -1024,9 +1005,8 @@ constexpr static uint32_t AAbits = 8;
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int aalineColor(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint32 color)
-    {
-        Uint8 *c = (Uint8 *)&color;
+    int aalineColor(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint32 color) {
+        Uint8 *c = (Uint8 *) &color;
         return _aalineRGBA(renderer, x1, y1, x2, y2, c[0], c[1], c[2], c[3], 1);
     }
 
@@ -1045,8 +1025,8 @@ constexpr static uint32_t AAbits = 8;
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int aalineRGBA(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+    int
+    aalineRGBA(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
         return _aalineRGBA(renderer, x1, y1, x2, y2, r, g, b, a, 1);
     }
 
@@ -1063,9 +1043,8 @@ constexpr static uint32_t AAbits = 8;
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int circleColor(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad, Uint32 color)
-    {
-        Uint8 *c = (Uint8 *)&color;
+    int circleColor(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad, Uint32 color) {
+        Uint8 *c = (Uint8 *) &color;
         return ellipseRGBA(renderer, x, y, rad, rad, c[0], c[1], c[2], c[3]);
     }
 
@@ -1083,8 +1062,7 @@ constexpr static uint32_t AAbits = 8;
     
     \returns Returns 0 on success, -1 on failure.
     */
-    int circleRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+    int circleRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
         return ellipseRGBA(renderer, x, y, rad, rad, r, g, b, a);
     }
 
@@ -1103,9 +1081,8 @@ constexpr static uint32_t AAbits = 8;
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int arcColor(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad, Sint16 start, Sint16 end, Uint32 color)
-    {
-        Uint8 *c = (Uint8 *)&color;
+    int arcColor(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad, Sint16 start, Sint16 end, Uint32 color) {
+        Uint8 *c = (Uint8 *) &color;
         return arcRGBA(renderer, x, y, rad, start, end, c[0], c[1], c[2], c[3]);
     }
 
@@ -1126,8 +1103,9 @@ constexpr static uint32_t AAbits = 8;
     \returns Returns 0 on success, -1 on failure.
     */
     /* TODO: rewrite algorithm; arc endpoints are not always drawn */
-    int arcRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad, Sint16 start, Sint16 end, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+    int
+    arcRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad, Sint16 start, Sint16 end, Uint8 r, Uint8 g, Uint8 b,
+            Uint8 a) {
         int result;
         Sint16 cx = 0;
         Sint16 cy = rad;
@@ -1196,9 +1174,8 @@ constexpr static uint32_t AAbits = 8;
 
             if (oct == startoct) {
                 /* need to compute stopval_start for this octant.  Look at picture above if this is unclear */
-                dstart = (double)start;
-                switch (oct)
-                {
+                dstart = (double) start;
+                switch (oct) {
                     case 0:
                     case 3:
                         temp = sin(dstart * M_PI / 180.);
@@ -1217,7 +1194,7 @@ constexpr static uint32_t AAbits = 8;
                         break;
                 }
                 temp *= rad;
-                stopval_start = (int)temp;
+                stopval_start = (int) temp;
 
                 /*
                 This isn't arbitrary, but requires graph paper to explain well.
@@ -1225,14 +1202,15 @@ constexpr static uint32_t AAbits = 8;
                 stop immediately after we render the last sensible pixel at x = ((int)temp).
                 and whether to draw in this octant initially
                 */
-                if (oct % 2) drawoct |= (1 << oct);			/* this is basically like saying drawoct[oct] = true, if drawoct were a bool array */
-                else		 drawoct &= 255 - (1 << oct);	/* this is basically like saying drawoct[oct] = false */
+                if (oct % 2)
+                    drawoct |= (1
+                            << oct);            /* this is basically like saying drawoct[oct] = true, if drawoct were a bool array */
+                else drawoct &= 255 - (1 << oct);    /* this is basically like saying drawoct[oct] = false */
             }
             if (oct == endoct) {
                 /* need to compute stopval_end for this octant */
-                dend = (double)end;
-                switch (oct)
-                {
+                dend = (double) end;
+                switch (oct) {
                     case 0:
                     case 3:
                         temp = sin(dend * M_PI / 180);
@@ -1251,10 +1229,10 @@ constexpr static uint32_t AAbits = 8;
                         break;
                 }
                 temp *= rad;
-                stopval_end = (int)temp;
+                stopval_end = (int) temp;
 
                 /* and whether to draw in this octant initially */
-                if (startoct == endoct)	{
+                if (startoct == endoct) {
                     /* note:      we start drawing, stop, then start again in this case */
                     /* otherwise: we only draw in this octant, so initialize it to false, it will get set back to true */
                     if (start > end) {
@@ -1264,9 +1242,8 @@ constexpr static uint32_t AAbits = 8;
                     } else {
                         drawoct &= 255 - (1 << oct);
                     }
-                }
-                else if (oct % 2) drawoct &= 255 - (1 << oct);
-                else			  drawoct |= (1 << oct);
+                } else if (oct % 2) drawoct &= 255 - (1 << oct);
+                else drawoct |= (1 << oct);
             } else if (oct != startoct) { /* already verified that it's != endoct */
                 drawoct |= (1 << oct); /* draw this entire segment */
             }
@@ -1278,8 +1255,8 @@ constexpr static uint32_t AAbits = 8;
         * Set color
         */
         result = 0;
-            result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
-            result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
+        result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
+        result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
 
         /*
         * Draw arc
@@ -1292,13 +1269,13 @@ constexpr static uint32_t AAbits = 8;
                 xmcx = x - cx;
 
                 /* always check if we're drawing a certain octant before adding a pixel to that octant. */
-                if (drawoct & 4)  result |= pixel(renderer, xmcx, ypcy);
-                if (drawoct & 2)  result |= pixel(renderer, xpcx, ypcy);
+                if (drawoct & 4) result |= pixel(renderer, xmcx, ypcy);
+                if (drawoct & 2) result |= pixel(renderer, xpcx, ypcy);
                 if (drawoct & 32) result |= pixel(renderer, xmcx, ymcy);
                 if (drawoct & 64) result |= pixel(renderer, xpcx, ymcy);
             } else {
                 if (drawoct & 96) result |= pixel(renderer, x, ymcy);
-                if (drawoct & 6)  result |= pixel(renderer, x, ypcy);
+                if (drawoct & 6) result |= pixel(renderer, x, ypcy);
             }
 
             xpcy = x + cy;
@@ -1306,12 +1283,12 @@ constexpr static uint32_t AAbits = 8;
             if (cx > 0 && cx != cy) {
                 ypcx = y + cx;
                 ymcx = y - cx;
-                if (drawoct & 8)   result |= pixel(renderer, xmcy, ypcx);
-                if (drawoct & 1)   result |= pixel(renderer, xpcy, ypcx);
-                if (drawoct & 16)  result |= pixel(renderer, xmcy, ymcx);
+                if (drawoct & 8) result |= pixel(renderer, xmcy, ypcx);
+                if (drawoct & 1) result |= pixel(renderer, xpcy, ypcx);
+                if (drawoct & 16) result |= pixel(renderer, xmcy, ymcx);
                 if (drawoct & 128) result |= pixel(renderer, xpcy, ymcx);
             } else if (cx == 0) {
-                if (drawoct & 24)  result |= pixel(renderer, xmcy, y);
+                if (drawoct & 24) result |= pixel(renderer, xmcy, y);
                 if (drawoct & 129) result |= pixel(renderer, xpcy, y);
             }
 
@@ -1322,11 +1299,11 @@ constexpr static uint32_t AAbits = 8;
                 /* works like an on-off switch. */
                 /* This is just in case start & end are in the same octant. */
                 if (drawoct & (1 << startoct)) drawoct &= 255 - (1 << startoct);
-                else						   drawoct |= (1 << startoct);
+                else drawoct |= (1 << startoct);
             }
             if (stopval_end == cx) {
                 if (drawoct & (1 << endoct)) drawoct &= 255 - (1 << endoct);
-                else						 drawoct |= (1 << endoct);
+                else drawoct |= (1 << endoct);
             }
 
             /*
@@ -1361,9 +1338,8 @@ constexpr static uint32_t AAbits = 8;
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int aacircleColor(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad, Uint32 color)
-    {
-        Uint8 *c = (Uint8 *)&color;
+    int aacircleColor(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad, Uint32 color) {
+        Uint8 *c = (Uint8 *) &color;
         return aaellipseRGBA(renderer, x, y, rad, rad, c[0], c[1], c[2], c[3]);
     }
 
@@ -1381,8 +1357,7 @@ constexpr static uint32_t AAbits = 8;
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int aacircleRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+    int aacircleRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
         /*
         * Draw
         */
@@ -1403,8 +1378,7 @@ constexpr static uint32_t AAbits = 8;
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int _drawQuadrants(SDL_Renderer *renderer,  Sint16 x, Sint16 y, Sint16 dx, Sint16 dy, Sint32 f)
-    {
+    int _drawQuadrants(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 dx, Sint16 dy, Sint32 f) {
         int result = 0;
         Sint16 xpdx, xmdx;
         Sint16 ypdy, ymdy;
@@ -1458,8 +1432,10 @@ constexpr static uint32_t AAbits = 8;
     \returns Returns 0 on success, -1 on failure.
     */
     constexpr static uint32_t DEFAULT_ELLIPSE_OVERSCAN = 4;
-    int _ellipseRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry, Uint8 r, Uint8 g, Uint8 b, Uint8 a, Sint32 f)
-    {
+
+    int
+    _ellipseRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry, Uint8 r, Uint8 g, Uint8 b, Uint8 a,
+                 Sint32 f) {
         int result;
         Sint32 rxi, ryi;
         Sint32 rx2, ry2, rx22, ry22;
@@ -1480,8 +1456,8 @@ constexpr static uint32_t AAbits = 8;
         * Set color
         */
         result = 0;
-            result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
-            result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
+        result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
+        result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
 
         /*
         * Special cases for rx=0 and/or ry=0: draw a hline/vline/pixel
@@ -1503,16 +1479,11 @@ constexpr static uint32_t AAbits = 8;
          */
         rxi = rx;
         ryi = ry;
-        if (rxi >= 512 || ryi >= 512)
-        {
+        if (rxi >= 512 || ryi >= 512) {
             ellipseOverscan = DEFAULT_ELLIPSE_OVERSCAN / 4;
-        }
-        else if (rxi >= 256 || ryi >= 256)
-        {
+        } else if (rxi >= 256 || ryi >= 256) {
             ellipseOverscan = DEFAULT_ELLIPSE_OVERSCAN / 2;
-        }
-        else
-        {
+        } else {
             ellipseOverscan = DEFAULT_ELLIPSE_OVERSCAN / 1;
         }
 
@@ -1537,14 +1508,12 @@ constexpr static uint32_t AAbits = 8;
 
         /* Points in segment 1 */
         error = ry2 - rx2 * ryi + rx2 / 4;
-        while (deltaX <= deltaY)
-        {
+        while (deltaX <= deltaY) {
             curX++;
             deltaX += ry22;
 
-            error +=  deltaX + ry2;
-            if (error >= 0)
-            {
+            error += deltaX + ry2;
+            if (error >= 0) {
                 curY--;
                 deltaY -= rx22;
                 error -= deltaY;
@@ -1560,21 +1529,18 @@ constexpr static uint32_t AAbits = 8;
         }
 
         /* Points in segment 2 */
-        if (curY > 0)
-        {
+        if (curY > 0) {
             curXp1 = curX + 1;
             curYm1 = curY - 1;
             error = ry2 * curX * curXp1 + ((ry2 + 3) / 4) + rx2 * curYm1 * curYm1 - rx2 * ry2;
-            while (curY > 0)
-            {
+            while (curY > 0) {
                 curY--;
                 deltaY -= rx22;
 
                 error += rx2;
                 error -= deltaY;
 
-                if (error <= 0)
-                {
+                if (error <= 0) {
                     curX++;
                     deltaX += ry22;
                     error += deltaX;
@@ -1584,7 +1550,7 @@ constexpr static uint32_t AAbits = 8;
                 scrY = curY / ellipseOverscan;
                 if ((scrX != oldX && scrY == oldY) || (scrX != oldX && scrY != oldY)) {
                     oldY--;
-                    for (;oldY >= scrY; oldY--) {
+                    for (; oldY >= scrY; oldY--) {
                         result |= _drawQuadrants(renderer, x, y, scrX, oldY, f);
                         /* prevent overdraw */
                         if (f) {
@@ -1599,7 +1565,7 @@ constexpr static uint32_t AAbits = 8;
             /* Remaining points in vertical */
             if (!f) {
                 oldY--;
-                for (;oldY >= 0; oldY--) {
+                for (; oldY >= 0; oldY--) {
                     result |= _drawQuadrants(renderer, x, y, scrX, oldY, f);
                 }
             }
@@ -1620,9 +1586,8 @@ constexpr static uint32_t AAbits = 8;
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int ellipseColor(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry, Uint32 color)
-    {
-        Uint8 *c = (Uint8 *)&color;
+    int ellipseColor(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry, Uint32 color) {
+        Uint8 *c = (Uint8 *) &color;
         return _ellipseRGBA(renderer, x, y, rx, ry, c[0], c[1], c[2], c[3], 0);
     }
 
@@ -1641,8 +1606,8 @@ constexpr static uint32_t AAbits = 8;
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int ellipseRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+    int
+    ellipseRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
         return _ellipseRGBA(renderer, x, y, rx, ry, r, g, b, a, 0);
     }
 
@@ -1659,9 +1624,8 @@ constexpr static uint32_t AAbits = 8;
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int filledCircleColor(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad, Uint32 color)
-    {
-        Uint8 *c = (Uint8 *)&color;
+    int filledCircleColor(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad, Uint32 color) {
+        Uint8 *c = (Uint8 *) &color;
         return filledEllipseRGBA(renderer, x, y, rad, rad, c[0], c[1], c[2], c[3]);
     }
 
@@ -1679,9 +1643,8 @@ constexpr static uint32_t AAbits = 8;
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int filledCircleRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
-        return _ellipseRGBA(renderer, x, y, rad, rad, r, g ,b, a, 1);
+    int filledCircleRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
+        return _ellipseRGBA(renderer, x, y, rad, rad, r, g, b, a, 1);
     }
 
 
@@ -1693,33 +1656,33 @@ constexpr static uint32_t AAbits = 8;
 #ifdef _M_X64
 #include <emmintrin.h>
 static __inline long
-	lrint(float f)
+    lrint(float f)
 {
-	return _mm_cvtss_si32(_mm_load_ss(&f));
+    return _mm_cvtss_si32(_mm_load_ss(&f));
 }
 #elif defined(_M_IX86)
 __inline long int
-	lrint (double flt)
+    lrint (double flt)
 {
-	int intgr;
-	_asm
-	{
-		fld flt
-			fistp intgr
-	};
-	return intgr;
+    int intgr;
+    _asm
+    {
+        fld flt
+            fistp intgr
+    };
+    return intgr;
 }
 #elif defined(_M_ARM)
 #include <armintr.h>
 #pragma warning(push)
 #pragma warning(disable: 4716)
 __declspec(naked) long int
-	lrint (double flt)
+    lrint (double flt)
 {
-	__emit(0xEC410B10); // fmdrr  d0, r0, r1
-	__emit(0xEEBD0B40); // ftosid s0, d0
-	__emit(0xEE100A10); // fmrs   r0, s0
-	__emit(0xE12FFF1E); // bx     lr
+    __emit(0xEC410B10); // fmdrr  d0, r0, r1
+    __emit(0xEEBD0B40); // ftosid s0, d0
+    __emit(0xEE100A10); // fmrs   r0, s0
+    __emit(0xE12FFF1E); // bx     lr
 }
 #pragma warning(pop)
 #else
@@ -1739,9 +1702,8 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int aaellipseColor(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry, Uint32 color)
-    {
-        Uint8 *c = (Uint8 *)&color;
+    int aaellipseColor(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry, Uint32 color) {
+        Uint8 *c = (Uint8 *) &color;
         return aaellipseRGBA(renderer, x, y, rx, ry, c[0], c[1], c[2], c[3]);
     }
 
@@ -1760,8 +1722,8 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int aaellipseRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+    int aaellipseRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry, Uint8 r, Uint8 g, Uint8 b,
+                      Uint8 a) {
         int result;
         int i;
         int a2, b2, ds, dt, dxt, t, s, d;
@@ -1802,9 +1764,9 @@ __declspec(naked) long int
         xc2 = 2 * x;
         yc2 = 2 * y;
 
-        sab = sqrt((double)(a2 + b2));
-        od = (Sint16)lrint(sab*0.01) + 1; /* introduce some overdraw */
-        dxt = (Sint16)lrint((double)a2 / sab) + od;
+        sab = sqrt((double) (a2 + b2));
+        od = (Sint16) lrint(sab * 0.01) + 1; /* introduce some overdraw */
+        dxt = (Sint16) lrint((double) a2 / sab) + od;
 
         t = 0;
         s = -2 * a2 * ry;
@@ -1815,7 +1777,7 @@ __declspec(naked) long int
 
         /* Draw */
         result = 0;
-            result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
+        result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
 
         /* "End points" */
         result |= pixelRGBA(renderer, xp, yp, r, g, b, a);
@@ -1880,7 +1842,7 @@ __declspec(naked) long int
         }
 
         /* Replaces original approximation code dyt = abs(yp - yc); */
-        dyt = (Sint16)lrint((double)b2 / sab ) + od;
+        dyt = (Sint16) lrint((double) b2 / sab) + od;
 
         for (i = 1; i <= dyt; i++) {
             yp++;
@@ -1955,9 +1917,8 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int filledEllipseColor(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry, Uint32 color)
-    {
-        Uint8 *c = (Uint8 *)&color;
+    int filledEllipseColor(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry, Uint32 color) {
+        Uint8 *c = (Uint8 *) &color;
         return _ellipseRGBA(renderer, x, y, rx, ry, c[0], c[1], c[2], c[3], 1);
     }
 
@@ -1976,8 +1937,8 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int filledEllipseRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+    int filledEllipseRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rx, Sint16 ry, Uint8 r, Uint8 g, Uint8 b,
+                          Uint8 a) {
         return _ellipseRGBA(renderer, x, y, rx, ry, r, g, b, a, 1);
     }
 
@@ -2003,8 +1964,8 @@ __declspec(naked) long int
     \returns Returns 0 on success, -1 on failure.
     */
     /* TODO: rewrite algorithm; pie is not always accurate */
-    int _pieRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad, Sint16 start, Sint16 end,  Uint8 r, Uint8 g, Uint8 b, Uint8 a, Uint8 filled)
-    {
+    int _pieRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad, Sint16 start, Sint16 end, Uint8 r, Uint8 g,
+                 Uint8 b, Uint8 a, Uint8 filled) {
         int result;
         double angle, start_angle, end_angle;
         double deltaAngle;
@@ -2037,8 +1998,8 @@ __declspec(naked) long int
         */
         dr = (double) rad;
         deltaAngle = 3.0 / dr;
-        start_angle = (double) start *(2.0 * M_PI / 360.0);
-        end_angle = (double) end *(2.0 * M_PI / 360.0);
+        start_angle = (double) start * (2.0 * M_PI / 360.0);
+        end_angle = (double) end * (2.0 * M_PI / 360.0);
         if (start > end) {
             end_angle += (2.0 * M_PI);
         }
@@ -2071,19 +2032,15 @@ __declspec(naked) long int
         vx[1] = x + (int) (dr * cos(angle));
         vy[1] = y + (int) (dr * sin(angle));
 
-        if (numpoints<3)
-        {
+        if (numpoints < 3) {
             result = lineRGBA(renderer, vx[0], vy[0], vx[1], vy[1], r, g, b, a);
-        }
-        else
-        {
+        } else {
             /* Calculate other vertices */
             i = 2;
             angle = start_angle;
             while (angle < end_angle) {
                 angle += deltaAngle;
-                if (angle>end_angle)
-                {
+                if (angle > end_angle) {
                     angle = end_angle;
                 }
                 vx[i] = x + (int) (dr * cos(angle));
@@ -2119,9 +2076,8 @@ __declspec(naked) long int
     \returns Returns 0 on success, -1 on failure.
     */
     int pieColor(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad,
-                 Sint16 start, Sint16 end, Uint32 color)
-    {
-        Uint8 *c = (Uint8 *)&color;
+                 Sint16 start, Sint16 end, Uint32 color) {
+        Uint8 *c = (Uint8 *) &color;
         return _pieRGBA(renderer, x, y, rad, start, end, c[0], c[1], c[2], c[3], 0);
     }
 
@@ -2142,8 +2098,7 @@ __declspec(naked) long int
     \returns Returns 0 on success, -1 on failure.
     */
     int pieRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad,
-                Sint16 start, Sint16 end, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+                Sint16 start, Sint16 end, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
         return _pieRGBA(renderer, x, y, rad, start, end, r, g, b, a, 0);
     }
 
@@ -2160,9 +2115,8 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int filledPieColor(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad, Sint16 start, Sint16 end, Uint32 color)
-    {
-        Uint8 *c = (Uint8 *)&color;
+    int filledPieColor(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad, Sint16 start, Sint16 end, Uint32 color) {
+        Uint8 *c = (Uint8 *) &color;
         return _pieRGBA(renderer, x, y, rad, start, end, c[0], c[1], c[2], c[3], 1);
     }
 
@@ -2183,8 +2137,7 @@ __declspec(naked) long int
     \returns Returns 0 on success, -1 on failure.
     */
     int filledPieRGBA(SDL_Renderer *renderer, Sint16 x, Sint16 y, Sint16 rad,
-                      Sint16 start, Sint16 end, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+                      Sint16 start, Sint16 end, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
         return _pieRGBA(renderer, x, y, rad, start, end, r, g, b, a, 1);
     }
 
@@ -2206,19 +2159,19 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int trigonColor(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 x3, Sint16 y3, Uint32 color)
-    {
+    int trigonColor(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 x3, Sint16 y3,
+                    Uint32 color) {
         Sint16 vx[3];
         Sint16 vy[3];
 
-        vx[0]=x1;
-        vx[1]=x2;
-        vx[2]=x3;
-        vy[0]=y1;
-        vy[1]=y2;
-        vy[2]=y3;
+        vx[0] = x1;
+        vx[1] = x2;
+        vx[2] = x3;
+        vy[0] = y1;
+        vy[1] = y2;
+        vy[2] = y3;
 
-        return(polygonColor(renderer,vx,vy,3,color));
+        return (polygonColor(renderer, vx, vy, 3, color));
     }
 
     /*!
@@ -2239,19 +2192,18 @@ __declspec(naked) long int
     \returns Returns 0 on success, -1 on failure.
     */
     int trigonRGBA(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 x3, Sint16 y3,
-                   Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+                   Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
         Sint16 vx[3];
         Sint16 vy[3];
 
-        vx[0]=x1;
-        vx[1]=x2;
-        vx[2]=x3;
-        vy[0]=y1;
-        vy[1]=y2;
-        vy[2]=y3;
+        vx[0] = x1;
+        vx[1] = x2;
+        vx[2] = x3;
+        vy[0] = y1;
+        vy[1] = y2;
+        vy[2] = y3;
 
-        return(polygonRGBA(renderer,vx,vy,3,r,g,b,a));
+        return (polygonRGBA(renderer, vx, vy, 3, r, g, b, a));
     }
 
 /* ------ AA-Trigon */
@@ -2272,19 +2224,19 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int aatrigonColor(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 x3, Sint16 y3, Uint32 color)
-    {
+    int aatrigonColor(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 x3, Sint16 y3,
+                      Uint32 color) {
         Sint16 vx[3];
         Sint16 vy[3];
 
-        vx[0]=x1;
-        vx[1]=x2;
-        vx[2]=x3;
-        vy[0]=y1;
-        vy[1]=y2;
-        vy[2]=y3;
+        vx[0] = x1;
+        vx[1] = x2;
+        vx[2] = x3;
+        vy[0] = y1;
+        vy[1] = y2;
+        vy[2] = y3;
 
-        return(aapolygonColor(renderer,vx,vy,3,color));
+        return (aapolygonColor(renderer, vx, vy, 3, color));
     }
 
     /*!
@@ -2304,20 +2256,19 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int aatrigonRGBA(SDL_Renderer *renderer,  Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 x3, Sint16 y3,
-                     Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+    int aatrigonRGBA(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 x3, Sint16 y3,
+                     Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
         Sint16 vx[3];
         Sint16 vy[3];
 
-        vx[0]=x1;
-        vx[1]=x2;
-        vx[2]=x3;
-        vy[0]=y1;
-        vy[1]=y2;
-        vy[2]=y3;
+        vx[0] = x1;
+        vx[1] = x2;
+        vx[2] = x3;
+        vy[0] = y1;
+        vy[1] = y2;
+        vy[2] = y3;
 
-        return(aapolygonRGBA(renderer,vx,vy,3,r,g,b,a));
+        return (aapolygonRGBA(renderer, vx, vy, 3, r, g, b, a));
     }
 
 /* ------ Filled Trigon */
@@ -2338,19 +2289,19 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int filledTrigonColor(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 x3, Sint16 y3, Uint32 color)
-    {
+    int filledTrigonColor(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 x3, Sint16 y3,
+                          Uint32 color) {
         Sint16 vx[3];
         Sint16 vy[3];
 
-        vx[0]=x1;
-        vx[1]=x2;
-        vx[2]=x3;
-        vy[0]=y1;
-        vy[1]=y2;
-        vy[2]=y3;
+        vx[0] = x1;
+        vx[1] = x2;
+        vx[2] = x3;
+        vy[0] = y1;
+        vy[1] = y2;
+        vy[2] = y3;
 
-        return(filledPolygonColor(renderer,vx,vy,3,color));
+        return (filledPolygonColor(renderer, vx, vy, 3, color));
     }
 
     /*!
@@ -2373,19 +2324,18 @@ __declspec(naked) long int
     \returns Returns 0 on success, -1 on failure.
     */
     int filledTrigonRGBA(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Sint16 x3, Sint16 y3,
-                         Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+                         Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
         Sint16 vx[3];
         Sint16 vy[3];
 
-        vx[0]=x1;
-        vx[1]=x2;
-        vx[2]=x3;
-        vy[0]=y1;
-        vy[1]=y2;
-        vy[2]=y3;
+        vx[0] = x1;
+        vx[1] = x2;
+        vx[2] = x3;
+        vy[0] = y1;
+        vy[1] = y2;
+        vy[2] = y3;
 
-        return(filledPolygonRGBA(renderer,vx,vy,3,r,g,b,a));
+        return (filledPolygonRGBA(renderer, vx, vy, 3, r, g, b, a));
     }
 
 /* ---- Polygon */
@@ -2401,9 +2351,8 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int polygonColor(SDL_Renderer *renderer, const Sint16 * vx, const Sint16 * vy, int n, Uint32 color)
-    {
-        Uint8 *c = (Uint8 *)&color;
+    int polygonColor(SDL_Renderer *renderer, const Sint16 *vx, const Sint16 *vy, int n, Uint32 color) {
+        Uint8 *c = (Uint8 *) &color;
         return polygonRGBA(renderer, vx, vy, n, c[0], c[1], c[2], c[3]);
     }
 
@@ -2417,14 +2366,13 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int polygon(SDL_Renderer *renderer, const Sint16 * vx, const Sint16 * vy, int n)
-    {
+    int polygon(SDL_Renderer *renderer, const Sint16 *vx, const Sint16 *vy, int n) {
         /*
         * Draw
         */
         int result = 0;
         int i, nn;
-        SDL_Point* points;
+        SDL_Point *points;
 
         /*
         * Vertex array nullptr check
@@ -2447,13 +2395,11 @@ __declspec(naked) long int
         * Create array of points
         */
         nn = n + 1;
-        points = (SDL_Point*)malloc(sizeof(SDL_Point) * nn);
-        if (points == nullptr)
-        {
+        points = (SDL_Point *) malloc(sizeof(SDL_Point) * nn);
+        if (points == nullptr) {
             return -1;
         }
-        for (i=0; i<n; i++)
-        {
+        for (i = 0; i < n; i++) {
             points[i].x = vx[i];
             points[i].y = vy[i];
         }
@@ -2463,7 +2409,7 @@ __declspec(naked) long int
         /*
         * Draw
         */
-            result |= SDL_RenderDrawLines(renderer, points, nn);
+        result |= SDL_RenderDrawLines(renderer, points, nn);
         free(points);
 
         return (result);
@@ -2483,8 +2429,8 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int polygonRGBA(SDL_Renderer *renderer, const Sint16 * vx, const Sint16 * vy, int n, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+    int
+    polygonRGBA(SDL_Renderer *renderer, const Sint16 *vx, const Sint16 *vy, int n, Uint8 r, Uint8 g, Uint8 b, Uint8 a) {
         /*
         * Draw
         */
@@ -2520,8 +2466,8 @@ __declspec(naked) long int
         * Set color
         */
         result = 0;
-            result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
-            result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
+        result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
+        result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
 
         /*
         * Draw
@@ -2544,9 +2490,8 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int aapolygonColor(SDL_Renderer *renderer, const Sint16 * vx, const Sint16 * vy, int n, Uint32 color)
-    {
-        Uint8 *c = (Uint8 *)&color;
+    int aapolygonColor(SDL_Renderer *renderer, const Sint16 *vx, const Sint16 *vy, int n, Uint32 color) {
+        Uint8 *c = (Uint8 *) &color;
         return aapolygonRGBA(renderer, vx, vy, n, c[0], c[1], c[2], c[3]);
     }
 
@@ -2564,8 +2509,8 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int aapolygonRGBA(SDL_Renderer *renderer, const Sint16 * vx, const Sint16 * vy, int n, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+    int aapolygonRGBA(SDL_Renderer *renderer, const Sint16 *vx, const Sint16 *vy, int n, Uint8 r, Uint8 g, Uint8 b,
+                      Uint8 a) {
         int result;
         int i;
         const Sint16 *x1, *y1, *x2, *y2;
@@ -2622,8 +2567,7 @@ __declspec(naked) long int
 
     \returns Returns 0 if a==b, a negative number if a<b or a positive number if a>b.
     */
-    int _gfxPrimitivesCompareInt(const void *a, const void *b)
-    {
+    int _gfxPrimitivesCompareInt(const void *a, const void *b) {
         return (*(const int *) a) - (*(const int *) b);
     }
 
@@ -2659,8 +2603,9 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int filledPolygonRGBAMT(SDL_Renderer *renderer, const Sint16 * vx, const Sint16 * vy, int n, Uint8 r, Uint8 g, Uint8 b, Uint8 a, int **polyInts, int *polyAllocated)
-    {
+    int
+    filledPolygonRGBAMT(SDL_Renderer *renderer, const Sint16 *vx, const Sint16 *vy, int n, Uint8 r, Uint8 g, Uint8 b,
+                        Uint8 a, int **polyInts, int *polyAllocated) {
         int result;
         int i;
         int y, xa, xb;
@@ -2693,7 +2638,7 @@ __declspec(naked) long int
         /*
         * Map polygon cache
         */
-        if ((polyInts==nullptr) || (polyAllocated==nullptr)) {
+        if ((polyInts == nullptr) || (polyAllocated == nullptr)) {
             /* Use global cache */
             gfxPrimitivesPolyInts = gfxPrimitivesPolyIntsGlobal;
             gfxPrimitivesPolyAllocated = gfxPrimitivesPolyAllocatedGlobal;
@@ -2728,15 +2673,15 @@ __declspec(naked) long int
         /*
         * Check temp array
         */
-        if (gfxPrimitivesPolyInts==nullptr) {
+        if (gfxPrimitivesPolyInts == nullptr) {
             gfxPrimitivesPolyAllocated = 0;
         }
 
         /*
         * Update cache variables
         */
-        if ((polyInts==nullptr) || (polyAllocated==nullptr)) {
-            gfxPrimitivesPolyIntsGlobal =  gfxPrimitivesPolyInts;
+        if ((polyInts == nullptr) || (polyAllocated == nullptr)) {
+            gfxPrimitivesPolyIntsGlobal = gfxPrimitivesPolyInts;
             gfxPrimitivesPolyAllocatedGlobal = gfxPrimitivesPolyAllocated;
         } else {
             *polyInts = gfxPrimitivesPolyInts;
@@ -2746,8 +2691,8 @@ __declspec(naked) long int
         /*
         * Check temp array again
         */
-        if (gfxPrimitivesPolyInts==nullptr) {
-            return(-1);
+        if (gfxPrimitivesPolyInts == nullptr) {
+            return (-1);
         }
 
         /*
@@ -2790,7 +2735,7 @@ __declspec(naked) long int
                 } else {
                     continue;
                 }
-                if ( ((y >= y1) && (y < y2)) || ((y == maxy) && (y > y1) && (y <= y2)) ) {
+                if (((y >= y1) && (y < y2)) || ((y == maxy) && (y > y1) && (y <= y2))) {
                     gfxPrimitivesPolyInts[ints++] = ((65536 * (y - y1)) / (y2 - y1)) * (x2 - x1) + (65536 * x1);
                 }
             }
@@ -2801,13 +2746,13 @@ __declspec(naked) long int
             * Set color
             */
             result = 0;
-                result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
-                result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
+            result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
+            result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
 
             for (i = 0; (i < ints); i += 2) {
                 xa = gfxPrimitivesPolyInts[i] + 1;
                 xa = (xa >> 16) + ((xa & 32768) >> 15);
-                xb = gfxPrimitivesPolyInts[i+1] - 1;
+                xb = gfxPrimitivesPolyInts[i + 1] - 1;
                 xb = (xb >> 16) + ((xb & 32768) >> 15);
                 result |= hline(renderer, xa, xb, y);
             }
@@ -2827,9 +2772,8 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int filledPolygonColor(SDL_Renderer *renderer, const Sint16 * vx, const Sint16 * vy, int n, Uint32 color)
-    {
-        Uint8 *c = (Uint8 *)&color;
+    int filledPolygonColor(SDL_Renderer *renderer, const Sint16 *vx, const Sint16 *vy, int n, Uint32 color) {
+        Uint8 *c = (Uint8 *) &color;
         return filledPolygonRGBAMT(renderer, vx, vy, n, c[0], c[1], c[2], c[3], nullptr, nullptr);
     }
 
@@ -2847,8 +2791,8 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int filledPolygonRGBA(SDL_Renderer *renderer, const Sint16 * vx, const Sint16 * vy, int n, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+    int filledPolygonRGBA(SDL_Renderer *renderer, const Sint16 *vx, const Sint16 *vy, int n, Uint8 r, Uint8 g, Uint8 b,
+                          Uint8 a) {
         return filledPolygonRGBAMT(renderer, vx, vy, n, r, g, b, a, nullptr, nullptr);
     }
 
@@ -2869,15 +2813,15 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int _HLineTextured(SDL_Renderer *renderer, Sint16 x1, Sint16 x2, Sint16 y, SDL_Texture *texture, int texture_w, int texture_h, int texture_dx, int texture_dy)
-    {
+    int _HLineTextured(SDL_Renderer *renderer, Sint16 x1, Sint16 x2, Sint16 y, SDL_Texture *texture, int texture_w,
+                       int texture_h, int texture_dx, int texture_dy) {
         Sint16 w;
         Sint16 xtmp;
         int result = 0;
         int texture_x_walker;
         int texture_y_start;
-        SDL_Rect source_rect,dst_rect;
-        int pixels_written,write_width;
+        SDL_Rect source_rect, dst_rect;
+        int pixels_written, write_width;
 
         /*
         * Swap x1, x2 if required to ensure x1<=x2
@@ -2896,13 +2840,13 @@ __declspec(naked) long int
         /*
         * Determine where in the texture we start drawing
         */
-        texture_x_walker =   (x1 - texture_dx)  % texture_w;
-        if (texture_x_walker < 0){
-            texture_x_walker = texture_w + texture_x_walker ;
+        texture_x_walker = (x1 - texture_dx) % texture_w;
+        if (texture_x_walker < 0) {
+            texture_x_walker = texture_w + texture_x_walker;
         }
 
         texture_y_start = (y + texture_dy) % texture_h;
-        if (texture_y_start < 0){
+        if (texture_y_start < 0) {
             texture_y_start = texture_h + texture_y_start;
         }
 
@@ -2917,34 +2861,34 @@ __declspec(naked) long int
 
         /* if there are enough pixels left in the current row of the texture */
         /* draw it all at once */
-        if (w <= texture_w -texture_x_walker){
+        if (w <= texture_w - texture_x_walker) {
             source_rect.w = w;
             source_rect.x = texture_x_walker;
-            dst_rect.x= x1;
+            dst_rect.x = x1;
             dst_rect.w = source_rect.w;
-                result = (SDL_RenderCopy(renderer, texture, &source_rect, &dst_rect) == 0);
+            result = (SDL_RenderCopy(renderer, texture, &source_rect, &dst_rect) == 0);
         } else {
             /* we need to draw multiple times */
             /* draw the first segment */
-            pixels_written = texture_w  - texture_x_walker;
+            pixels_written = texture_w - texture_x_walker;
             source_rect.w = pixels_written;
             source_rect.x = texture_x_walker;
-            dst_rect.x= x1;
+            dst_rect.x = x1;
             dst_rect.w = source_rect.w;
-                result |= (SDL_RenderCopy(renderer, texture, &source_rect, &dst_rect) == 0);
+            result |= (SDL_RenderCopy(renderer, texture, &source_rect, &dst_rect) == 0);
             write_width = texture_w;
 
             /* now draw the rest */
             /* set the source x to 0 */
             source_rect.x = 0;
-            while (pixels_written < w){
+            while (pixels_written < w) {
                 if (write_width >= w - pixels_written) {
-                    write_width =  w - pixels_written;
+                    write_width = w - pixels_written;
                 }
                 source_rect.w = write_width;
                 dst_rect.x = x1 + pixels_written;
                 dst_rect.w = source_rect.w;
-                    result |= (SDL_RenderCopy(renderer, texture, &source_rect, &dst_rect) == 0);
+                result |= (SDL_RenderCopy(renderer, texture, &source_rect, &dst_rect) == 0);
                 pixels_written += write_width;
             }
         }
@@ -2968,13 +2912,12 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int texturedPolygonMT(SDL_Renderer *renderer, const Sint16 * vx, const Sint16 * vy, int n,
-                          SDL_Surface * texture, int texture_dx, int texture_dy, int **polyInts, int *polyAllocated)
-    {
+    int texturedPolygonMT(SDL_Renderer *renderer, const Sint16 *vx, const Sint16 *vy, int n,
+                          SDL_Surface *texture, int texture_dx, int texture_dy, int **polyInts, int *polyAllocated) {
         int result;
         int i;
         int y, xa, xb;
-        int minx,maxx,miny, maxy;
+        int minx, maxx, miny, maxy;
         int x1, y1;
         int x2, y2;
         int ind1, ind2;
@@ -2994,7 +2937,7 @@ __declspec(naked) long int
         /*
         * Map polygon cache
         */
-        if ((polyInts==nullptr) || (polyAllocated==nullptr)) {
+        if ((polyInts == nullptr) || (polyAllocated == nullptr)) {
             /* Use global cache */
             gfxPrimitivesPolyInts = gfxPrimitivesPolyIntsGlobal;
             gfxPrimitivesPolyAllocated = gfxPrimitivesPolyAllocatedGlobal;
@@ -3015,7 +2958,7 @@ __declspec(naked) long int
                 gfxPrimitivesPolyIntsTemp = (int *) realloc(gfxPrimitivesPolyInts, sizeof(int) * n);
                 if (gfxPrimitivesPolyIntsTemp == nullptr) {
                     /* Realloc failed - keeps original memory block, but fails this operation */
-                    return(-1);
+                    return (-1);
                 }
                 gfxPrimitivesPolyInts = gfxPrimitivesPolyIntsTemp;
                 gfxPrimitivesPolyAllocated = n;
@@ -3025,15 +2968,15 @@ __declspec(naked) long int
         /*
         * Check temp array
         */
-        if (gfxPrimitivesPolyInts==nullptr) {
+        if (gfxPrimitivesPolyInts == nullptr) {
             gfxPrimitivesPolyAllocated = 0;
         }
 
         /*
         * Update cache variables
         */
-        if ((polyInts==nullptr) || (polyAllocated==nullptr)) {
-            gfxPrimitivesPolyIntsGlobal =  gfxPrimitivesPolyInts;
+        if ((polyInts == nullptr) || (polyAllocated == nullptr)) {
+            gfxPrimitivesPolyIntsGlobal = gfxPrimitivesPolyInts;
             gfxPrimitivesPolyAllocatedGlobal = gfxPrimitivesPolyAllocated;
         } else {
             *polyInts = gfxPrimitivesPolyInts;
@@ -3043,8 +2986,8 @@ __declspec(naked) long int
         /*
         * Check temp array again
         */
-        if (gfxPrimitivesPolyInts==nullptr) {
-            return(-1);
+        if (gfxPrimitivesPolyInts == nullptr) {
+            return (-1);
         }
 
         /*
@@ -3068,9 +3011,8 @@ __declspec(naked) long int
         }
 
         /* Create texture for drawing */
-            textureAsTexture = SDL_CreateTextureFromSurface(renderer, texture);
-        if (textureAsTexture == nullptr)
-        {
+        textureAsTexture = SDL_CreateTextureFromSurface(renderer, texture);
+        if (textureAsTexture == nullptr) {
             return -1;
         }
         SDL_SetTextureBlendMode(textureAsTexture, SDL_BLENDMODE_BLEND);
@@ -3102,7 +3044,7 @@ __declspec(naked) long int
                 } else {
                     continue;
                 }
-                if ( ((y >= y1) && (y < y2)) || ((y == maxy) && (y > y1) && (y <= y2)) ) {
+                if (((y >= y1) && (y < y2)) || ((y == maxy) && (y > y1) && (y <= y2))) {
                     gfxPrimitivesPolyInts[ints++] = ((65536 * (y - y1)) / (y2 - y1)) * (x2 - x1) + (65536 * x1);
                 }
             }
@@ -3112,14 +3054,15 @@ __declspec(naked) long int
             for (i = 0; (i < ints); i += 2) {
                 xa = gfxPrimitivesPolyInts[i] + 1;
                 xa = (xa >> 16) + ((xa & 32768) >> 15);
-                xb = gfxPrimitivesPolyInts[i+1] - 1;
+                xb = gfxPrimitivesPolyInts[i + 1] - 1;
                 xb = (xb >> 16) + ((xb & 32768) >> 15);
-                result |= _HLineTextured(renderer, xa, xb, y, textureAsTexture, texture->w, texture->h, texture_dx, texture_dy);
+                result |= _HLineTextured(renderer, xa, xb, y, textureAsTexture, texture->w, texture->h, texture_dx,
+                                         texture_dy);
             }
         }
 
-            SDL_RenderPresent(renderer);
-            SDL_DestroyTexture(textureAsTexture);
+        SDL_RenderPresent(renderer);
+        SDL_DestroyTexture(textureAsTexture);
 
         return (result);
     }
@@ -3140,8 +3083,8 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int texturedPolygon(SDL_Renderer *renderer, const Sint16 * vx, const Sint16 * vy, int n, SDL_Surface *texture, int texture_dx, int texture_dy)
-    {
+    int texturedPolygon(SDL_Renderer *renderer, const Sint16 *vx, const Sint16 *vy, int n, SDL_Surface *texture,
+                        int texture_dx, int texture_dy) {
         /*
         * Draw
         */
@@ -3159,44 +3102,43 @@ __declspec(naked) long int
 
     \returns Interpolated value at position t, value[0] when t<0, value[n-1] when t>n.
     */
-    double _evaluateBezier (double *data, int ndata, double t)
-    {
+    double _evaluateBezier(double *data, int ndata, double t) {
         double mu, result;
-        int n,k,kn,nn,nkn;
-        double blend,muk,munk;
+        int n, k, kn, nn, nkn;
+        double blend, muk, munk;
 
         /* Sanity check bounds */
-        if (t<0.0) {
-            return(data[0]);
+        if (t < 0.0) {
+            return (data[0]);
         }
-        if (t>=(double)ndata) {
-            return(data[ndata-1]);
+        if (t >= (double) ndata) {
+            return (data[ndata - 1]);
         }
 
         /* Adjust t to the range 0.0 to 1.0 */
-        mu=t/(double)ndata;
+        mu = t / (double) ndata;
 
         /* Calculate interpolate */
-        n=ndata-1;
-        result=0.0;
+        n = ndata - 1;
+        result = 0.0;
         muk = 1;
-        munk = pow(1-mu,(double)n);
-        for (k=0;k<=n;k++) {
+        munk = pow(1 - mu, (double) n);
+        for (k = 0; k <= n; k++) {
             nn = n;
             kn = k;
             nkn = n - k;
             blend = muk * munk;
             muk *= mu;
-            munk /= (1-mu);
+            munk /= (1 - mu);
             while (nn >= 1) {
                 blend *= nn;
                 nn--;
                 if (kn > 1) {
-                    blend /= (double)kn;
+                    blend /= (double) kn;
                     kn--;
                 }
                 if (nkn > 1) {
-                    blend /= (double)nkn;
+                    blend /= (double) nkn;
                     nkn--;
                 }
             }
@@ -3218,9 +3160,8 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int bezierColor(SDL_Renderer *renderer, const Sint16 * vx, const Sint16 * vy, int n, int s, Uint32 color)
-    {
-        Uint8 *c = (Uint8 *)&color;
+    int bezierColor(SDL_Renderer *renderer, const Sint16 *vx, const Sint16 *vy, int n, int s, Uint32 color) {
+        Uint8 *c = (Uint8 *) &color;
         return bezierRGBA(renderer, vx, vy, n, s, c[0], c[1], c[2], c[3]);
     }
 
@@ -3239,8 +3180,8 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int bezierRGBA(SDL_Renderer *renderer, const Sint16 * vx, const Sint16 * vy, int n, int s, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+    int bezierRGBA(SDL_Renderer *renderer, const Sint16 *vx, const Sint16 *vy, int n, int s, Uint8 r, Uint8 g, Uint8 b,
+                   Uint8 a) {
         int result;
         int i;
         double *x, *y, t, stepsize;
@@ -3259,40 +3200,40 @@ __declspec(naked) long int
         /*
         * Variable setup
         */
-        stepsize=(double)1.0/(double)s;
+        stepsize = (double) 1.0 / (double) s;
 
         /* Transfer vertices into float arrays */
-        if ((x=(double *)malloc(sizeof(double)*(n+1)))==nullptr) {
-            return(-1);
+        if ((x = (double *) malloc(sizeof(double) * (n + 1))) == nullptr) {
+            return (-1);
         }
-        if ((y=(double *)malloc(sizeof(double)*(n+1)))==nullptr) {
+        if ((y = (double *) malloc(sizeof(double) * (n + 1))) == nullptr) {
             free(x);
-            return(-1);
+            return (-1);
         }
-        for (i=0; i<n; i++) {
-            x[i]=(double)vx[i];
-            y[i]=(double)vy[i];
+        for (i = 0; i < n; i++) {
+            x[i] = (double) vx[i];
+            y[i] = (double) vy[i];
         }
-        x[n]=(double)vx[0];
-        y[n]=(double)vy[0];
+        x[n] = (double) vx[0];
+        y[n] = (double) vy[0];
 
         /*
         * Set color
         */
         result = 0;
-            result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
-            result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
+        result |= SDL_SetRenderDrawBlendMode(renderer, (a == 255) ? SDL_BLENDMODE_NONE : SDL_BLENDMODE_BLEND);
+        result |= SDL_SetRenderDrawColor(renderer, r, g, b, a);
 
         /*
         * Draw
         */
-        t=0.0;
-        x1=(Sint16)lrint(_evaluateBezier(x,n+1,t));
-        y1=(Sint16)lrint(_evaluateBezier(y,n+1,t));
-        for (i = 0; i <= (n*s); i++) {
+        t = 0.0;
+        x1 = (Sint16) lrint(_evaluateBezier(x, n + 1, t));
+        y1 = (Sint16) lrint(_evaluateBezier(y, n + 1, t));
+        for (i = 0; i <= (n * s); i++) {
             t += stepsize;
-            x2=(Sint16)_evaluateBezier(x,n,t);
-            y2=(Sint16)_evaluateBezier(y,n,t);
+            x2 = (Sint16) _evaluateBezier(x, n, t);
+            y2 = (Sint16) _evaluateBezier(y, n, t);
             result |= line(renderer, x1, y1, x2, y2);
             x1 = x2;
             y1 = y2;
@@ -3318,9 +3259,8 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int thickLineColor(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint8 width, Uint32 color)
-    {
-        Uint8 *c = (Uint8 *)&color;
+    int thickLineColor(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint8 width, Uint32 color) {
+        Uint8 *c = (Uint8 *) &color;
         return thickLineRGBA(renderer, x1, y1, x2, y2, width, c[0], c[1], c[2], c[3]);
     }
 
@@ -3340,8 +3280,8 @@ __declspec(naked) long int
 
     \returns Returns 0 on success, -1 on failure.
     */
-    int thickLineRGBA(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint8 width, Uint8 r, Uint8 g, Uint8 b, Uint8 a)
-    {
+    int thickLineRGBA(SDL_Renderer *renderer, Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint8 width, Uint8 r, Uint8 g,
+                      Uint8 b, Uint8 a) {
         int wh;
         double dx, dy, dx1, dy1, dx2, dy2;
         double l, wl2, nx, ny, ang, adj;
@@ -3363,28 +3303,28 @@ __declspec(naked) long int
         }
 
         /* Calculate offsets for sides */
-        dx = (double)(x2 - x1);
-        dy = (double)(y2 - y1);
-        l = SDL_sqrt(dx*dx + dy*dy);
+        dx = (double) (x2 - x1);
+        dy = (double) (y2 - y1);
+        l = SDL_sqrt(dx * dx + dy * dy);
         ang = SDL_atan2(dx, dy);
         adj = 0.1 + 0.9 * SDL_fabs(SDL_cos(2.0 * ang));
-        wl2 = ((double)width - adj)/(2.0 * l);
+        wl2 = ((double) width - adj) / (2.0 * l);
         nx = dx * wl2;
         ny = dy * wl2;
 
         /* Build polygon */
-        dx1 = (double)x1;
-        dy1 = (double)y1;
-        dx2 = (double)x2;
-        dy2 = (double)y2;
-        px[0] = (Sint16)(dx1 + ny);
-        px[1] = (Sint16)(dx1 - ny);
-        px[2] = (Sint16)(dx2 - ny);
-        px[3] = (Sint16)(dx2 + ny);
-        py[0] = (Sint16)(dy1 - nx);
-        py[1] = (Sint16)(dy1 + nx);
-        py[2] = (Sint16)(dy2 + nx);
-        py[3] = (Sint16)(dy2 - nx);
+        dx1 = (double) x1;
+        dy1 = (double) y1;
+        dx2 = (double) x2;
+        dy2 = (double) y2;
+        px[0] = (Sint16) (dx1 + ny);
+        px[1] = (Sint16) (dx1 - ny);
+        px[2] = (Sint16) (dx2 - ny);
+        px[3] = (Sint16) (dx2 + ny);
+        py[0] = (Sint16) (dy1 - nx);
+        py[1] = (Sint16) (dy1 + nx);
+        py[2] = (Sint16) (dy2 + nx);
+        py[3] = (Sint16) (dy2 - nx);
 
         /* Draw polygon */
         return filledPolygonRGBA(renderer, px, py, 4, r, g, b, a);
