@@ -349,34 +349,38 @@ namespace guipi {
          */
 
 #if __cplusplus == 201703L
-        static constexpr array<string_view, 8> initialSatelliteList{
+        static constexpr array<string_view, 9> initialSatelliteList{
                 "ISS",
-                "NOAA_15",
-                "NOAA_18",
-                "NOAA_19",
-                "NOAA_20",
+                "AO-92", // AO-91
+                "SO-50",
+                "IO-26",
+                "DIWATA-2",
+                "FOX-1B",
                 "AO-7",
                 "AO-27",
                 "AO-73"
         };
 #else
         vector<char const *> initialSatelliteList{
-            "ISS",
-                    "NOAA_15",
-                    "NOAA_18",
-                    "NOAA_19",
-                    "NOAA_20",
-                    "AO-7",
-                    "AO-27",
-                    "AO-73"
+                "ISS",
+                "AO-92", // AO-91
+                "SO-50",
+                "IO-26",
+                "DIWATA-2",
+                "FOX-1B",
+                "AO-7",
+                "AO-27",
+                "AO-73"
         };
 #endif
 
         Uint32 timerCallback(Uint32 interval) {
+            // Reap the ephemeris loading thread.
             if (mEphemerisThread.joinable()) {
                 mEphemerisThread.join();
             }
 
+            // If there is no ephemris loaded, try to get it.
             if (mEphemeris.empty()) {
                 mEphemerisThread = thread([this]() {
                     lock_guard<mutex> lockGuard(mEphemerisMutex);
