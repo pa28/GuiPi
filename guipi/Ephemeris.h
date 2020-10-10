@@ -86,8 +86,15 @@ namespace guipi {
             return predict(name, predictionTime);
         }
 
+        [[nodiscard]] optional<Satellite> satellite(const string &name) const {
+            if (haveEphemeris(name)) {
+                return Satellite{satelliteEphemerisMap.at(name)};
+            }
+            return nullopt;
+        }
+
         [[nodiscard]] optional<Vector2f> predict(const string &name, const DateTime &predictionTime) const {
-            try {
+            if (haveEphemeris(name)) {
                 Satellite satellite{satelliteEphemerisMap.at(name)};
                 satellite.predict(predictionTime);
 #if __cplusplus == 201703L
@@ -99,10 +106,7 @@ namespace guipi {
 #endif
                 return optional<Vector2f>{Vector2f{(float) lon, (float) lat}};
             }
-
-            catch (const out_of_range &e) {
-                return optional<Vector2f>{};
-            }
+            return nullopt;
         }
 
         [[nodiscard]] Earthsat nextPass(const string &name, const Observer &observer) const {
