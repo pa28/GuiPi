@@ -96,7 +96,7 @@ namespace sdlgui {
         }
 
         void push_back(ImageStore::size_type index, ImageData imageData) {
-            if (mImageStore.empty())
+            if (mImageStore.empty() || mImageStore.size() <= index)
                 mImageStore.push_back(ImageDataList{});
             mImageStore[index].push_back(move(imageData));
         }

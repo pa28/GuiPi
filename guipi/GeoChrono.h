@@ -10,10 +10,11 @@
 #include <chrono>
 #include <mutex>
 #include <thread>
-#include <guipi/Ephemeris.h>
 #include <sdlgui/widget.h>
 #include <sdlgui/TimeBox.h>
 #include <sdlgui/Image.h>
+#include <guipi/EphemerisModel.h>
+#include <sdlgui/ImageRepository.h>
 #include <guipi/GfxPrimitives.h>
 #include <guipi/PassTracker.h>
 
@@ -64,6 +65,7 @@ namespace guipi {
         Surface mDayAzMap;          //< The surface holding the generated day Azmuthal map
         Surface mNightAzMap;        //< The surface holding the generated night Azuthal map
         Surface mBackdropImage;
+        ref<ImageRepository> mIconRepository;
         bool mBackdropDirty{};
         bool mAzimuthalDisplay{false};
         bool mAzimuthalEffective{false};
@@ -79,6 +81,19 @@ namespace guipi {
 
         Vector2f mStationLocation;  //< The longitude x, latitude y (in radians, West/South negative) of the station.
         Observer mObserver;
+
+        EphemerisModel::OrbitTrackingData mNewOrbitData;
+
+        ImageRepository::ImageStoreIndex mBaseIconIndex;
+
+        struct WorkingOrbitData {
+            float lat, lon;
+            Vector2i mapLoc;
+            bool mapLocDirty;
+            ImageRepository::ImageStoreIndex iconIdx;
+        };
+
+        vector<WorkingOrbitData> mWorkingOrbitData;
 
         std::function<void(GeoChrono &, EventType)> mCallback;
 
@@ -103,9 +118,8 @@ namespace guipi {
         typedef std::shared_ptr<AsyncTexture> AsyncTexturePtr;
         std::vector<AsyncTexturePtr> _txs;
 
-        PlotPackage mSun;
+        Vector2f mSun_GeoCoord;
 
-        vector<PlotPackage> mPlotPackage{};
     public:
         ref<PassTracker> mPassTracker;
     protected:
@@ -226,9 +240,8 @@ namespace guipi {
         }
 
         void invalidateMapCoordinates() {
-            for (auto & plotItem : mPlotPackage) {
-                plotItem.mMapCoordValid = false;
-            }
+            for (auto &orbit : mWorkingOrbitData)
+                orbit.mapLocDirty = true;
         }
 
         ref<GeoChrono> withAzmuthalDisplay(bool azumthal) { setAzmuthalDisplay(azumthal); return ref<GeoChrono>{this}; }
@@ -254,18 +267,15 @@ namespace guipi {
 
         ref<GeoChrono> withSatelliteDisplay(bool satellite) { setSatelliteDisplay(satellite); return ref<GeoChrono>{this}; }
 
-        void setPlotPackage(vector<PlotPackage> plotPackage) { mPlotPackage = plotPackage; }
-
-        vector<PlotPackage> &getPlotPackage() { return mPlotPackage; }
-
-        ref<GeoChrono> withPlotPackage(vector<PlotPackage> plotPackage) {
-            mPlotPackage = move(plotPackage);
+        ref<GeoChrono> withImageRepository(const ref<ImageRepository> &iconRepository, ImageRepository::ImageStoreIndex &baseIdx) {
+            mIconRepository = iconRepository;
+            mBaseIconIndex = baseIdx;
+            mPassTracker->withIconRepository(iconRepository);
             return ref<GeoChrono>{this};
         }
 
-        ref<GeoChrono> withImageRepository(ref<ImageRepository> imageRepository) {
-            mPassTracker->withImageRepository(imageRepository);
-            return ref<GeoChrono>{this};
+        void setOrbitalData(EphemerisModel::OrbitTrackingData data) {
+            mNewOrbitData = move(data);
         }
 
         void transparentForeground();
@@ -277,7 +287,7 @@ namespace guipi {
          * @param geoCoord the geographic coordinate of the icon
          * @param icon the icon pre-rendered as a texture.
          */
-        void renderMapIcon(SDL_Renderer *renderer, const Vector2i& mapLocation, PlotPackage &plotItem) const;
+//        void renderMapIcon(SDL_Renderer *renderer, const Vector2i& mapLocation, PlotPackage &plotItem) const;
 
         /**
          * Create a texture of an icon

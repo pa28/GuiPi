@@ -10,9 +10,6 @@
 */
 
 #include <algorithm>
-#include <mutex>
-#include <string_view>
-#include <thread>
 #include <SDL2/SDL.h>
 #include <sdlgui/entypo.h>
 #include <guipi/GeoChrono.h>
@@ -25,8 +22,8 @@
 #include <sdlgui/tabwidget.h>
 #include <sdlgui/TimeBox.h>
 #include <guipi/GuiPiApplication.h>
-#include <guipi/Ephemeris.h>
-#include <guipi/SatelliteDataDisplay.h>
+#include <guipi/EphemerisModel.h>
+//#include <guipi/SatelliteDataDisplay.h>
 
 using namespace sdlgui;
 
@@ -47,13 +44,10 @@ namespace guipi {
         sdlgui::ref<Window> mPopupWindow;
         sdlgui::ref<ImageRepository> mImageRepository;
 
-        Ephemeris mEphemeris;
-        thread mEphemerisThread;
-        mutex mEphemerisMutex;
-        Timer<HamChrono> mTimer;
-
         ref<ImageRepository> mIconRepository;
-        ref<SatelliteDataDisplay> mSatelliteDataDisplay;
+//        ref<SatelliteDataDisplay> mSatelliteDataDisplay;
+
+        EphemerisModel mEphemerisModel{};
 
     public:
         ~HamChrono() override = default;
@@ -77,113 +71,67 @@ namespace guipi {
         const char *backdrop = "NASA_Nebula.png";
 #endif
 
-#if __cplusplus == 201703L
-        struct PlotPackageConfig {
-            string_view name;
-            PlotItemType itemType;
-            int icon;
-            int size;
-            array<uint8_t ,4>color;
-        };
+        static Vector2f antipode(const Vector2f &location) {
+            return Vector2f{(location.x < 0 ? 1.f : -1.f) * ((float) M_PI - abs(location.x)), -location.y};
+        }
 
-        static constexpr array<PlotPackageConfig, 9> mPlotPackageConfig = {
-                PlotPackageConfig{"QTH", PlotItemType::GEO_LOCATION_QTH, ENTYPO_ICON_HAIR_CROSS,
-                                  50, {0, 255, 0, 255}},
-                PlotPackageConfig{"A_QTH", PlotItemType::GEO_LOCATION_ANTIPODE, ENTYPO_ICON_HAIR_CROSS,
-                                  50, {255, 0, 0, 255}},
-                PlotPackageConfig{"Moon", PlotItemType::CELESTIAL_BODY_MOON, ENTYPO_ICON_MOON,
-                                  50, {255, 255, 255, 255}},
-                PlotPackageConfig{"Sun", PlotItemType::CELESTIAL_BODY_SUN, ENTYPO_ICON_LIGHT_UP,
-                                  50, {255, 255, 0, 255}},
-                PlotPackageConfig{"", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
-                                  30, {0, 255, 0, 255}},
-                PlotPackageConfig{"", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
-                                  30, {255, 128, 128, 255}},
-                PlotPackageConfig{"", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
-                                  30, {255, 0, 255, 255}},
-                PlotPackageConfig{"", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
-                                  30, {128, 64, 255, 255}},
-                PlotPackageConfig{"", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
-                                  30, {255, 0, 0, 255}}
-        };
-#else
-        struct PlotPackageConfig {
-            const char *name;
-            PlotItemType itemType;
+        struct IconRepositoryData {
             int icon;
             int size;
             array<uint8_t, 4> color;
         };
 
-        vector<guipi::HamChrono::PlotPackageConfig> mPlotPackageConfig{
-                PlotPackageConfig{"QTH", PlotItemType::GEO_LOCATION_QTH, ENTYPO_ICON_HAIR_CROSS,
-                                  50, {0, 255, 0, 255}},
-                PlotPackageConfig{"A_QTH", PlotItemType::GEO_LOCATION_ANTIPODE, ENTYPO_ICON_HAIR_CROSS,
-                                  50, {255, 0, 0, 255}},
-                PlotPackageConfig{"Moon", PlotItemType::CELESTIAL_BODY_MOON, ENTYPO_ICON_MOON,
-                                  50, {255, 255, 255, 255}},
-                PlotPackageConfig{"Sun", PlotItemType::CELESTIAL_BODY_SUN, ENTYPO_ICON_LIGHT_UP,
-                                  50, {255, 255, 0, 255}},
-                PlotPackageConfig{"NOAA_15", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
-                                  30, {0, 255, 0, 255}},
-                PlotPackageConfig{"NOAA_18", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
-                                  30, {255, 128, 128, 255}},
-                PlotPackageConfig{"NOAA_19", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
-                                  30, {255, 0, 255, 255}},
-                PlotPackageConfig{"NOAA_20", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
-                                  30, {128, 64, 255, 255}},
-                PlotPackageConfig{"ISS", PlotItemType::EARTH_SATELLITE, ENTYPO_ICON_RECORD,
-                                  30, {255, 0, 0, 255}}
+        // Icons for geographic locations ImageRepository::ImageStoreIndex idx{0, x}
+        static constexpr array<IconRepositoryData, 2> mGeoLocationIcons = {
+                IconRepositoryData{ENTYPO_ICON_HAIR_CROSS, 50, {0, 255, 0, 255}},
+                IconRepositoryData{ENTYPO_ICON_HAIR_CROSS, 50, {0, 255, 0, 255}}
         };
-#endif
 
-        static Vector2f antipode(const Vector2f &location) {
-            return Vector2f{(location.x < 0 ? 1.f : -1.f) * ((float) M_PI - abs(location.x)), -location.y};
-        }
+        // Icons for celestial objects ImageRepository::ImageStoreIndex idx{1, x}
+        static constexpr array<IconRepositoryData, 2> mCelestialIcons = {
+                IconRepositoryData{ENTYPO_ICON_LIGHT_UP, 50, {255, 255, 0, 255}},
+                IconRepositoryData{ENTYPO_ICON_MOON, 50, {255, 255, 255, 255}}
+        };
 
-        vector<PlotPackage> buildPlotPackage() {
-            vector<PlotPackage> plotPackage;
+        // Icons for satellites ImageRepository::ImageStoreIndex idx{2, x}
+        static constexpr array<IconRepositoryData, 5> mSatOrbitIcons = {
+                IconRepositoryData{ENTYPO_ICON_RECORD,30, {0, 255, 0, 255}},
+                IconRepositoryData{ENTYPO_ICON_RECORD,30, {255, 128, 128, 255}},
+                IconRepositoryData{ENTYPO_ICON_RECORD,30, {255, 0, 255, 255}},
+                IconRepositoryData{ENTYPO_ICON_RECORD,30, {128, 64, 255, 255}},
+                IconRepositoryData{ENTYPO_ICON_RECORD,30, {255, 0, 0, 255}}
+        };
 
+        void buildIconRepository() {
             ImageRepository::ImageStoreIndex idx{0, 0};
-            for (auto &conf : mPlotPackageConfig) {
-                if (conf.icon) {
-                    ImageData imageData{createIcon(conf.icon, conf.size,
-                                                   Color{get<0>(conf.color), get<1>(conf.color), get<2>(conf.color),
-                                                         get<3>(conf.color)})};
-                    mIconRepository->push_back(idx.first, move(imageData));
-                    PlotPackage plot;
-                    switch (conf.itemType) {
-                        case GEO_LOCATION_QTH:
-                            plot = PlotPackage{conf.name, conf.itemType, qthLatLon};
-                            break;
-                        case GEO_LOCATION_ANTIPODE:
-                            plot = PlotPackage{conf.name, conf.itemType, antipode(qthLatLon)};
-                            break;
-                        case CELESTIAL_BODY_SUN:
-                        case CELESTIAL_BODY_MOON:
-                        case EARTH_SATELLITE:
-                            plot = PlotPackage{conf.name, conf.itemType};
-                            break;
-                        default:
-                            throw (logic_error("Can't configure PlotPackage/Icon as defined."));
-                    }
-                    plot.mImageRepository = mIconRepository;
-                    plot.mImageIndex = idx;
-                    plotPackage.push_back(plot);
-                    ++idx.second;
-                } else {
-                    throw (logic_error("Can't configure PlotPackage/Icon as defined."));
-                }
+            for (auto &conf : mGeoLocationIcons) {
+                ImageData imageData{createIcon(conf.icon, conf.size,
+                                               Color{get<0>(conf.color), get<1>(conf.color), get<2>(conf.color),
+                                                     get<3>(conf.color)})};
+                mIconRepository->push_back(idx.first, move(imageData));
             }
+            ++idx.first;
 
-            mGeoChrono->withImageRepository(mIconRepository);
-            return move(plotPackage);
+            for (auto &conf : mCelestialIcons) {
+                ImageData imageData{createIcon(conf.icon, conf.size,
+                                               Color{get<0>(conf.color), get<1>(conf.color), get<2>(conf.color),
+                                                     get<3>(conf.color)})};
+                mIconRepository->push_back(idx.first, move(imageData));
+            }
+            ++idx.first;
+
+            for (auto &conf : mSatOrbitIcons) {
+                ImageData imageData{createIcon(conf.icon, conf.size,
+                                               Color{get<0>(conf.color), get<1>(conf.color), get<2>(conf.color),
+                                                     get<3>(conf.color)})};
+                mIconRepository->push_back(idx.first, move(imageData));
+            }
         }
 
         HamChrono(SDL_Window *pwindow, int rwidth, int rheight)
-                : GuiPiApplication(pwindow, rwidth, rheight, "HamChrono"),
-                  mTimer(*this, &HamChrono::timerCallback, 60000) {
+                : GuiPiApplication(pwindow, rwidth, rheight, "HamChrono") {
             mIconRepository = new ImageRepository{};
+            buildIconRepository();
 
             qthLatLon = Vector2f(deg2rad(-76.0123), deg2rad(44.9016));
             mObserver = Observer{44.9016, -76.0123, 0.};
@@ -192,8 +140,6 @@ namespace guipi {
             Vector2i topAreaSize(mScreenSize.x, mScreenSize.y - mapAreaSize.y);
             Vector2i botAreaSize(mScreenSize.x, mScreenSize.y - topAreaSize.y);
             Vector2i sideBarSize(mScreenSize.x - mapAreaSize.x, mapAreaSize.y);
-
-            timerCallback(0);
 
             mMainWindow = add<Window>("", Vector2i::Zero())->withBlank(true)
                     ->withFixedSize(mScreenSize)
@@ -258,7 +204,9 @@ namespace guipi {
             auto mapArea = botArea->add<Widget>()->withFixedSize(mapAreaSize)->withId("mapArea")
                     ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 0, 0);
 
+            ImageRepository::ImageStoreIndex satIdx{2, 0};
             mGeoChrono = mapArea->add<GeoChrono>()
+                    ->withImageRepository(mIconRepository, satIdx)
                     ->withObserver(mObserver)
                     ->withStationCoordinates(qthLatLon)
                     ->withBackgroundFile(string(map_path) + string(night_map))
@@ -266,9 +214,9 @@ namespace guipi {
                     ->withBackdropFile(string(background_path) + string(backdrop))
                     ->withFixedSize(Vector2i(EARTH_BIG_W, EARTH_BIG_H));
 
-            auto plotPackage = buildPlotPackage();
-            mGeoChrono->setPlotPackage(plotPackage);
-            timerCallback(0); // TODO: should clean this up, hoist the prediction/sorting functin.
+            mEphemerisModel.setOrbitTrackingCallback([this](auto data) {
+                mGeoChrono->setOrbitalData(data);
+            });
 
             auto switches = topArea->add<Widget>()
                     ->withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 0, 0);
@@ -314,22 +262,13 @@ namespace guipi {
                     ->add<ToolButton>(ENTYPO_ICON_LIGHT_DOWN, Button::Flags::ToggleButton)->_and()
                     ->add<ToolButton>(ENTYPO_ICON_HAIR_CROSS, Button::Flags::ToggleButton);
 
-//            auto esv = sideBar->add<Widget>()->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 0, 0);
-//
-//            for (auto &plot : mGeoChrono->getPlotPackage()) {
-//                if (plot.mPlotItemType == EARTH_SATELLITE) {
-//                    esv->add<Widget>()->withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 0, 0)
-//                            ->add<Label>(plot.mName)->withFont(mTheme->mBoldFont)->withFontSize(15);
-//                }
-//            }
-
             auto tab = sideBar->add<TabWidget>();
 
             Widget *layer = tab->createTab("S", ENTYPO_ICON_ROCKET);
             layer->setLayout(new BoxLayout(Orientation::Vertical, Alignment::Minimum, 0, 0));
 
             // Use overloaded variadic add to fill the tab widget with Different tabs.
-            mSatelliteDataDisplay = layer->add<SatelliteDataDisplay>(mGeoChrono)->withFixedWidth(sideBarSize.x - 20);
+//            mSatelliteDataDisplay = layer->add<SatelliteDataDisplay>(mGeoChrono)->withFixedWidth(sideBarSize.x - 20);
 
             layer = tab->createTab("D", ENTYPO_ICON_LOCATION);
             layer->setLayout(new BoxLayout(Orientation::Vertical, Alignment::Minimum, 0, 0));
@@ -338,127 +277,13 @@ namespace guipi {
             layer->add<Label>("Stations", "sans-bold")->withFixedWidth(sideBarSize.x - 20);
 
             tab->setActiveTab(0);
+
+            mEphemerisModel.loadEphemerisLibrary();
+            mEphemerisModel.setSatellitesOfInterest("ISS,AO-92,FO-99,IO-26,DIWATA-2,FOX-1B,AO-7,AO-27,AO-73,SO-50");
+            mEphemerisModel.timerCallback(0);
         }
 
         void drawContents() override {
-        }
-
-    public:
-        /**
-         * The timer callback
-         * @param interval
-         * @return the new interval
-         */
-
-#if __cplusplus == 201703L
-        static constexpr array<string_view, 10> initialSatelliteList{
-                "ISS",
-                "AO-92", // AO-91
-                "FO-99", //"SO-50",
-                "IO-26",
-                "DIWATA-2",
-                "FOX-1B",
-                "AO-7",
-                "AO-27",
-                "AO-73",
-                "SO-50"
-        };
-#else
-        vector<char const *> initialSatelliteList{
-                "ISS",
-                "AO-92", // AO-91
-                "SO-50",
-                "IO-26",
-                "DIWATA-2",
-                "FOX-1B",
-                "AO-7",
-                "AO-27",
-                "AO-73"
-        };
-#endif
-
-        Uint32 timerCallback(Uint32 interval) {
-            // Reap the ephemeris loading thread.
-            if (mEphemerisThread.joinable()) {
-                mEphemerisThread.join();
-            }
-
-            // If there is no ephemris loaded, try to get it.
-            if (mEphemeris.empty()) {
-                mEphemerisThread = thread([this]() {
-//                    lock_guard<mutex> lockGuard(mEphemerisMutex);
-                    mEphemeris.loadEphemeris();
-                });
-
-                return interval;
-            }
-
-//            lock_guard<mutex> lockGuard(mEphemerisMutex);
-
-            // TODO: Prevent concurrent access to GeoChrono::mPlotPackage inside and outside the owner class.
-
-            // Predict location and next pass for each currently predicted satellite.
-            DateTime now{true};
-            bool changed = false;
-            for (auto &plotItem : mGeoChrono->getPlotPackage()) {
-                if (plotItem.mName.empty()) {
-                    changed = true;
-                } else if (plotItem.mPlotItemType == EARTH_SATELLITE && !plotItem.mName.empty()) {
-                    plotItem.predict(mEphemeris);
-                    plotItem.predictPass(mEphemeris, mObserver);
-                    plotItem.mEarthsat.roundPassTimes();
-
-                    // If the predicted rise time is less than two minutes away
-                    if ((plotItem.mEarthsat.riseTime() - now) * 86400. < 120) {
-                        auto satellite = mEphemeris.satellite(plotItem.mName);
-                        if (satellite)
-                            mGeoChrono->passTracker()->addSatellite(satellite.value());
-                    }
-                }
-            }
-
-            // Sort in order of increasing rise time, and look for changes in order.
-            sort(mGeoChrono->getPlotPackage().begin(), mGeoChrono->getPlotPackage().end(),
-                 [&changed](PlotPackage &p0, PlotPackage &p1) {
-                     auto r = p0.compareLt(p1);
-                     changed |= r;
-                     return r;
-                 });
-
-            // If the order has changed it means that the list should be refreshed.
-            if (changed) {
-                // Get ephemeris for the list of satellites the user wants tracked,
-                // and predict the next pass.
-                vector<pair<string, Earthsat>> passList;
-                for (auto &sat : initialSatelliteList) {
-                    Earthsat earthsat{};
-                    earthsat = mEphemeris.nextPass(string(sat), mObserver);
-                    passList.emplace_back(pair<string, Earthsat>{string(sat), earthsat});
-                }
-
-                // Sort the list by rise time.
-                sort(passList.begin(), passList.end(), [](auto p0, auto p1) {
-                    return p0.second.riseTime() < p1.second.riseTime();
-                });
-
-                // Move the new list into the GeoChrono and predict the current location.
-                auto pass = passList.begin();
-                for (auto &plotItem : mGeoChrono->getPlotPackage()) {
-                    if (pass == passList.end())
-                        break;
-                    if (plotItem.mPlotItemType == EARTH_SATELLITE) {
-                        plotItem.mName = pass->first;
-                        plotItem.mEarthsat = pass->second;
-                        plotItem.predict(mEphemeris);
-                        ++pass;
-                    }
-                }
-
-                if (mSatelliteDataDisplay)
-                    mSatelliteDataDisplay->updateSatelliteData();
-            }
-
-            return interval;
         }
     };
 }

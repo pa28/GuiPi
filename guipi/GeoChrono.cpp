@@ -14,7 +14,6 @@
 #include <sdlgui/entypo.h>
 #include <sdlgui/screen.h>
 #include <sdlgui/Image.h>
-#include <guipi/PassTracker.h>
 #include "GeoChrono.h"
 
 #include "sdlgui/nanovg.h"
@@ -298,6 +297,32 @@ namespace guipi {
             if (mForeground) {
                 auto passTrackerVisible = mPassTracker->visible();
 
+                if (!mNewOrbitData.empty()) {
+                    mWorkingOrbitData.clear();
+                    ImageRepository::ImageStoreIndex idx = mBaseIconIndex;
+                    for (auto &data : mNewOrbitData) {
+                        WorkingOrbitData wd{(float)get<1>(data), (float)get<2>(data), Vector2i::Zero(), true, idx};
+                        mWorkingOrbitData.emplace_back(wd);
+                        if (++idx.second >= mIconRepository->size(idx.first))
+                            break;
+                    }
+                    mNewOrbitData.clear();
+                }
+
+                if (mSatelliteDisplay && !mWorkingOrbitData.empty()) {
+                    for (auto &orbit : mWorkingOrbitData) {
+                        if (orbit.mapLocDirty)
+                            orbit.mapLoc = latLongToMap(orbit.lat, orbit.lon);
+                        orbit.mapLocDirty = false;
+                        auto imageSize = mIconRepository->imageSize(orbit.iconIdx);
+                        auto list = renderMapIconRect(p, orbit.mapLoc, imageSize);
+                        for (auto &copySet : list) {
+                            mIconRepository->renderCopy(renderer, orbit.iconIdx,copySet.first,copySet.second);
+                        }
+                    }
+                }
+
+#if 0
                 for (auto &plotItem : mPlotPackage) {
                     switch (plotItem.mPlotItemType) {
                         case CELESTIAL_BODY:
@@ -376,6 +401,7 @@ namespace guipi {
                         }
                     }
                 }
+#endif
             }
         }
 
@@ -553,7 +579,7 @@ namespace guipi {
         Vector2f mSubSolar;
         mSubSolar.x = lonS;
         mSubSolar.y = latS;
-        mSun.mGeoCoord = mSubSolar;
+        mSun_GeoCoord = mSubSolar;
 
         float siny = sin(mStationLocation.y);
         float cosy = cos(mStationLocation.y);

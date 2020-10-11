@@ -251,6 +251,8 @@ Satellite::tle(const std::string &l1, const std::string &l2) {
 
 void
 Satellite::predict(const DateTime &dt) {
+    mPrediction = dt;
+
     long DN = dt.DN;
     double TN = dt.TN;
 

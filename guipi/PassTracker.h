@@ -27,7 +27,6 @@
 #include <sdlgui/widget.h>
 #include <sdlgui/Image.h>
 #include <sdlgui/TimeBox.h>
-#include <guipi/Ephemeris.h>
 
 namespace guipi {
     using namespace sdlgui;
@@ -61,7 +60,7 @@ namespace guipi {
         };
 
         map<string,PassPlot> mPassPlotMap;
-        ref<ImageRepository> mImageRepository;
+        sdlgui::ref<ImageRepository> mImageRepository;
 
     public:
 
@@ -81,10 +80,10 @@ namespace guipi {
         sdlgui::ref<PassTracker> withObserver(const Observer &observer) { setObserver(observer); return sdlgui::ref{this}; }
         Observer observer() const { return mObserver; }
 
-        void setImageRepository(ref<ImageRepository> imageRepository) { mImageRepository = imageRepository; }
-        sdlgui::ref<PassTracker> withImageRepository(ref<ImageRepository> imageRepository ) {
+        void setImageRepository(sdlgui::ref<ImageRepository> imageRepository) { mImageRepository = imageRepository; }
+        sdlgui::ref<PassTracker> withIconRepository(sdlgui::ref<ImageRepository> imageRepository ) {
             setImageRepository(imageRepository);
-            return ref<PassTracker>{this};
+            return sdlgui::ref<PassTracker>{this};
         }
 
         void addSatellite(Satellite &satellite);

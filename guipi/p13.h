@@ -360,6 +360,8 @@ public:
     Vec3 SAT{}, VEL{};        // celestial coordinates
     Vec3 S{}, V{};        // geocentric coordinates
 
+    DateTime mPrediction{};
+
     Satellite() = default;
 
     /**
