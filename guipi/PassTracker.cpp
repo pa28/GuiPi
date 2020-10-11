@@ -8,19 +8,15 @@
 #include "PassTracker.h"
 
 guipi::PassTracker::PassTracker(sdlgui::Widget *parent, const sdlgui::Vector2i &position,
-                                const sdlgui::Vector2i &fixedSize) : Widget(parent),
-                                mTimer(*this, &PassTracker::timerCallback, 2000){
+                                const sdlgui::Vector2i &fixedSize) : Widget(parent) {
     setPosition(position);
     setFixedSize(fixedSize);
 }
 
 
-guipi::PassTracker::PassTracker(sdlgui::Widget *parent) : Widget(parent),
-        mTimer(*this, &PassTracker::timerCallback, 2000) {
+guipi::PassTracker::PassTracker(sdlgui::Widget *parent) : Widget(parent) {}
 
-}
-
-
+#if 0
 Uint32 guipi::PassTracker::timerCallback(Uint32 interval) {
     DateTime now{true};
     for (auto & plot : mPassPlotMap) {
@@ -51,9 +47,27 @@ Uint32 guipi::PassTracker::timerCallback(Uint32 interval) {
 
     return interval;
 }
+#endif
 
 void guipi::PassTracker::draw(SDL_Renderer *renderer) {
     Widget::draw(renderer);
+
+    if (mNewTrackingDataFlag) {
+        mPassPlotMap.clear();
+
+        for (auto &pass : mNewTrackingData) {
+            auto az = RADIANS(std::get<2>(pass));
+            auto el = RADIANS(std::get<1>(pass));
+            auto r = (M_PI_2 - el) / M_PI_2 * 150.;
+            auto x = roundToInt(r * sin(az)) + 165;
+            auto y = roundToInt( -r * cos(az)) + 165;
+
+            mPassPlotMap.emplace(std::get<0>(pass),
+                                 PassPlot{x, y, el, az});
+        }
+    }
+
+    setVisible(!mPassPlotMap.empty());
 
     if (visible()) {
         int ax = getAbsoluteLeft();
@@ -71,7 +85,6 @@ void guipi::PassTracker::draw(SDL_Renderer *renderer) {
         SDL_Rect dst{ ax, ay, mSize.x, mSize.y};
         dst = clip_rects(dst,clipRect);
 
-        ImageRepository::ImageStoreIndex imageStoreIndex{0, 1};
         if (mBackground) {
             SDL_RenderCopy(renderer, mBackground.get(), &src, &dst);
             for (auto & plot : mPassPlotMap) {
@@ -79,10 +92,10 @@ void guipi::PassTracker::draw(SDL_Renderer *renderer) {
                     plot.second.imageData.set(mTheme->getTexAndRectUtf8(renderer, 0, 0, plot.first.c_str(),
                                               mTheme->mBoldFont.c_str(), 15, mTheme->mTextColor));
                 }
-                auto iconSize = mImageRepository->imageSize(imageStoreIndex);
+                auto iconSize = mImageRepository->imageSize(mBaseIndex);
                 SDL_Rect iconSrc{0, 0, iconSize.x, iconSize.y};
                 SDL_Rect iconDst{ ax + plot.second.x - iconSize.x/2, ay + plot.second.y - iconSize.y/2, iconSize.x, iconSize.y };
-                mImageRepository->renderCopy(renderer, imageStoreIndex, iconSrc, iconDst);
+                mImageRepository->renderCopy(renderer, mBaseIndex, iconSrc, iconDst);
 
                 SDL_Rect labelSrc{ 0, 0, plot.second.imageData.w, plot.second.imageData.h};
                 // Default location below and right.
@@ -120,16 +133,4 @@ void guipi::PassTracker::drawBackground(SDL_Renderer *renderer, int ax, int ay) 
     SDL_RenderPresent(renderer);
     SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
     mBackground.set(texture);
-}
-
-void guipi::PassTracker::addSatellite(Satellite &satellite) {
-    bool found = false;
-    string name = std::string(satellite.getName());
-    mPassPlotMap[name] = std::move(PassPlot{name, 0, 0, 0, 0, false, satellite});
-
-    auto tracking = dynamic_cast<GeoChrono*>(parent())->satelliteDisplay();
-    if (tracking && !mPassPlotMap.empty()) {
-        setVisible(true);
-        dynamic_cast<GeoChrono*>(parent())->invalidateMapCoordinates();
-    }
 }

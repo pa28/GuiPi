@@ -297,11 +297,16 @@ namespace guipi {
             if (mForeground) {
                 auto passTrackerVisible = mPassTracker->visible();
 
+                if (!mNewGeoData.empty()) {
+                    mWorkingGeoData = move(mNewGeoData);
+                    mNewGeoData.clear();
+                }
+
                 if (!mNewOrbitData.empty()) {
                     mWorkingOrbitData.clear();
                     ImageRepository::ImageStoreIndex idx = mBaseIconIndex;
                     for (auto &data : mNewOrbitData) {
-                        WorkingOrbitData wd{(float)get<1>(data), (float)get<2>(data), Vector2i::Zero(), true, idx};
+                        PositionData wd{(float)get<1>(data), (float)get<2>(data), true, idx, Vector2i::Zero()};
                         mWorkingOrbitData.emplace_back(wd);
                         if (++idx.second >= mIconRepository->size(idx.first))
                             break;
@@ -309,13 +314,31 @@ namespace guipi {
                     mNewOrbitData.clear();
                 }
 
+                if (!mWorkingGeoData.empty()) {
+                    for (auto &geo : mWorkingGeoData) {
+                        if (geo.mapLocDirty)
+                            geo.mapLoc = latLongToMap(geo.lat, geo.lon);
+                        geo.mapLocDirty = false;
+                        auto imageSize = mIconRepository->imageSize(geo.iconIdx);
+                        auto list = renderMapIconRect(p, geo.mapLoc, imageSize);
+                        for (auto &copySet : list) {
+                            mIconRepository->renderCopy(renderer, geo.iconIdx, copySet.first, copySet.second);
+                        }
+                    }
+                }
+
                 if (mSatelliteDisplay && !mWorkingOrbitData.empty()) {
                     for (auto &orbit : mWorkingOrbitData) {
                         if (orbit.mapLocDirty)
                             orbit.mapLoc = latLongToMap(orbit.lat, orbit.lon);
                         orbit.mapLocDirty = false;
-                        auto imageSize = mIconRepository->imageSize(orbit.iconIdx);
+                        auto imageSize = mIconRepository->imageSize(mOrbitBackgroundIndex);
                         auto list = renderMapIconRect(p, orbit.mapLoc, imageSize);
+                        for (auto &copySet : list) {
+                            mIconRepository->renderCopy(renderer, mOrbitBackgroundIndex,copySet.first,copySet.second);
+                        }
+                        imageSize = mIconRepository->imageSize(orbit.iconIdx);
+                        list = renderMapIconRect(p, orbit.mapLoc, imageSize);
                         for (auto &copySet : list) {
                             mIconRepository->renderCopy(renderer, orbit.iconIdx,copySet.first,copySet.second);
                         }

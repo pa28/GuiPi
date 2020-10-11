@@ -23,6 +23,7 @@
 #include <sdlgui/TimeBox.h>
 #include <guipi/GuiPiApplication.h>
 #include <guipi/EphemerisModel.h>
+#include <guipi/SatelliteDataDisplay.h>
 //#include <guipi/SatelliteDataDisplay.h>
 
 using namespace sdlgui;
@@ -32,6 +33,7 @@ namespace guipi {
     protected:
 
         Vector2f qthLatLon;
+        Vector2f aQthLatLon;
         Vector2i mScreenSize{800, 480};
         Observer mObserver{};
 
@@ -45,7 +47,7 @@ namespace guipi {
         sdlgui::ref<ImageRepository> mImageRepository;
 
         ref<ImageRepository> mIconRepository;
-//        ref<SatelliteDataDisplay> mSatelliteDataDisplay;
+        ref<SatelliteDataDisplay> mSatelliteDataDisplay;
 
         EphemerisModel mEphemerisModel{};
 
@@ -82,9 +84,10 @@ namespace guipi {
         };
 
         // Icons for geographic locations ImageRepository::ImageStoreIndex idx{0, x}
-        static constexpr array<IconRepositoryData, 2> mGeoLocationIcons = {
-                IconRepositoryData{ENTYPO_ICON_HAIR_CROSS, 50, {0, 255, 0, 255}},
-                IconRepositoryData{ENTYPO_ICON_HAIR_CROSS, 50, {0, 255, 0, 255}}
+        static constexpr array<IconRepositoryData, 3> mGeoLocationIcons = {
+                IconRepositoryData{ENTYPO_ICON_HAIR_CROSS, 50, {0x00, 0xFF, 0x00, 0xFF}},
+                IconRepositoryData{ENTYPO_ICON_HAIR_CROSS, 50, {0xFF, 0x00, 0x00, 0xFF}},
+                IconRepositoryData{ENTYPO_ICON_RECORD,40, {0x00, 0x00, 0x00, 0xFF}}
         };
 
         // Icons for celestial objects ImageRepository::ImageStoreIndex idx{1, x}
@@ -95,11 +98,11 @@ namespace guipi {
 
         // Icons for satellites ImageRepository::ImageStoreIndex idx{2, x}
         static constexpr array<IconRepositoryData, 5> mSatOrbitIcons = {
-                IconRepositoryData{ENTYPO_ICON_RECORD,30, {0, 255, 0, 255}},
-                IconRepositoryData{ENTYPO_ICON_RECORD,30, {255, 128, 128, 255}},
-                IconRepositoryData{ENTYPO_ICON_RECORD,30, {255, 0, 255, 255}},
-                IconRepositoryData{ENTYPO_ICON_RECORD,30, {128, 64, 255, 255}},
-                IconRepositoryData{ENTYPO_ICON_RECORD,30, {255, 0, 0, 255}}
+                IconRepositoryData{ENTYPO_ICON_RECORD,30, {0x00, 0xFF, 0, 0xFF}},
+                IconRepositoryData{ENTYPO_ICON_RECORD,30, {0x80, 0xC0, 0, 0xFF}},
+                IconRepositoryData{ENTYPO_ICON_RECORD,30, {0xA0, 0xA0, 0, 0xFF}},
+                IconRepositoryData{ENTYPO_ICON_RECORD,30, {0xC0, 0x40, 0, 0xFF}},
+                IconRepositoryData{ENTYPO_ICON_RECORD,30, {0xFF, 0x00, 0, 0xFF}}
         };
 
         void buildIconRepository() {
@@ -134,6 +137,7 @@ namespace guipi {
             buildIconRepository();
 
             qthLatLon = Vector2f(deg2rad(-76.0123), deg2rad(44.9016));
+            aQthLatLon = antipode(qthLatLon);
             mObserver = Observer{44.9016, -76.0123, 0.};
 
             Vector2i mapAreaSize(660, 330);
@@ -205,8 +209,10 @@ namespace guipi {
                     ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 0, 0);
 
             ImageRepository::ImageStoreIndex satIdx{2, 0};
+            ImageRepository::ImageStoreIndex orbBgnd{ 0, 2};
+            ImageRepository::ImageStoreIndex trackIdx{ 0, 1};
             mGeoChrono = mapArea->add<GeoChrono>()
-                    ->withImageRepository(mIconRepository, satIdx)
+                    ->withImageRepository(mIconRepository, satIdx, orbBgnd, trackIdx)
                     ->withObserver(mObserver)
                     ->withStationCoordinates(qthLatLon)
                     ->withBackgroundFile(string(map_path) + string(night_map))
@@ -214,9 +220,8 @@ namespace guipi {
                     ->withBackdropFile(string(background_path) + string(backdrop))
                     ->withFixedSize(Vector2i(EARTH_BIG_W, EARTH_BIG_H));
 
-            mEphemerisModel.setOrbitTrackingCallback([this](auto data) {
-                mGeoChrono->setOrbitalData(data);
-            });
+            mGeoChrono->setGeoData(vector<GeoChrono::PositionData>{ {qthLatLon.y, qthLatLon.x, true, ImageRepository::ImageStoreIndex{ 0, 0}},
+                                                          {aQthLatLon.y, aQthLatLon.x, true, ImageRepository::ImageStoreIndex{0, 1} }});
 
             auto switches = topArea->add<Widget>()
                     ->withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 0, 0);
@@ -268,7 +273,8 @@ namespace guipi {
             layer->setLayout(new BoxLayout(Orientation::Vertical, Alignment::Minimum, 0, 0));
 
             // Use overloaded variadic add to fill the tab widget with Different tabs.
-//            mSatelliteDataDisplay = layer->add<SatelliteDataDisplay>(mGeoChrono)->withFixedWidth(sideBarSize.x - 20);
+            mSatelliteDataDisplay = layer->add<SatelliteDataDisplay>(mIconRepository, ImageRepository::ImageStoreIndex{2,0})
+                    ->withFixedWidth(sideBarSize.x - 20);
 
             layer = tab->createTab("D", ENTYPO_ICON_LOCATION);
             layer->setLayout(new BoxLayout(Orientation::Vertical, Alignment::Minimum, 0, 0));
@@ -278,6 +284,19 @@ namespace guipi {
 
             tab->setActiveTab(0);
 
+            mEphemerisModel.setPassMonitorCallback([this](auto data) {
+                mSatelliteDataDisplay->updateSatelliteData(data);
+            });
+
+            mEphemerisModel.setOrbitTrackingCallback([this](auto data) {
+                mGeoChrono->setOrbitalData(data);
+            });
+
+            mEphemerisModel.setPassTrackingCallback([this](auto data) {
+                mGeoChrono->setPasStrackingData(data);
+            });
+
+            mEphemerisModel.setObserver(mObserver);
             mEphemerisModel.loadEphemerisLibrary();
             mEphemerisModel.setSatellitesOfInterest("ISS,AO-92,FO-99,IO-26,DIWATA-2,FOX-1B,AO-7,AO-27,AO-73,SO-50");
             mEphemerisModel.timerCallback(0);

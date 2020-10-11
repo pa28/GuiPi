@@ -49,6 +49,13 @@ namespace guipi {
 
         Timer<GeoChrono> mTimer;
 
+        struct PositionData {
+            float lat, lon;
+            bool mapLocDirty;
+            ImageRepository::ImageStoreIndex iconIdx;
+            Vector2i mapLoc;
+        };
+
     private:
         mutex mTransparentMutex;
         thread mTransparentThread;
@@ -85,15 +92,11 @@ namespace guipi {
         EphemerisModel::OrbitTrackingData mNewOrbitData;
 
         ImageRepository::ImageStoreIndex mBaseIconIndex;
+        ImageRepository::ImageStoreIndex mOrbitBackgroundIndex;
 
-        struct WorkingOrbitData {
-            float lat, lon;
-            Vector2i mapLoc;
-            bool mapLocDirty;
-            ImageRepository::ImageStoreIndex iconIdx;
-        };
-
-        vector<WorkingOrbitData> mWorkingOrbitData;
+        vector<PositionData> mWorkingOrbitData;
+        vector<PositionData> mWorkingGeoData;
+        vector<PositionData> mNewGeoData;
 
         std::function<void(GeoChrono &, EventType)> mCallback;
 
@@ -124,11 +127,12 @@ namespace guipi {
         ref<PassTracker> mPassTracker;
     protected:
         void setAzimuthalEffective() {
-            bool ae = mAzimuthalDisplay | mPassTracker->visible();
+            bool ae = mAzimuthalDisplay | (mPassTracker->activeTracking() && mSatelliteDisplay);
             if (mAzimuthalEffective != ae) {
                 invalidateMapCoordinates();
                 mAzimuthalEffective = ae;
             }
+            mPassTracker->setVisible(mPassTracker->activeTracking() && mSatelliteDisplay);
         }
 
     public:
@@ -206,6 +210,8 @@ namespace guipi {
             return ref<GeoChrono>{this};
         }
 
+        void setGeoData(vector<PositionData> newGeoData) { mNewGeoData = move(newGeoData); }
+
         /**
          * Get the currently set callback function.
          * @return the callback function.
@@ -242,6 +248,8 @@ namespace guipi {
         void invalidateMapCoordinates() {
             for (auto &orbit : mWorkingOrbitData)
                 orbit.mapLocDirty = true;
+            for (auto &geo : mWorkingGeoData)
+                geo.mapLocDirty = true;
         }
 
         ref<GeoChrono> withAzmuthalDisplay(bool azumthal) { setAzmuthalDisplay(azumthal); return ref<GeoChrono>{this}; }
@@ -267,15 +275,24 @@ namespace guipi {
 
         ref<GeoChrono> withSatelliteDisplay(bool satellite) { setSatelliteDisplay(satellite); return ref<GeoChrono>{this}; }
 
-        ref<GeoChrono> withImageRepository(const ref<ImageRepository> &iconRepository, ImageRepository::ImageStoreIndex &baseIdx) {
+        ref<GeoChrono> withImageRepository(const ref<ImageRepository> &iconRepository,
+                                           ImageRepository::ImageStoreIndex &baseIdx,
+                                           ImageRepository::ImageStoreIndex &orbBgrd,
+                                           ImageRepository::ImageStoreIndex &passIdx) {
             mIconRepository = iconRepository;
             mBaseIconIndex = baseIdx;
-            mPassTracker->withIconRepository(iconRepository);
+            mOrbitBackgroundIndex = orbBgrd;
+            mPassTracker->withIconRepository(iconRepository, passIdx);
             return ref<GeoChrono>{this};
         }
 
         void setOrbitalData(EphemerisModel::OrbitTrackingData data) {
             mNewOrbitData = move(data);
+        }
+
+        void setPasStrackingData(const EphemerisModel::PassTrackingData &data) {
+            if (mPassTracker)
+                mPassTracker->setPasStrackingData(data);
         }
 
         void transparentForeground();

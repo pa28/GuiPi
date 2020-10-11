@@ -126,13 +126,14 @@ namespace guipi {
                 if (mInitialize || mDivider >= 60000) {
                     mSatellitePassData.clear();
                     for (auto &sat : mSatellitesOfInterest) {
-                        Earthsat earthsat;
+                        sat.second.predict(now);
+                        Earthsat earthsat{};
                         earthsat.FindNextPass(sat.second, mObserver);
-                        mSatellitePassData.emplace_back(sat.first, earthsat);
+                        mSatellitePassData.emplace_back(sat.first, earthsat.riseTime(), earthsat.setTime());
                     }
 
                     std::sort(mSatellitePassData.begin(), mSatellitePassData.end(), [](auto &p0, auto &p1) {
-                        return p0.second.riseTime() < p1.second.riseTime();
+                        return std::get<1>(p0) < std::get<1>(p1);
                     });
 
                     if (mPassMonitorCallback) {
@@ -143,11 +144,11 @@ namespace guipi {
                 if (mInitialize || mDivider >= 10000) {
                     mSatelliteOrbitData.clear();
                     for (auto &pass : mSatellitePassData) {
-                        auto sat = mSatellitesOfInterest.at(pass.first);
+                        auto sat = mSatellitesOfInterest.at(std::get<0>(pass));
                         if (abs(now - sat.mPrediction) > 10. / 86400.)
                             sat.predict(now);
                         auto[lat, lon] = sat.geo();
-                        mSatelliteOrbitData.emplace_back(pass.first, lat, lon);
+                        mSatelliteOrbitData.emplace_back(std::get<0>(pass), lat, lon);
                     }
 
                     if (mOrbitTrackingCallback) {
@@ -157,12 +158,14 @@ namespace guipi {
 
                 if (mInitialize || mDivider >= 5000) {
                     mSatelliteTrackData.clear();
-                    for (auto &track : mSatelliteOrbitData) {
+                    for (auto &track : mSatellitePassData) {
                         auto sat = mSatellitesOfInterest.at(std::get<0>(track));
                         if (abs(now - sat.mPrediction) > 5. / 86400.)
                             sat.predict(now);
-                        auto[el, az, range, rate] = sat.topo(mObserver);
-                        mSatelliteTrackData.emplace_back(std::get<0>(track), el, az, range, rate);
+                        if ((std::get<1>(track) - now) * 86400. < 60. && (std::get<2>(track) - now) * 86400. > -60. ) {
+                            auto[el, az, range, rate] = sat.topo(mObserver);
+                            mSatelliteTrackData.emplace_back(std::get<0>(track), el, az, range, rate);
+                        }
                     }
 
                     if (mPassTrackingCallback)

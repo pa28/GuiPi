@@ -37,11 +37,12 @@ namespace guipi {
             Satellite() = delete;
             explicit Satellite(Widget *parent) : Widget(parent) {}
 
-            Satellite(Widget *parent, const PlotPackage &plotPackage);
+            Satellite(Widget *parent, const ref <ImageRepository> &imageRepository,
+                      ImageRepository::ImageStoreIndex index);
 
             void update();
 
-            void update(const PlotPackage &plotPackage);
+            void update(const EphemerisModel::PassData &plotPackage);
 
             static string timeToString(const DateTime &time, const DateTime &now);
 
@@ -60,15 +61,17 @@ namespace guipi {
         Timer<SatelliteDataDisplay> mTimer;
         time_point <system_clock> mEpoch;
         duration<double> mElapsedSeconds{};
+        ref<ImageRepository> mImageRepository;
+        ImageRepository::ImageStoreIndex mBaseIdx;
 
     public:
         SatelliteDataDisplay() = delete;
 
         explicit SatelliteDataDisplay(Widget *parent);
 
-        SatelliteDataDisplay(Widget *parent, const ref <GeoChrono> &geoChrono);
+        SatelliteDataDisplay(Widget *parent, ref<ImageRepository> imageRepo, ImageRepository::ImageStoreIndex baseIdx);
 
-        void updateSatelliteData();
+        void updateSatelliteData(const EphemerisModel::PassMonitorData &passMonitorData);
 
         Uint32 timerCallback(Uint32 interval);
 

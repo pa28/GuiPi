@@ -134,7 +134,7 @@ namespace guipi {
 
     class EphemerisModel {
     public:
-        typedef std::pair<std::string, Earthsat> PassData;
+        typedef std::tuple<std::string, DateTime, DateTime> PassData;
         typedef std::vector<PassData> PassMonitorData;
         typedef std::tuple<std::string, double, double> OrbitData;
         typedef std::vector<OrbitData> OrbitTrackingData;
@@ -179,9 +179,9 @@ namespace guipi {
 
         Uint32 timerCallback(Uint32 interval);
 
-        void setPassMonitorCallback(std::function<void(PassMonitorData)> &callback) { mPassMonitorCallback = callback; }
+        void setPassMonitorCallback(std::function<void(PassMonitorData)> callback) { mPassMonitorCallback = move(callback); }
 
-        void setPassTrackingCallback(std::function<void(PassTrackingData)> &callback) { mPassTrackingCallback = callback; }
+        void setPassTrackingCallback(std::function<void(PassTrackingData)> callback) { mPassTrackingCallback = move(callback); }
 
         void setOrbitTrackingCallback(std::function<void(OrbitTrackingData)> callback) { mOrbitTrackingCallback = move(callback); }
     };

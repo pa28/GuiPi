@@ -22,6 +22,7 @@
 
 #pragma once
 
+#include <atomic>
 #include <thread>
 #include <sdlgui/common.h>
 #include <sdlgui/widget.h>
@@ -46,16 +47,19 @@ namespace guipi {
 
         Observer mObserver{};       //< Location of the observer
 
-        Timer<PassTracker> mTimer;
+        ImageRepository::ImageStoreIndex mBaseIndex;
+
+//        Timer<PassTracker> mTimer;
+
+        EphemerisModel::PassTrackingData mNewTrackingData;
+        std::atomic<bool> mNewTrackingDataFlag{false};
+        bool mActiveTracking;
 
         struct PassPlot {
-            string name;
             int x;
             int y;
             double elevation;
             double azimuth;
-            bool passStarted;
-            Satellite satellite;
             ImageData imageData;
         };
 
@@ -80,13 +84,20 @@ namespace guipi {
         sdlgui::ref<PassTracker> withObserver(const Observer &observer) { setObserver(observer); return sdlgui::ref{this}; }
         Observer observer() const { return mObserver; }
 
-        void setImageRepository(sdlgui::ref<ImageRepository> imageRepository) { mImageRepository = imageRepository; }
-        sdlgui::ref<PassTracker> withIconRepository(sdlgui::ref<ImageRepository> imageRepository ) {
-            setImageRepository(imageRepository);
+        void setImageRepository(sdlgui::ref<ImageRepository> imageRepository, ImageRepository::ImageStoreIndex &baseIndex) {
+            mImageRepository = move(imageRepository); mBaseIndex = baseIndex; }
+        sdlgui::ref<PassTracker> withIconRepository(sdlgui::ref<ImageRepository> imageRepository, ImageRepository::ImageStoreIndex &baseIndex ) {
+            setImageRepository(move(imageRepository), baseIndex);
             return sdlgui::ref<PassTracker>{this};
         }
 
-        void addSatellite(Satellite &satellite);
+        bool activeTracking() const { return mActiveTracking; }
+
+        void setPasStrackingData(EphemerisModel::PassTrackingData data) {
+            mActiveTracking = !data.empty() || !mPassPlotMap.empty();
+            mNewTrackingData = move(data);
+            mNewTrackingDataFlag = true;
+        }
 
         bool empty() const { return mPassPlotMap.empty(); }
 
