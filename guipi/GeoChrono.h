@@ -106,8 +106,9 @@ namespace guipi {
         PlotPackage mSun;
 
         vector<PlotPackage> mPlotPackage{};
+    public:
         ref<PassTracker> mPassTracker;
-
+    protected:
         void setAzimuthalEffective() {
             bool ae = mAzimuthalDisplay | mPassTracker->visible();
             if (mAzimuthalEffective != ae) {
