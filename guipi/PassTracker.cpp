@@ -71,14 +71,30 @@ void guipi::PassTracker::draw(SDL_Renderer *renderer) {
         SDL_Rect dst{ ax, ay, mSize.x, mSize.y};
         dst = clip_rects(dst,clipRect);
 
-        ImageRepository::ImageStoreIndex imageStoreIndex{0, 0};
+        ImageRepository::ImageStoreIndex imageStoreIndex{0, 1};
         if (mBackground) {
             SDL_RenderCopy(renderer, mBackground.get(), &src, &dst);
             for (auto & plot : mPassPlotMap) {
+                if (plot.second.imageData.dirty) {
+                    plot.second.imageData.set(mTheme->getTexAndRectUtf8(renderer, 0, 0, plot.first.c_str(),
+                                              mTheme->mBoldFont.c_str(), 15, mTheme->mTextColor));
+                }
                 auto iconSize = mImageRepository->imageSize(imageStoreIndex);
                 SDL_Rect iconSrc{0, 0, iconSize.x, iconSize.y};
                 SDL_Rect iconDst{ ax + plot.second.x - iconSize.x/2, ay + plot.second.y - iconSize.y/2, iconSize.x, iconSize.y };
                 mImageRepository->renderCopy(renderer, imageStoreIndex, iconSrc, iconDst);
+
+                SDL_Rect labelSrc{ 0, 0, plot.second.imageData.w, plot.second.imageData.h};
+                // Default location below and right.
+                SDL_Rect labelDst{ ax + plot.second.x - iconSize.x/2, ay + plot.second.y + iconSize.y/4,
+                                   plot.second.imageData.w, plot.second.imageData.h};
+                // If on right side, pull it back left
+                if (plot.second.x > mSize.x/2)
+                    labelDst.x -= plot.second.imageData.w - iconSize.x;
+                // If on the bottom half, pull it up.
+                if (plot.second.y > mSize.y/2)
+                    labelDst.y -= iconSize.y/2 + plot.second.imageData.h;
+                SDL_RenderCopy(renderer, plot.second.imageData.get(), &labelSrc, &labelDst);
             }
         } else {
             drawBackground(renderer, ax, ay);
