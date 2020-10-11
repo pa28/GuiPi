@@ -66,6 +66,7 @@ namespace sdlgui {
         int w{}, h{};
         string path{};
         string name{};
+        bool dirty{true};
 
         ~ImageData() {
             if (tex)
@@ -88,6 +89,7 @@ namespace sdlgui {
             texture.tex = nullptr;
             w = texture.w();
             h = texture.h();
+            dirty = false;
         }
 
         ImageData(ImageData &&other) noexcept {
@@ -97,6 +99,7 @@ namespace sdlgui {
             name = std::move(other.name);
             w = other.w;
             h = other.h;
+            dirty = other.dirty;
         }
 
         ImageData &operator=(ImageData && other) noexcept {
@@ -106,6 +109,7 @@ namespace sdlgui {
             other.tex = nullptr;
             path = std::move(other.path);
             name = std::move(other.name);
+            dirty = other.dirty;
             return *this;
         }
 
@@ -114,6 +118,7 @@ namespace sdlgui {
                 SDL_DestroyTexture(tex);
             tex = texture;
             SDL_QueryTexture(tex, nullptr, nullptr, &w, &h);
+            dirty = false;
         }
 
         SDL_Texture* get() { return tex; }

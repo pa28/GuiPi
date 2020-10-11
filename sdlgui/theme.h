@@ -151,6 +151,9 @@ public:
     void getTexAndRectUtf8(SDL_Renderer *renderer, Texture& tx, int x, int y, const char *text,
                            const char* fontname, size_t ptsize, const Color& textColor);
 
+    SDL_Texture *getTexAndRectUtf8(SDL_Renderer *renderer, int x, int y, const char *text,
+                                   const char *fontname, size_t ptsize, const Color &textColor);
+
     virtual ~Theme();
 };
 

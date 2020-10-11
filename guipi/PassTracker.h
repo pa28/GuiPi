@@ -57,6 +57,7 @@ namespace guipi {
             double azimuth;
             bool passStarted;
             Satellite satellite;
+            ImageData imageData;
         };
 
         map<string,PassPlot> mPassPlotMap;

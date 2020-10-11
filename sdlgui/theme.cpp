@@ -333,6 +333,14 @@ NAMESPACE_BEGIN(sdlgui)
         getTexAndRectUtf8(renderer, 0, 0, text, fontname, ptsize, &tx.tex, &tx.rrect, &tColor);
     }
 
+    SDL_Texture * Theme::getTexAndRectUtf8(SDL_Renderer *renderer, int x, int y, const char *text,
+                                           const char *fontname, size_t ptsize, const Color &textColor) {
+        Texture tx;
+        SDL_Color tColor = textColor.toSdlColor();
+        getTexAndRectUtf8(renderer, 0, 0, text, fontname, ptsize, &tx.tex, &tx.rrect, &tColor);
+        return tx.tex;
+    }
+
     void SDL_RenderCopy(SDL_Renderer *renderer, Texture &tx, const Vector2i &pos) {
         if (!tx.tex)
             return;

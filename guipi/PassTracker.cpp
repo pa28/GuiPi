@@ -125,7 +125,7 @@ void guipi::PassTracker::drawBackground(SDL_Renderer *renderer, int ax, int ay) 
 void guipi::PassTracker::addSatellite(Satellite &satellite) {
     bool found = false;
     string name = std::string(satellite.getName());
-    mPassPlotMap[name] = PassPlot{name, 0, 0, 0, 0, false, satellite};
+    mPassPlotMap[name] = std::move(PassPlot{name, 0, 0, 0, 0, false, satellite});
 
     auto tracking = dynamic_cast<GeoChrono*>(parent())->satelliteDisplay();
     if (tracking && !mPassPlotMap.empty()) {
