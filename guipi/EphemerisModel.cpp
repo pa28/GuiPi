@@ -86,9 +86,10 @@ namespace guipi {
     }
 
     int EphemerisModel::setSatellitesOfInterest(const std::string &satelliteNameList) {
-        std::lock_guard<std::mutex> libraryLock(mEphmerisLibraryMutex);
         if (mEphemerisLibaryLoad.joinable())
             mEphemerisLibaryLoad.join();
+
+        std::lock_guard<std::mutex> libraryLock(mEphmerisLibraryMutex);
 
         mSatellitesOfInterest.clear();
         std::stringstream strm;
