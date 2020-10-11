@@ -351,16 +351,17 @@ namespace guipi {
          */
 
 #if __cplusplus == 201703L
-        static constexpr array<string_view, 9> initialSatelliteList{
+        static constexpr array<string_view, 10> initialSatelliteList{
                 "ISS",
                 "AO-92", // AO-91
-                "SO-50",
+                "FO-99", //"SO-50",
                 "IO-26",
                 "DIWATA-2",
                 "FOX-1B",
                 "AO-7",
                 "AO-27",
-                "AO-73"
+                "AO-73",
+                "SO-50"
         };
 #else
         vector<char const *> initialSatelliteList{
@@ -385,19 +386,20 @@ namespace guipi {
             // If there is no ephemris loaded, try to get it.
             if (mEphemeris.empty()) {
                 mEphemerisThread = thread([this]() {
-                    lock_guard<mutex> lockGuard(mEphemerisMutex);
+//                    lock_guard<mutex> lockGuard(mEphemerisMutex);
                     mEphemeris.loadEphemeris();
                 });
 
                 return interval;
             }
 
-            lock_guard<mutex> lockGuard(mEphemerisMutex);
+//            lock_guard<mutex> lockGuard(mEphemerisMutex);
+
+            // TODO: Prevent concurrent access to GeoChrono::mPlotPackage inside and outside the owner class.
 
             // Predict location and next pass for each currently predicted satellite.
-            DateTime now;
+            DateTime now{true};
             bool changed = false;
-            now.userNow();
             for (auto &plotItem : mGeoChrono->getPlotPackage()) {
                 if (plotItem.mName.empty()) {
                     changed = true;
@@ -407,7 +409,7 @@ namespace guipi {
                     plotItem.mEarthsat.roundPassTimes();
 
                     // If the predicted rise time is less than two minutes away
-                    if (auto timeToRise = (plotItem.mEarthsat.riseTime() - now) * 86400.; timeToRise < 120) {
+                    if ((plotItem.mEarthsat.riseTime() - now) * 86400. < 120) {
                         auto satellite = mEphemeris.satellite(plotItem.mName);
                         if (satellite)
                             mGeoChrono->passTracker()->addSatellite(satellite.value());
@@ -439,11 +441,6 @@ namespace guipi {
                     return p0.second.riseTime() < p1.second.riseTime();
                 });
 
-//                // Debugging display
-//                for (auto &pass : passList) {
-//                    std::cout << pass.first << ": " << pass.second.riseTime() << '\n';
-//                }
-
                 // Move the new list into the GeoChrono and predict the current location.
                 auto pass = passList.begin();
                 for (auto &plotItem : mGeoChrono->getPlotPackage()) {
@@ -457,24 +454,10 @@ namespace guipi {
                     }
                 }
 
-                // Debugging output.
-//                std::cout << "Changed\n";
-//
-//                for (auto &plotItem : mGeoChrono->getPlotPackage()) {
-//                    std::cout << plotItem.mName << '\n';
-//                    if (plotItem.mEarthsat.passFound()) {
-//                        std::cout << "Rise: " << plotItem.mEarthsat.riseTime() << " @ "
-//                                  << plotItem.mEarthsat.riseAzimuth() << '\n'
-//                                  << "Set:  " << plotItem.mEarthsat.setTime() << " @ "
-//                                  << plotItem.mEarthsat.setAzimuth() << "\n\n";
-//                    } else
-//                        std::cout << "No pass\n\n";
-//                }
+                if (mSatelliteDataDisplay)
+                    mSatelliteDataDisplay->updateSatelliteData();
             }
 
-            // Update the satellite display
-            if (changed && mSatelliteDataDisplay)
-                mSatelliteDataDisplay->updateSatelliteData();
             return interval;
         }
     };
