@@ -338,6 +338,9 @@ int main(int /* argc */, char ** /* argv */) {
 #ifdef BCMHOST
     std::cerr << "BCMHOST\n";
 #endif
+#ifdef X86HOST
+    std::cerr << "X86HOST\n";
+#endif
 
     char rendername[256] = {0};
     SDL_RendererInfo info;
