@@ -76,6 +76,8 @@ public:
     int mScrollBarGutter;
     int mMinBrightness;
     int mMaxBrightness;
+    int mCPUNormalMax;
+    int mCPUWarningMax;
 
     std::mutex loadMutex;
 
@@ -89,6 +91,9 @@ public:
     Color mDisabledTextColor;
     Color mTextColorShadow;
     Color mIconColor;
+    Color mCPUNormal;
+    Color mCPUWarning;
+    Color mCPUAlert;
 
     /* Button colors */
     Color mButtonGradientTopFocused;

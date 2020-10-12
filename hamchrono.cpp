@@ -334,6 +334,11 @@ int main(int /* argc */, char ** /* argv */) {
 #else
     std::cerr << "C++ unkonwn\n";
 #endif
+
+#ifdef BCMHOST
+    std::cerr << "BCMHOST\n";
+#endif
+
     char rendername[256] = {0};
     SDL_RendererInfo info;
 

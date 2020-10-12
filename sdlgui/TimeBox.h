@@ -100,11 +100,14 @@ namespace sdlgui {
         bool mConfigured{false};
         bool mFontSet{false};
         bool mFontSizeSet{false};
+        bool mHasTemperatureDevice{true};
         ref<Widget> mTimeDisplay;
         ref<Widget> mDateDisplay;
+        ref<Widget> mMonitor;
         ref<Label> mHoursMins;
         ref<Label> mSeconds;
         ref<Label> mDate;
+        ref<Label> mTemperature;
 
         int mTimeBoxHoursMinFontSize{};
         int mTimeBoxSecFontSize{};
@@ -145,6 +148,8 @@ namespace sdlgui {
          * @param now the time to be rendered.
          */
         void renderTime(const time_point <system_clock> &now);
+
+        void readCPUTemperature();
 
         /**
          * The timer callback

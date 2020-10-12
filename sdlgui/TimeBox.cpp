@@ -4,6 +4,8 @@
 
 #include <locale>
 #include <ctime>
+#include <fstream>
+#include <iomanip>
 #include <string>
 #include <sstream>
 #include <iostream>
@@ -14,6 +16,12 @@
 #include "TimeBox.h"
 
 static Uint32 TimeBoxCallbackStub(Uint32 interval, void *param);
+
+#ifdef BCMHOST
+static constexpr std::string_view SystemTempDevice = "/sys/class/thermal/thermal_zone0/temp";
+#else
+static constexpr std::string_view SystemTempDevice = "/sys/class/thermal/thermal_zone2/temp";
+#endif
 
 namespace sdlgui {
     TimeBox::TimeBox(Widget *parent)
@@ -59,6 +67,8 @@ namespace sdlgui {
         auto delta_seconds = elapsed_seconds - mElapsedSeconds;
         mElapsedSeconds = elapsed_seconds;
         renderTime(now);
+        if (!mSmallBox)
+            readCPUTemperature();
 
         return 1005 - chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count() % 1000;
     }
@@ -107,6 +117,12 @@ namespace sdlgui {
         mDateDisplay->withLayout<BoxLayout>(Orientation::Horizontal,
                                             Alignment::Minimum,
                                             0, 5);
+
+        if (!mSmallBox)
+            mMonitor = add<Widget>()->withLayout<BoxLayout>(Orientation::Horizontal,
+                                                            Alignment::Minimum,
+                                                            0, 5);
+
         mHoursMins = mTimeDisplay->add<Label>("")
                 ->withFont(mTimeBoxTimeFont)
                 ->withFontSize(mTimeBoxHoursMinFontSize)
@@ -118,19 +134,50 @@ namespace sdlgui {
         mDate = mDateDisplay->add<Label>("")->withFont(mTimeBoxDateFont);
         mDate->withFontSize(mTimeBoxDateFontSize)->withFixedHeight(mTimeBoxDateFontSize);
 
+        if (!mSmallBox)
+            mTemperature = mMonitor->add<Label>("")->withFont(mTimeBoxDateFont);
+
         mEpoch = std::chrono::system_clock::now();
         renderTime(mEpoch);
-
+        if (!mSmallBox)
+            readCPUTemperature();
     }
+
     bool TimeBox::mouseMotionEvent(const Vector2i &p, const Vector2i &rel, int button,
-                                        int modifiers) {
+                                   int modifiers) {
         if (button) {
-            auto level = sdlgui::clamp((float)p.x / (float)width(), 0.0F, 1.0F);
+            auto level = sdlgui::clamp((float) p.x / (float) width(), 0.0F, 1.0F);
             if (mCallback) {
                 mCallback(*this, level);
             }
         }
         return Widget::mouseMotionEvent(p, rel, button, modifiers);
+    }
+
+    void TimeBox::readCPUTemperature() {
+        if (mHasTemperatureDevice) {
+            std::ifstream ifs;
+            ifs.open(std::string(SystemTempDevice), std::ofstream::in);
+            if (ifs) {
+                int temperature;
+                std::stringstream sstrm;
+                ifs >> temperature;
+                ifs.close();
+                sstrm << "CPU " << std::fixed << std::setw(4) << std::setprecision(1)
+                      << ((float) temperature / 1000.) << 'C';
+                mTemperature->setCaption(sstrm.str());
+                if (temperature < mTheme->mCPUNormalMax)
+                    mTemperature->setColor(mTheme->mCPUNormal);
+                else if (temperature < mTheme->mCPUWarningMax)
+                    mTemperature->setColor(mTheme->mCPUWarning);
+                else
+                    mTemperature->setColor(mTheme->mCPUAlert);
+            } else {
+                // TODO: Better error reporting.
+                mHasTemperatureDevice = false;
+                std::cerr << "Can not open " << SystemTempDevice << std::endl;
+            }
+        }
     }
 
 //    bool TimeBox::mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers) {

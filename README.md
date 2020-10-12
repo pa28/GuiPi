@@ -141,7 +141,8 @@ settings (giving four separate modes):
     1. *Time Zone* Either GMT or the system local time zone with official Daylight
     Savings Time.
     2. *Large or Small* Either full time with seconds and date with the year, or
-    abbrieviated by omitting the seconds and year. 
+    abbreviated by omitting the seconds and year.
+    3. The larger version also has a system monitor for temperature.
 
 1. **ImageDisplay** Display one of a set of images loaded from the files system
 (or, eventually, downloaded directly) to a thumb nail area. Touch semantics

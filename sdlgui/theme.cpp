@@ -65,6 +65,8 @@ NAMESPACE_BEGIN(sdlgui)
         mScrollBarGutter = 2;
         mMinBrightness = 16;
         mMaxBrightness = 255;
+        mCPUNormalMax = 55000;
+        mCPUWarningMax = 60000;
 
         mDropShadow = Color(32, 32, 32, 255);
         mTransparent = Color(0, 0);
@@ -75,6 +77,10 @@ NAMESPACE_BEGIN(sdlgui)
         mDisabledTextColor = Color(255, 80);
         mTextColorShadow = Color(0, 160);
         mIconColor = mTextColor;
+        mCPUNormal = Color( 0, 255, 0, 255);
+        mCPUWarning = Color( 255, 255, 0, 255);
+        mCPUAlert = Color( 255, 0, 0, 255);
+
 
         mButtonGradientTopFocused = Color(64, 255);
         mButtonGradientBotFocused = Color(48, 255);
