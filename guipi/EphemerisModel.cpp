@@ -117,13 +117,20 @@ namespace guipi {
         std::lock_guard<std::mutex> libraryLock(mEphmerisLibraryMutex);
 
         mSatellitesOfInterest.clear();
-        std::stringstream strm;
-        strm << satelliteNameList;
-        std::string name;
-        while (getline(strm, name, ',')) {
-            auto sat = getSatellite(name);
-            if (sat)
-                mSatellitesOfInterest[name] = sat.value();
+
+        if (satelliteNameList.empty()) {
+            for (auto & sat : mEphmerisLibrary)
+                if (sat.first != "Moon")
+                    mSatellitesOfInterest[sat.first] = Satellite{sat.second};
+        } else{
+                std::stringstream strm;
+                strm << satelliteNameList;
+                std::string name;
+                while (getline(strm, name, ',')) {
+                    auto sat = getSatellite(name);
+                    if (sat)
+                        mSatellitesOfInterest[name] = sat.value();
+                }
         }
 
         mDivider = 0;

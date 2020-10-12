@@ -191,7 +191,7 @@ namespace guipi {
 
         void setObserver(const Observer &observer);
 
-        int setSatellitesOfInterest(const std::string &satelliteNameList);
+        int setSatellitesOfInterest(const std::string &satelliteNameList = "");
 
         Uint32 timerCallback(Uint32 interval);
 

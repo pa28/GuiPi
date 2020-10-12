@@ -315,7 +315,7 @@ namespace guipi {
 
             mEphemerisModel.setObserver(mObserver);
             mEphemerisModel.loadEphemerisLibrary();
-            mEphemerisModel.setSatellitesOfInterest("ISS,AO-92,FO-99,IO-26,DIWATA-2,FOX-1B,AO-7,AO-27,AO-73,SO-50");
+            mEphemerisModel.setSatellitesOfInterest(); //"ISS,AO-92,FO-99,IO-26,DIWATA-2,FOX-1B,AO-7,AO-27,AO-73,SO-50");
             mEphemerisModel.timerCallback(0);
         }
 
