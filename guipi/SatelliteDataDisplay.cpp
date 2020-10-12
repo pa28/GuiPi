@@ -28,6 +28,11 @@ guipi::SatelliteDataDisplay::SatelliteDataDisplay(Widget *parent, ref<ImageRepos
 void guipi::SatelliteDataDisplay::updateSatelliteData(const EphemerisModel::PassMonitorData &passMonitorData) {
     auto child = mChildren.begin();
 
+    for (auto &child : mChildren) {
+        auto sat = dynamic_cast<Satellite*>(child);
+        sat->mName->setCaption("");
+        sat->mInfo->setCaption("");
+    }
     for (auto &pass : passMonitorData) {
         if (child != mChildren.end()) {
             auto sat = dynamic_cast<Satellite *>(*child);
@@ -66,8 +71,8 @@ guipi::SatelliteDataDisplay::Satellite::Satellite(Widget *parent, const ref<Imag
     auto line0 = add<Widget>()->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 0, 0);
     mIcon = line0->add<Widget>()->withFixedSize(Vector2i(20, 20));
     auto line1 = add<Widget>()->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 0, 0);
-    mName = line1->add<Label>("name");
-    mInfo = line1->add<Label>("pass times")->withFontSize(12);
+    mName = line1->add<Label>("");
+    mInfo = line1->add<Label>("")->withFontSize(12);
 }
 
 void guipi::SatelliteDataDisplay::Satellite::update(const EphemerisModel::PassData &passData) {

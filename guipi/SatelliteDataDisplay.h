@@ -33,6 +33,7 @@ namespace guipi {
     class SatelliteDataDisplay : public Widget {
     protected:
         class Satellite : public Widget {
+            friend class SatelliteDataDisplay;
         public:
             Satellite() = delete;
             explicit Satellite(Widget *parent) : Widget(parent) {}
