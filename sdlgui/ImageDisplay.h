@@ -43,6 +43,8 @@ namespace sdlgui {
         ImageRepeater(Widget *parent, const Vector2i &position, const Vector2i &fixedSize);
 
         void repeateFromRepository(const ref<ImageDisplay>& imageDisplay, ref<ImageRepository> imageRepository, ImageRepository::ImageStoreIndex imageStoreIndex);
+
+        ref<ImageDisplay> setCallback(const std::function<void(ImageDisplay &, ImageRepository::EventType)> &callback);
     };
 
     /**

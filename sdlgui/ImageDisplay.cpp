@@ -186,4 +186,10 @@ namespace sdlgui {
         dynamic_cast<Screen*>(window()->parent())->moveWindowToFront(window());
         mImageDisplay->mTextureDirty = true;
     }
+
+    ref<ImageDisplay>
+    ImageRepeater::setCallback(const function<void(ImageDisplay &, ImageRepository::EventType)> &callback) {
+            mImageDisplay->setCallback(callback);
+            return mImageDisplay;
+    }
 }

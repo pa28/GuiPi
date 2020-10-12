@@ -131,6 +131,13 @@ namespace guipi {
             }
         }
 
+        void screenShot() {
+            SDL_Surface *sshot = SDL_CreateRGBSurface(0, 800, 480, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+            SDL_RenderReadPixels(mSDL_Renderer, NULL, SDL_PIXELFORMAT_ARGB8888, sshot->pixels, sshot->pitch);
+            SDL_SaveBMP(sshot, "screenshot.bmp");
+            SDL_FreeSurface(sshot);
+        }
+
         HamChrono(SDL_Window *pwindow, int rwidth, int rheight)
                 : GuiPiApplication(pwindow, rwidth, rheight, "HamChrono") {
             mIconRepository = new ImageRepository{};
@@ -188,6 +195,9 @@ namespace guipi {
 
             // Create an image repeater to use with the image display.
             auto imageRepeater = add<ImageRepeater>(Vector2i(210, 0), Vector2i(450, 450));
+            imageRepeater->setCallback([=](ImageDisplay &w, ImageRepository::EventType e) {
+                        screenShot();
+                    });
             topArea->add<ImageDisplay>()->withImageRepository(mImageRepository)
                     ->withRepeater(imageRepeater)
                     ->setCallback([=](ImageDisplay &w, ImageRepository::EventType e) {
@@ -267,10 +277,7 @@ namespace guipi {
                     ->add<ToolButton>(ENTYPO_ICON_LIGHT_DOWN, Button::Flags::ToggleButton)->_and()
                     ->add<ToolButton>(ENTYPO_ICON_CAMERA, Button::Flags::NormalButton)
                             ->withCallback([&](){
-                                SDL_Surface *sshot = SDL_CreateRGBSurface(0, 800, 480, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
-                                SDL_RenderReadPixels(mSDL_Renderer, NULL, SDL_PIXELFORMAT_ARGB8888, sshot->pixels, sshot->pitch);
-                                SDL_SaveBMP(sshot, "screenshot.bmp");
-                                SDL_FreeSurface(sshot);
+                                screenShot();
                             });
 
             auto tab = sideBar->add<TabWidget>();
