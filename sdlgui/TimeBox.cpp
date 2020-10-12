@@ -124,11 +124,6 @@ namespace sdlgui {
                                             Alignment::Minimum,
                                             0, 5);
 
-        if (!mSmallBox)
-            mMonitor = add<Widget>()->withLayout<BoxLayout>(Orientation::Horizontal,
-                                                            Alignment::Middle,
-                                                            0, 5);
-
         mHoursMins = mTimeDisplay->add<Label>("")
                 ->withFont(mTimeBoxTimeFont)
                 ->withFontSize(mTimeBoxHoursMinFontSize)
@@ -141,17 +136,23 @@ namespace sdlgui {
         mDate->withFontSize(mTimeBoxDateFontSize)->withFixedHeight(mTimeBoxDateFontSize);
 
         if (!mSmallBox) {
-            mTemperature = mMonitor->add<Label>("")->withFont(mTimeBoxDateFont);
-            mUsage = mMonitor->add<Label>("")->withFont(mTimeBoxDateFont);
-        }
+            mMonitor = add<Widget>()->withLayout<BoxLayout>(Orientation::Horizontal,
+                                                            Alignment::Middle,
+                                                            5, 5);
+            mTemperature = mMonitor->add<Label>("")
+                    ->withFont(mTimeBoxDateFont)
+                    ->withFontSize(15);
+            mUsage = mMonitor->add<Label>("")
+                    ->withFont(mTimeBoxDateFont)
+                    ->withFontSize(15);
 
-        mEpoch = std::chrono::system_clock::now();
-        renderTime(mEpoch);
-        if (!mSmallBox) {
             cpuCount();
             readCPUTemperature();
             readProcessUsage();
         }
+
+        mEpoch = std::chrono::system_clock::now();
+        renderTime(mEpoch);
     }
 
     bool TimeBox::mouseMotionEvent(const Vector2i &p, const Vector2i &rel, int button,
@@ -166,33 +167,38 @@ namespace sdlgui {
     }
 
     void TimeBox::readCPUTemperature() {
+        static int divisor{4};
+        static int count{0};
+
         if (mHasTemperatureDevice) {
-            std::ifstream ifs;
-            ifs.open(std::string(SystemTempDevice), std::ofstream::in);
-            if (ifs) {
-                int temperature;
-                std::stringstream sstrm;
-                ifs >> temperature;
-                ifs.close();
-                sstrm << "CPU Temp " << roundToInt((float) temperature / 1000.) << 'C';
-                mTemperature->setCaption(sstrm.str());
-                if (temperature < mTheme->mCPUNormalMax)
-                    mTemperature->setColor(mTheme->mCPUNormal);
-                else if (temperature < mTheme->mCPUWarningMax)
-                    mTemperature->setColor(mTheme->mCPUWarning);
-                else
-                    mTemperature->setColor(mTheme->mCPUAlert);
-            } else {
-                // TODO: Better error reporting.
-                mHasTemperatureDevice = false;
-                std::cerr << "Can not open " << SystemTempDevice << std::endl;
+            if (count == 0) {
+                std::ifstream ifs;
+                ifs.open(std::string(SystemTempDevice), std::ofstream::in);
+                if (ifs) {
+                    int temperature;
+                    std::stringstream sstrm;
+                    ifs >> temperature;
+                    ifs.close();
+                    sstrm << "CPU Temp " << roundToInt((float) temperature / 1000.) << 'C';
+                    mTemperature->setCaption(sstrm.str());
+                    if (temperature < mTheme->mCPUNormalMax)
+                        mTemperature->setColor(mTheme->mCPUNormal);
+                    else if (temperature < mTheme->mCPUWarningMax)
+                        mTemperature->setColor(mTheme->mCPUWarning);
+                    else
+                        mTemperature->setColor(mTheme->mCPUAlert);
+                } else {
+                    // TODO: Better error reporting.
+                    mHasTemperatureDevice = false;
+                    std::cerr << "Can not open " << SystemTempDevice << std::endl;
+                }
             }
         }
     }
 
     void TimeBox::readProcessUsage() {
         static int divisor{4};
-        static int count{0};
+        static int count{1};
 
         if (count == 0) {
             std::ifstream ifs;
