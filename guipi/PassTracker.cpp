@@ -67,7 +67,7 @@ void guipi::PassTracker::draw(SDL_Renderer *renderer) {
         }
     }
 
-    setVisible(!mPassPlotMap.empty());
+    setPassTrackerVisible(!mPassPlotMap.empty());
 
     if (visible()) {
         int ax = getAbsoluteLeft();

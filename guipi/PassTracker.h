@@ -93,11 +93,7 @@ namespace guipi {
 
         bool activeTracking() const { return mActiveTracking; }
 
-        void setPasStrackingData(EphemerisModel::PassTrackingData data) {
-            mActiveTracking = !data.empty() || !mPassPlotMap.empty();
-            mNewTrackingData = move(data);
-            mNewTrackingDataFlag = true;
-        }
+        void setPassTrackingData(EphemerisModel::PassTrackingData data);
 
         bool empty() const { return mPassPlotMap.empty(); }
 
@@ -108,6 +104,8 @@ namespace guipi {
         void draw(SDL_Renderer *renderer) override;
 
         void drawBackground(SDL_Renderer *renderer, int ax, int ay);
+
+        void setPassTrackerVisible(bool v);
     };
 }
 

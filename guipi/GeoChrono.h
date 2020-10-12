@@ -291,7 +291,7 @@ namespace guipi {
 
         void setPasStrackingData(const EphemerisModel::PassTrackingData &data) {
             if (mPassTracker)
-                mPassTracker->setPasStrackingData(data);
+                mPassTracker->setPassTrackingData(data);
         }
 
         void transparentForeground();
