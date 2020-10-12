@@ -61,6 +61,8 @@ the minimalist system for portability, low power or other
 reasons, then HamClock the way Elwood wrote it is what you
 want.
 
+![TrackingDisplay](https://github.com/pa28/GuiPi/blob/main/ScreenShots/ScreenshotTracking.png)
+
 This started off as a simple exercise to port HamClock to
 using the full capabilities available on a Raspberry Pi;
 but it has quickly become an parallel effort of that, and
