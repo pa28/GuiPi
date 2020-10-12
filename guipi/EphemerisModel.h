@@ -64,6 +64,10 @@ namespace guipi {
 
         [[nodiscard]] auto setAzimuth() const { return set_az; }
 
+        operator bool() const { return rise_ok && set_ok && ever_down && ever_up; }
+
+        bool isEverUp() const { return ever_up; }
+
         void roundPassTimes();
     };
 

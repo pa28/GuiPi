@@ -154,7 +154,9 @@ namespace guipi {
                         sat.second.predict(now);
                         Earthsat earthsat{};
                         earthsat.FindNextPass(sat.second, mObserver);
-                        mSatellitePassData.emplace_back(sat.first, earthsat.riseTime(), earthsat.setTime());
+                        earthsat.roundPassTimes();
+                        if (earthsat.isEverUp())
+                            mSatellitePassData.emplace_back(sat.first, earthsat.riseTime(), earthsat.setTime());
                     }
 
                     std::sort(mSatellitePassData.begin(), mSatellitePassData.end(), [](auto &p0, auto &p1) {
