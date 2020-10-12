@@ -13,6 +13,31 @@
 
 namespace guipi {
 
+    /**
+     * Compute the sub-solar geographic coordinates, used in plotting the solar ilumination.
+     * @return a tuple with the latitude, longitude in radians
+     */
+    std::tuple<double, double> subSolar() {
+        using namespace std::chrono;
+        auto epoch = system_clock::now();
+        time_t tt = system_clock::to_time_t(epoch);
+
+        double JD = (tt / 86400.0) + 2440587.5;
+        double D = JD - 2451545.0;
+        double g = 357.529 + 0.98560028 * D;
+        double q = 280.459 + 0.98564736 * D;
+        double L = q + 1.915 * sin(M_PI / 180 * g) + 0.020 * sin(M_PI / 180 * 2 * g);
+        double e = 23.439 - 0.00000036 * D;
+        double RA = 180 / M_PI * atan2(cos(M_PI / 180 * e) * sin(M_PI / 180 * L), cos(M_PI / 180 * L));
+        auto lat = asin(sin(M_PI / 180 * e) * sin(M_PI / 180 * L));
+        auto lat_d = rad2deg(lat);
+        double GMST = fmod(15 * (18.697374558 + 24.06570982441908 * D), 360.0);
+        auto lng_d = fmod(RA - GMST + 36000.0 + 180.0, 360.0) - 180.0;
+        auto lng = deg2rad(lng_d);
+
+        return std::make_tuple(lat, lng);
+    }
+
     SatelliteEphemeris SatelliteEphemerisFetch::fetchNamed(const std::string &name) {
         std::ostringstream url;
         url << URL_FETCH_NAME << name;
@@ -138,6 +163,19 @@ namespace guipi {
 
                     if (mPassMonitorCallback) {
                         mPassMonitorCallback(PassMonitorData{mSatellitePassData});
+                    }
+
+                    if (mCelestialTrackingCallback) {
+                        CelestialTrackingData celestialData;
+                        auto[sLat, sLon] = subSolar();
+                        celestialData.emplace_back(sLat, sLon, std::pair{1, 0});
+                        auto moon = getSatellite("Moon");
+                        if (moon) {
+                            moon->predict(now);
+                            auto[mLat, mLon] = moon->geo();
+                            celestialData.emplace_back(mLat, mLon, std::pair{1, 1});
+                        }
+                        mCelestialTrackingCallback(celestialData);
                     }
                 }
 

@@ -297,6 +297,16 @@ namespace guipi {
             if (mForeground) {
                 auto passTrackerVisible = mPassTracker->visible();
 
+                if (!mNewCellestialData.empty()) {
+                    mWorkingCelestialData.clear();
+                    for (auto &cel : mNewCellestialData) {
+                        ImageRepository::ImageStoreIndex idx{std::get<2>(cel).first, std::get<2>(cel).second};
+                        PositionData positionData{std::get<0>(cel), std::get<1>(cel), true, idx, Vector2i {}};
+                        mWorkingCelestialData.emplace_back(positionData);
+                    }
+                    mNewCellestialData.clear();
+                }
+
                 if (!mNewGeoData.empty()) {
                     mWorkingGeoData = move(mNewGeoData);
                     mNewGeoData.clear();
@@ -314,20 +324,30 @@ namespace guipi {
                     mNewOrbitData.clear();
                 }
 
-                if (!mWorkingGeoData.empty()) {
-                    for (auto &geo : mWorkingGeoData) {
-                        if (geo.mapLocDirty)
-                            geo.mapLoc = latLongToMap(geo.lat, geo.lon);
-                        geo.mapLocDirty = false;
-                        auto imageSize = mIconRepository->imageSize(geo.iconIdx);
-                        auto list = renderMapIconRect(p, geo.mapLoc, imageSize);
-                        for (auto &copySet : list) {
-                            mIconRepository->renderCopy(renderer, geo.iconIdx, copySet.first, copySet.second);
-                        }
+                for (auto &geo : mWorkingGeoData) {
+                    if (geo.mapLocDirty)
+                        geo.mapLoc = latLongToMap(geo.lat, geo.lon);
+                    geo.mapLocDirty = false;
+                    auto imageSize = mIconRepository->imageSize(geo.iconIdx);
+                    auto list = renderMapIconRect(p, geo.mapLoc, imageSize);
+                    for (auto &copySet : list) {
+                        mIconRepository->renderCopy(renderer, geo.iconIdx, copySet.first, copySet.second);
                     }
                 }
 
-                if (mSatelliteDisplay && !mWorkingOrbitData.empty()) {
+                if (mSunMoonDisplay)
+                    for (auto &cel : mWorkingCelestialData) {
+                        if (cel.mapLocDirty)
+                            cel.mapLoc = latLongToMap(cel.lat, cel.lon);
+                        cel.mapLocDirty = false;
+                        auto imageSize = mIconRepository->imageSize(cel.iconIdx);
+                        auto list = renderMapIconRect(p, cel.mapLoc, imageSize);
+                        for (auto &copySet : list) {
+                            mIconRepository->renderCopy(renderer, cel.iconIdx, copySet.first, copySet.second);
+                        }
+                    }
+
+                if (mSatelliteDisplay)
                     for (auto &orbit : mWorkingOrbitData) {
                         if (orbit.mapLocDirty)
                             orbit.mapLoc = latLongToMap(orbit.lat, orbit.lon);
@@ -343,7 +363,6 @@ namespace guipi {
                             mIconRepository->renderCopy(renderer, orbit.iconIdx,copySet.first,copySet.second);
                         }
                     }
-                }
 
 #if 0
                 for (auto &plotItem : mPlotPackage) {
@@ -553,6 +572,7 @@ namespace guipi {
         return interval;
     }
 
+#if 0
     /**
      * Compute the sub-solar geographic coordinates, used in plotting the solar ilumination.
      * @return a tuple with the latitude, longitude in radians
@@ -577,6 +597,7 @@ namespace guipi {
 
         return std::make_tuple(lat, lng);
     }
+#endif
 
     /**
      * Plot the solar illumination area in the Alpha channel of the daytime map for Mercator and Azimuthal.

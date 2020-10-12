@@ -26,14 +26,6 @@ namespace guipi {
     using namespace sdlgui;
     using sdlgui::ref;
 
-    template<typename T>
-    constexpr T deg2rad(T deg) { return deg * M_PI / 180.; }
-
-    template<typename T>
-    constexpr T rad2deg(T rad) { return rad * 180. / M_PI; }
-
-    std::tuple<double, double> subSolar();
-
     /**
      * @class GeoChrono
      * A minimalist Image display widget capable of resizing and displaying one image on an ImageList
@@ -97,6 +89,9 @@ namespace guipi {
         vector<PositionData> mWorkingOrbitData;
         vector<PositionData> mWorkingGeoData;
         vector<PositionData> mNewGeoData;
+
+        vector<PositionData> mWorkingCelestialData;
+        EphemerisModel::CelestialTrackingData mNewCellestialData;
 
         std::function<void(GeoChrono &, EventType)> mCallback;
 
@@ -212,6 +207,8 @@ namespace guipi {
 
         void setGeoData(vector<PositionData> newGeoData) { mNewGeoData = move(newGeoData); }
 
+        void setCelestialTrackingData(EphemerisModel::CelestialTrackingData data) { mNewCellestialData = move(data); }
+
         /**
          * Get the currently set callback function.
          * @return the callback function.
@@ -250,6 +247,8 @@ namespace guipi {
                 orbit.mapLocDirty = true;
             for (auto &geo : mWorkingGeoData)
                 geo.mapLocDirty = true;
+            for (auto &cel : mWorkingCelestialData)
+                cel.mapLocDirty = true;
         }
 
         ref<GeoChrono> withAzmuthalDisplay(bool azumthal) { setAzmuthalDisplay(azumthal); return ref<GeoChrono>{this}; }

@@ -33,6 +33,14 @@
 #include <guipi/p13.h>
 
 namespace guipi {
+    template<typename T>
+    constexpr T deg2rad(T deg) { return deg * M_PI / 180.; }
+
+    template<typename T>
+    constexpr T rad2deg(T rad) { return rad * 180. / M_PI; }
+
+    std::tuple<double, double> subSolar();
+
     class Earthsat {
     private:
         bool set_ok = false, rise_ok = false, ever_up = false, ever_down = false;
@@ -140,10 +148,13 @@ namespace guipi {
         typedef std::vector<OrbitData> OrbitTrackingData;
         typedef std::tuple<std::string, double, double, double, double> TrackData;
         typedef std::vector<TrackData> PassTrackingData;
+        typedef std::tuple<float, float, std::pair<size_t, size_t>> CelestialData;
+        typedef std::vector<CelestialData> CelestialTrackingData;
 
         typedef std::function<void(PassMonitorData)> PassMonitorCallback;
         typedef std::function<void(OrbitTrackingData)> OrbitTrackingCallback;
         typedef std::function<void(PassTrackingData)> PassTrackingCallback;
+        typedef std::function<void(CelestialTrackingData)> CelestialTrackingCallback;
 
     protected:
         size_t mDivider;
@@ -165,6 +176,7 @@ namespace guipi {
         PassMonitorCallback mPassMonitorCallback{};
         PassTrackingCallback mPassTrackingCallback{};
         OrbitTrackingCallback mOrbitTrackingCallback{};
+        CelestialTrackingCallback mCelestialTrackingCallback{};
 
         std::optional<Satellite> getSatellite(const std::string &name);
 
@@ -179,11 +191,13 @@ namespace guipi {
 
         Uint32 timerCallback(Uint32 interval);
 
-        void setPassMonitorCallback(std::function<void(PassMonitorData)> callback) { mPassMonitorCallback = move(callback); }
+        void setPassMonitorCallback(PassMonitorCallback callback) { mPassMonitorCallback = move(callback); }
 
-        void setPassTrackingCallback(std::function<void(PassTrackingData)> callback) { mPassTrackingCallback = move(callback); }
+        void setPassTrackingCallback(PassTrackingCallback callback) { mPassTrackingCallback = move(callback); }
 
-        void setOrbitTrackingCallback(std::function<void(OrbitTrackingData)> callback) { mOrbitTrackingCallback = move(callback); }
+        void setOrbitTrackingCallback(OrbitTrackingCallback callback) { mOrbitTrackingCallback = move(callback); }
+
+        void setCelestialTrackingCallback(CelestialTrackingCallback callback) { mCelestialTrackingCallback = move(callback); }
     };
 }
 
