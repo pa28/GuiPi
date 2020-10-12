@@ -10,14 +10,12 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 set(EXTRA_LIBS "")
 
 include(CheckCXXCompilerFlag)
-include(CheckIncludeFile)
-CHECK_INCLUDE_FILE(/opt/vc/include/bcm_host.h BCMHOST)
-if (BCMHOST)
-    add_compile_definitions(BCMHOST=1)
-else()
+find_file(BCMHOST bcm_host.h PATHS /opt/vc/include NO_DEFAULT_PATH)
+if (NOT BCMHOST)
     add_compile_definitions(X86HOST=1)
+else()
+    add_compile_definitions(BCMHOST=1)
 endif()
-
 
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     message(STATUS "Setting build type to 'Release' as none was specified.")

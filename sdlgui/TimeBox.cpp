@@ -163,8 +163,7 @@ namespace sdlgui {
                 std::stringstream sstrm;
                 ifs >> temperature;
                 ifs.close();
-                sstrm << "CPU " << std::fixed << std::setw(4) << std::setprecision(1)
-                      << ((float) temperature / 1000.) << 'C';
+                sstrm << "CPU " << roundToInt((float) temperature / 1000.) << 'C';
                 mTemperature->setCaption(sstrm.str());
                 if (temperature < mTheme->mCPUNormalMax)
                     mTemperature->setColor(mTheme->mCPUNormal);
