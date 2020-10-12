@@ -134,3 +134,20 @@ void guipi::PassTracker::drawBackground(SDL_Renderer *renderer, int ax, int ay) 
     SDL_SetTextureBlendMode(texture, SDL_BLENDMODE_BLEND);
     mBackground.set(texture);
 }
+
+void guipi::PassTracker::setPassTrackerVisible(bool v) {
+    if (v != visible()) {
+        setVisible(v);
+        dynamic_cast<GeoChrono*>(parent())->setAzimuthalEffective();
+    }
+}
+
+void guipi::PassTracker::setPassTrackingData(guipi::EphemerisModel::PassTrackingData data) {
+    mActiveTracking = !data.empty() || !mPassPlotMap.empty();
+    mNewTrackingData = move(data);
+    mNewTrackingDataFlag = true;
+    if (!mActiveTracking) {
+        dynamic_cast<GeoChrono*>(parent())->invalidateMapCoordinates();
+        setVisible(false);
+    }
+}

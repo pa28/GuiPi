@@ -121,11 +121,12 @@ namespace guipi {
     public:
         ref<PassTracker> mPassTracker;
     protected:
+        friend class PassTracker;
         void setAzimuthalEffective() {
             bool ae = mAzimuthalDisplay | (mPassTracker->activeTracking() && mSatelliteDisplay);
             if (mAzimuthalEffective != ae) {
-                invalidateMapCoordinates();
                 mAzimuthalEffective = ae;
+                invalidateMapCoordinates();
             }
             mPassTracker->setVisible(mPassTracker->activeTracking() && mSatelliteDisplay);
         }
