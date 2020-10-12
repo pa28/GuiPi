@@ -165,6 +165,9 @@ implementation in [HamClock](https://www.clearskyinstitute.com/ham/HamClock/).
 1. **PassTracker** A helper Widget for GeoChrono which displays the Azimuth-Elevation
 of objects being tracked.
 
+1. **Ephemeris Model** This class manages all the ephemeris data and calculations in
+one location, distributing the results as needed throughout the program using callbacks.
+
 # Dependencies
 
 ## Libraries
