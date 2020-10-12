@@ -23,6 +23,10 @@ static constexpr std::string_view SystemTempDevice = "/sys/class/thermal/thermal
 static constexpr std::string_view SystemTempDevice = "/sys/class/thermal/thermal_zone2/temp";
 #endif
 
+static constexpr std::string_view ProcSelfStat = "/proc/self/stat";
+static constexpr std::string_view ProcStat = "/proc/stat";
+static constexpr std::string_view ProcCpuInfo = "/proc/cpuinfo";
+
 namespace sdlgui {
     TimeBox::TimeBox(Widget *parent)
             : Widget(parent),
@@ -67,8 +71,10 @@ namespace sdlgui {
         auto delta_seconds = elapsed_seconds - mElapsedSeconds;
         mElapsedSeconds = elapsed_seconds;
         renderTime(now);
-        if (!mSmallBox)
+        if (!mSmallBox) {
             readCPUTemperature();
+            readProcessUsage();
+        }
 
         return 1005 - chrono::duration_cast<chrono::milliseconds>(now.time_since_epoch()).count() % 1000;
     }
@@ -120,7 +126,7 @@ namespace sdlgui {
 
         if (!mSmallBox)
             mMonitor = add<Widget>()->withLayout<BoxLayout>(Orientation::Horizontal,
-                                                            Alignment::Minimum,
+                                                            Alignment::Middle,
                                                             0, 5);
 
         mHoursMins = mTimeDisplay->add<Label>("")
@@ -134,13 +140,18 @@ namespace sdlgui {
         mDate = mDateDisplay->add<Label>("")->withFont(mTimeBoxDateFont);
         mDate->withFontSize(mTimeBoxDateFontSize)->withFixedHeight(mTimeBoxDateFontSize);
 
-        if (!mSmallBox)
+        if (!mSmallBox) {
             mTemperature = mMonitor->add<Label>("")->withFont(mTimeBoxDateFont);
+            mUsage = mMonitor->add<Label>("")->withFont(mTimeBoxDateFont);
+        }
 
         mEpoch = std::chrono::system_clock::now();
         renderTime(mEpoch);
-        if (!mSmallBox)
+        if (!mSmallBox) {
+            cpuCount();
             readCPUTemperature();
+            readProcessUsage();
+        }
     }
 
     bool TimeBox::mouseMotionEvent(const Vector2i &p, const Vector2i &rel, int button,
@@ -163,7 +174,7 @@ namespace sdlgui {
                 std::stringstream sstrm;
                 ifs >> temperature;
                 ifs.close();
-                sstrm << "CPU " << roundToInt((float) temperature / 1000.) << 'C';
+                sstrm << "CPU Temp " << roundToInt((float) temperature / 1000.) << 'C';
                 mTemperature->setCaption(sstrm.str());
                 if (temperature < mTheme->mCPUNormalMax)
                     mTemperature->setColor(mTheme->mCPUNormal);
@@ -177,6 +188,77 @@ namespace sdlgui {
                 std::cerr << "Can not open " << SystemTempDevice << std::endl;
             }
         }
+    }
+
+    void TimeBox::readProcessUsage() {
+        static int divisor{4};
+        static int count{0};
+
+        if (count == 0) {
+            std::ifstream ifs;
+            ifs.open(std::string(ProcSelfStat), std::ofstream::in);
+            int utime, stime;
+            if (ifs) {
+                std::string not_needed;
+                for (int i = 0; i < 13; ++i) {
+                    getline(ifs, not_needed, ' ');
+                }
+                ifs >> utime >> stime;
+                ifs.close();
+                if (procTimeStart)
+                    procTimeUse = (utime + stime) - procTimeStart;
+                procTimeStart = utime + stime;
+            }
+
+            ifs.open(std::string(ProcStat), std::ofstream::in);
+            if (ifs) {
+                std::string cpu;
+                getline(ifs, cpu, '\n');
+                ifs.close();
+                stringstream sstrm(cpu);
+                getline(sstrm, cpu, ' ');
+                int total{0};
+                while (sstrm) {
+                    int value;
+                    sstrm >> value;
+                    total += value;
+                }
+                if (cpuTimeStart) {
+                    cpuTimeUse = total - cpuTimeStart;
+                }
+                cpuTimeStart = total;
+
+            }
+            if (cpuTimeUse) {
+                std::stringstream sstrm;
+                sstrm << "Use" << std::fixed << std::setw(5) << std::setprecision(1)
+                      << mCpuCount * ((100. * (float) procTimeUse) / (float) cpuTimeUse) << '%';
+                mUsage->setCaption(sstrm.str());
+            }
+        }
+
+        count = (count + 1) % divisor;
+    }
+
+    void TimeBox::cpuCount() {
+        static constexpr std::string_view ProcessorLine = "processor";
+        std::ifstream ifs;
+        ifs.open(std::string(ProcCpuInfo), std::ofstream::in);
+        if (ifs) {
+            std::string line;
+            while (getline(ifs, line, '\n')) {
+                if (line.substr(0, ProcessorLine.size()) == ProcessorLine) {
+                    line = line.substr(line.find_last_of(' '));
+                    std::stringstream sstrm{line.substr(line.find_last_of(' '))};
+                    sstrm >> mCpuCount;
+                }
+            }
+        }
+
+        ++mCpuCount;
+#ifdef X86HOST
+        mCpuCount /= 2;
+#endif
     }
 
 //    bool TimeBox::mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers) {

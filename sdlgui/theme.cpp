@@ -77,7 +77,7 @@ NAMESPACE_BEGIN(sdlgui)
         mDisabledTextColor = Color(255, 80);
         mTextColorShadow = Color(0, 160);
         mIconColor = mTextColor;
-        mCPUNormal = Color( 0, 255, 0, 255);
+        mCPUNormal = mTextColor;
         mCPUWarning = Color( 255, 255, 0, 255);
         mCPUAlert = Color( 255, 0, 0, 255);
 

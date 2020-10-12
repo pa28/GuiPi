@@ -108,10 +108,15 @@ namespace sdlgui {
         ref<Label> mSeconds;
         ref<Label> mDate;
         ref<Label> mTemperature;
+        ref<Label> mUsage;
 
         int mTimeBoxHoursMinFontSize{};
         int mTimeBoxSecFontSize{};
         int mTimeBoxDateFontSize{};
+
+        int mCpuCount{0};
+        int cpuTimeUse, cpuTimeStart{0};
+        int procTimeUse, procTimeStart{0};
 
         std::string mTimeBoxTimeFont;
         std::string mTimeBoxDateFont;
@@ -122,8 +127,19 @@ namespace sdlgui {
         std::function<void(TimeBox &, float )> mCallback;
 
         /**
-         * Widget default constructor.
+         * Render time for a specific time.
+         * @param now the time to be rendered.
          */
+        void renderTime(const time_point <system_clock> &now);
+
+        /**
+         * Read and display the CPU temperature colour coded for normal, warning, alert.
+         */
+        void readCPUTemperature();
+
+        void readProcessUsage();
+
+        void cpuCount();
 
     public:
 
@@ -142,14 +158,6 @@ namespace sdlgui {
          * @param fontSize the font size to use or -1 for the default
          */
         TimeBox(Widget *parent, bool small, bool localTime = false);
-
-        /**
-         * Render time for a specific time.
-         * @param now the time to be rendered.
-         */
-        void renderTime(const time_point <system_clock> &now);
-
-        void readCPUTemperature();
 
         /**
          * The timer callback
