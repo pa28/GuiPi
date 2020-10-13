@@ -179,6 +179,20 @@ namespace guipi {
             SatelliteEphemeris ephemeris;
             for (auto i = input.begin(); i != input.end(); ++i) {
                 ephemeris[0] = *i++;
+
+                // Normalize the satellite names
+                auto l = ephemeris[0].find_first_of('(') + 1;
+                auto r = ephemeris[0].find_last_of(')');
+                if (l != std::string::npos && r != std::string::npos && l < r) {
+                    ephemeris[0] = ephemeris[0].substr(l,r);
+                }
+                r = ephemeris[0].find_last_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") + 1;
+                if (r != std::string::npos)
+                    ephemeris[0] = ephemeris[0].substr(0, r);
+
+                if (ephemeris[0] == "ZARYA")
+                    ephemeris[0] = "ISS";
+
                 ephemeris[1] = *i++;
                 ephemeris[2] = *i;
                 ephemerisMap[ephemeris[0]] = ephemeris;

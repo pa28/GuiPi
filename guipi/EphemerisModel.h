@@ -72,8 +72,9 @@ namespace guipi {
     };
 
 #if __cplusplus == 201703L
-        constexpr static std::string_view URL_FETCH_NAME = "http://clearskyinstitute.com/ham/HamClock/esats.pl?tlename=";
-        constexpr static std::string_view URL_FETCH_ALL = "http://clearskyinstitute.com/ham/HamClock/esats.pl?getall=";
+    constexpr static std::string_view URL_FETCH_NAME = "http://clearskyinstitute.com/ham/HamClock/esats.pl?tlename=";
+//    constexpr static std::string_view URL_FETCH_ALL = "http://clearskyinstitute.com/ham/HamClock/esats.pl?getall=";
+    constexpr static std::string_view URL_FETCH_ALL = "https://www.celestrak.com/NORAD/elements/amateur.txt";
 #else
         #define URL_FETCH_NAME "http://clearskyinstitute.com/ham/HamClock/esats.pl?tlename="
 #define URL_FETCH_ALL "http://clearskyinstitute.com/ham/HamClock/esats.pl?getall="
