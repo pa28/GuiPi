@@ -138,11 +138,11 @@ namespace guipi {
         }
 
         static constexpr array<pair<string_view, string_view>, 5> NasaSolarImages {
-        pair<string_view, string_view>{ "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_2048_0193.jpg", "AIA 193 Å" },
-        pair<string_view, string_view>{ "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_2048_211193171.jpg", "AIA 211 Å, 193 Å, 171 Å" },
-        pair<string_view, string_view>{ "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_2048_HMIB.jpg", "HMI Magnetogram" },
-        pair<string_view, string_view>{ "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_2048_HMIIC.jpg", "HMI Intensitygram" },
-        pair<string_view, string_view>{ "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_2048_0171.jpg", "AIA 171 Å" }
+        pair<string_view, string_view>{ "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_512_0193.jpg", "AIA 193 Å" },
+        pair<string_view, string_view>{ "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_512_211193171.jpg", "AIA 211 Å, 193 Å, 171 Å" },
+        pair<string_view, string_view>{ "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_512_HMIB.jpg", "HMI Magnetogram" },
+        pair<string_view, string_view>{ "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_512_HMIIC.jpg", "HMI Intensitygram" },
+        pair<string_view, string_view>{ "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_512_0171.jpg", "AIA 171 Å" }
         };
 
         void screenShot() {
@@ -188,6 +188,7 @@ namespace guipi {
 
         HamChrono(SDL_Window *pwindow, int rwidth, int rheight)
                 : GuiPiApplication(pwindow, rwidth, rheight, "HamChrono") {
+            SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "2");
             mIconRepository = new ImageRepository{};
             buildIconRepository();
 
