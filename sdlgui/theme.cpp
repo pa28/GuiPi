@@ -14,10 +14,6 @@
 #include <map>
 #include <string>
 
-#ifdef DIRECTORY_PREFIX
-#define DIRECTORY_PREFIX "./"
-#endif
-
 #if defined(_WIN32)
 #include <SDL_ttf.h>
 #else

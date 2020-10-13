@@ -34,10 +34,6 @@
 
 using namespace sdlgui;
 
-#ifdef DIRECTORY_PREFIX
-#define DIRECTORY_PREFIX "./"
-#endif
-
 namespace guipi {
     class HamChrono : public GuiPiApplication {
     protected:

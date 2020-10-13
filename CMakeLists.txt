@@ -17,11 +17,17 @@ else()
     add_compile_definitions(BCMHOST=1)
 endif()
 
-IF(CMAKE_BUILD_TYPE MATCHES RELEASE)
-    add_compile_definitions(DIRECTORY_PREFIX="/var/lib/hamchrono")
-ELSE()
+set(CMAKE_VERBOSE_MAKEFILE OFF)
+
+IF(CMAKE_BUILD_TYPE MATCHES Debug)
     add_compile_definitions(DIRECTORY_PREFIX="./")
-ENDIF(CMAKE_BUILD_TYPE MATCHES RELEASE)
+    SET(DIRECTORY_PREFIX "./")
+ELSE()
+    add_compile_definitions(DIRECTORY_PREFIX="/var/lib/hamchrono/")
+    SET(DIRECTORY_PREFIX "/var/lib/hamchrono/")
+ENDIF(CMAKE_BUILD_TYPE MATCHES Debug)
+
+MESSAGE(STATUS "Dir prefix:  ${DIRECTORY_PREFIX}")
 
 
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
