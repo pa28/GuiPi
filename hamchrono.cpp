@@ -60,6 +60,8 @@ namespace guipi {
     public:
         ~HamChrono() override = default;
 
+        Timer<HamChrono> mTimer;
+
         template<typename T>
         constexpr T deg2rad(T deg) { return deg * M_PI / 180.; }
 
@@ -186,8 +188,18 @@ namespace guipi {
             return make_tuple(nullptr,chrono::system_clock::now());
         }
 
+        Uint32 timerCallback(Uint32 interval) {
+            for (ImageRepository::ImageStoreIndex idx{0,0}; idx.second < mImageRepository->size(idx.first); ++idx.second) {
+                mImageRepository->mFutureStore[idx] = async(curlFetchImage, mSDL_Renderer,
+                                                            mImageRepository->image(idx).path,
+                                                            mImageRepository->image(idx).name);
+            }
+            return interval;
+        }
+
         HamChrono(SDL_Window *pwindow, int rwidth, int rheight)
-                : GuiPiApplication(pwindow, rwidth, rheight, "HamChrono") {
+                : GuiPiApplication(pwindow, rwidth, rheight, "HamChrono"),
+                mTimer{*this, &HamChrono::timerCallback, 3600000}{
             SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "2");
             mIconRepository = new ImageRepository{};
             buildIconRepository();
@@ -377,11 +389,6 @@ namespace guipi {
             mEphemerisModel.loadEphemerisLibrary();
             mEphemerisModel.setSatellitesOfInterest(); //"ISS,AO-92,FO-99,IO-26,DIWATA-2,FOX-1B,AO-7,AO-27,AO-73,SO-50");
             mEphemerisModel.timerCallback(0);
-
-//            while (!mImageRepository->mFutureStore.empty()) {
-//                auto fut = mImageRepository->mFutureStore.begin();
-//                mImageRepository->getFuture(mSDL_Renderer, fut->first, true);
-//            }
         }
 
         void drawContents() override {
