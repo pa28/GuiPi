@@ -23,6 +23,7 @@
 #pragma once
 
 #include <map>
+#include <iterator>
 #include <vector>
 #include <type_traits>
 #include <sdlgui/common.h>
@@ -38,15 +39,29 @@ namespace sdlgui {
         typedef std::function<void(ImageRepository &, ImageStoreIndex)> ImageChangedCallback;
         typedef map<ref<Widget>, ImageChangedCallback> ImageChangedCallbackList;
 
-        map<ImageStoreIndex, ImageChangedCallbackList> mImageCallbackMap;
-
         ImageStore mImageStore{};
 
+        class iterator {
+        public:
+            using iterator_category = std::output_iterator_tag;
+            using value_type = ImageData; // crap
+            using difference_type = std::ptrdiff_t;
+            using pointer = ImageData *;
+            using reference = ImageData &;
+
+        protected:
+            vector<ImageDataList>::size_type first;
+            ImageDataList::size_type second;
+            sdlgui::ref<ImageRepository> imageRepository;
+
+        };
+    protected:
+        map<ImageStoreIndex, ImageChangedCallbackList> mImageCallbackMap;
+
+    public:
         enum EventType {
             UP_EVENT, LEFT_EVENT, DOWN_EVENT, RIGHT_EVENT, CLICK_EVENT
         };
-
-    public:
 
         ImageRepository() = default;
         ~ImageRepository() override = default;
@@ -127,8 +142,6 @@ namespace sdlgui {
                 (callback.second)(*this, index);
             }
         }
-
-
     };
 }
 

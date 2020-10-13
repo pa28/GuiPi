@@ -5,6 +5,7 @@
 #pragma once
 
 #include <memory>
+#include <chrono>
 #include <cstdint>
 #include <utility>
 #include <vector>
@@ -67,6 +68,7 @@ namespace sdlgui {
         string path{};
         string name{};
         bool dirty{true};
+        std::chrono::time_point<std::chrono::system_clock> loaded{}, life{};
 
         ~ImageData() {
             if (tex)

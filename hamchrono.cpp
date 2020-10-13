@@ -10,7 +10,13 @@
 */
 
 #include <algorithm>
+#include <chrono>
 #include <SDL2/SDL.h>
+#include <SDL_image.h>
+#include <curlpp/cURLpp.hpp>
+#include <curlpp/Easy.hpp>
+#include <curlpp/Options.hpp>
+#include <curlpp/Exception.hpp>
 #include <sdlgui/entypo.h>
 #include <guipi/GeoChrono.h>
 #include <sdlgui/ImageRepository.h>
@@ -131,17 +137,76 @@ namespace guipi {
             }
         }
 
+        static constexpr array<pair<string_view, string_view>, 5> NasaSolarImages {
+        pair<string_view, string_view>{ "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_2048_0193.jpg", "AIA 193 Å" },
+        pair<string_view, string_view>{ "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_2048_211193171.jpg", "AIA 211 Å, 193 Å, 171 Å" },
+        pair<string_view, string_view>{ "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_2048_HMIB.jpg", "HMI Magnetogram" },
+        pair<string_view, string_view>{ "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_2048_HMIIC.jpg", "HMI Intensitygram" },
+        pair<string_view, string_view>{ "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_2048_0171.jpg", "AIA 171 Å" }
+        };
+
         void screenShot() {
-            SDL_Surface *sshot = SDL_CreateRGBSurface(0, 800, 480, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
-            SDL_RenderReadPixels(mSDL_Renderer, NULL, SDL_PIXELFORMAT_ARGB8888, sshot->pixels, sshot->pitch);
+            SDL_Surface *sshot = SDL_CreateRGBSurface(0, DISPLAY_WIDTH, DISPLAY_HEIGHT, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+            SDL_RenderReadPixels(mSDL_Renderer, nullptr, SDL_PIXELFORMAT_ARGB8888, sshot->pixels, sshot->pitch);
             SDL_SaveBMP(sshot, "screenshot.bmp");
             SDL_FreeSurface(sshot);
+        }
+
+        SDL_Texture *curlFetchImage(const string &url, const string &name) {
+            SDL_Texture *texture = nullptr;
+            try {
+                // Set the URL.
+                curlpp::options::Url myUrl(url);
+                curlpp::Easy myRequest;
+
+                ofstream response;
+                string fileName = "images/" + name + ".jpg";
+                response.open(fileName);
+                if (response) {
+                    myRequest.setOpt(new curlpp::options::Url(url));
+                    myRequest.setOpt(new curlpp::options::WriteStream(&response));
+
+                    // Send request and get a result.
+                    myRequest.perform();
+                    response.close();
+                    auto surface = IMG_Load(fileName.c_str());
+                    if (surface) {
+                        texture = SDL_CreateTextureFromSurface(mSDL_Renderer, surface);
+                        SDL_FreeSurface(surface);
+                        return texture;
+                    }
+                }
+            }
+
+            catch (curlpp::RuntimeError &e) {
+                std::cout << e.what() << std::endl;
+            }
+
+            catch (curlpp::LogicError &e) {
+                std::cout << e.what() << std::endl;
+            }
+
+            return texture;
         }
 
         HamChrono(SDL_Window *pwindow, int rwidth, int rheight)
                 : GuiPiApplication(pwindow, rwidth, rheight, "HamChrono") {
             mIconRepository = new ImageRepository{};
             buildIconRepository();
+
+            mImageRepository = new ImageRepository();
+//            mImageRepository->addImageList(loadImageDataDirectory(mSDL_Renderer, string(image_path)));
+            for (auto &image : NasaSolarImages) {
+                ImageData imageData{};
+                imageData.path = image.first;
+                imageData.name = image.second;
+                mImageRepository->push_back(0, move(imageData));
+            }
+
+            for (auto &image : mImageRepository->mImageStore.at(0)) {
+                image.set(curlFetchImage(image.path, image.name));
+                image.loaded = chrono::system_clock::now();
+            }
 
             qthLatLon = Vector2f(deg2rad(-76.0123), deg2rad(44.9016));
             aQthLatLon = antipode(qthLatLon);
@@ -189,9 +254,6 @@ namespace guipi {
                     ->withId("sidebar");
 
             sideBar->add<TimeBox>(true, true)->withId("localtime");
-
-            mImageRepository = new ImageRepository();
-            mImageRepository->addImageList(loadImageDataDirectory(mSDL_Renderer, string(image_path)));
 
             // Create an image repeater to use with the image display.
             auto imageRepeater = add<ImageRepeater>(Vector2i(210, 0), Vector2i(450, 450));
