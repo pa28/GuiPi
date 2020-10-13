@@ -14,6 +14,10 @@
 #include <map>
 #include <string>
 
+#ifdef DIRECTORY_PREFIX
+#define DIRECTORY_PREFIX "./"
+#endif
+
 #if defined(_WIN32)
 #include <SDL_ttf.h>
 #else
@@ -140,6 +144,8 @@ NAMESPACE_BEGIN(sdlgui)
  */
     TTF_Font *getFont(const Theme &theme, const std::string &fontname, size_t ptsize) {
         // Compose a font name including the size as a key for caching
+        static constexpr std::string_view icon_font_path = DIRECTORY_PREFIX "fonts/entypo.ttf";
+
         std::string shortFontName = fontname;
         if (shortFontName == "sans")
             shortFontName = theme.mStandardFont;
@@ -153,7 +159,7 @@ NAMESPACE_BEGIN(sdlgui)
         auto fontIt = internal::fonts.find(fullFontName);
         if (fontIt == internal::fonts.end()) {
             if (fontname == "icons") {
-                auto *fileFont = TTF_OpenFont("entypo.ttf", ptsize);
+                auto *fileFont = TTF_OpenFont(std::string(icon_font_path).c_str(), ptsize);
                 if (fileFont != nullptr) {
                     internal::fonts[fullFontName] = fileFont;
                     return fileFont;

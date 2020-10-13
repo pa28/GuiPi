@@ -34,6 +34,10 @@
 
 using namespace sdlgui;
 
+#ifdef DIRECTORY_PREFIX
+#define DIRECTORY_PREFIX "./"
+#endif
+
 namespace guipi {
     class HamChrono : public GuiPiApplication {
     protected:
@@ -66,9 +70,9 @@ namespace guipi {
         constexpr T deg2rad(T deg) { return deg * M_PI / 180.; }
 
 #if __cplusplus == 201703L
-        static constexpr string_view map_path = "maps/";
-        static constexpr string_view image_path = "images/";
-        static constexpr string_view background_path = "backgrounds/";
+        static constexpr string_view map_path = DIRECTORY_PREFIX "maps/";
+        static constexpr string_view image_path = DIRECTORY_PREFIX "images/";
+        static constexpr string_view background_path = DIRECTORY_PREFIX "backgrounds/";
         static constexpr string_view day_map = "day_earth_660x330.png";
         static constexpr string_view night_map = "night_earth_660x330.png";
         static constexpr string_view backdrop = "NASA_Nebula.png";
@@ -163,7 +167,7 @@ namespace guipi {
                 curlpp::Easy myRequest;
 
                 ofstream response;
-                string fileName = "images/" + name + ".jpg";
+                string fileName = string{image_path} + name + ".jpg";
                 response.open(fileName);
                 if (response) {
                     myRequest.setOpt(new curlpp::options::Url(url));
