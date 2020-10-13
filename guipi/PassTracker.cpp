@@ -92,7 +92,7 @@ void guipi::PassTracker::draw(SDL_Renderer *renderer) {
                     plot.second.imageData.set(mTheme->getTexAndRectUtf8(renderer, 0, 0, plot.first.c_str(),
                                               mTheme->mBoldFont.c_str(), 15, mTheme->mTextColor));
                 }
-                auto iconSize = mImageRepository->imageSize(mBaseIndex);
+                auto iconSize = mImageRepository->imageSize(nullptr, mBaseIndex);
                 SDL_Rect iconSrc{0, 0, iconSize.x, iconSize.y};
                 SDL_Rect iconDst{ ax + plot.second.x - iconSize.x/2, ay + plot.second.y - iconSize.y/2, iconSize.x, iconSize.y };
                 mImageRepository->renderCopy(renderer, mBaseIndex, iconSrc, iconDst);

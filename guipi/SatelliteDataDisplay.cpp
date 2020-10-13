@@ -115,7 +115,7 @@ string guipi::SatelliteDataDisplay::Satellite::timeToString(const DateTime &time
 
 void guipi::SatelliteDataDisplay::Satellite::draw(SDL_Renderer *renderer) {
     Widget::draw(renderer);
-    auto size = mImageRepository->imageSize(mImageIndex);
+    auto size = mImageRepository->imageSize(renderer, mImageIndex);
     SDL_Rect src{0, 0, size.x, size.y};
     SDL_Rect paint{mIcon->getAbsoluteLeft(), mIcon->getAbsoluteTop(), size.x, size.y};
     mImageRepository->renderCopy(renderer, mImageIndex, src, paint);

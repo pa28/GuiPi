@@ -22,8 +22,10 @@
 
 #pragma once
 
-#include <map>
+#include <chrono>
+#include <future>
 #include <iterator>
+#include <map>
 #include <vector>
 #include <type_traits>
 #include <sdlgui/common.h>
@@ -32,29 +34,47 @@
 
 namespace sdlgui {
     using namespace std;
+
+    /**
+     * @class ImageRepository
+     * @brief A cache of image data structures that may be used by other widgets to
+     * render textures.
+     */
     class ImageRepository : public Object {
     public:
         typedef vector<ImageDataList> ImageStore;
         typedef pair<ImageDataList::size_type, ImageStore::size_type> ImageStoreIndex;
         typedef std::function<void(ImageRepository &, ImageStoreIndex)> ImageChangedCallback;
         typedef map<ref<Widget>, ImageChangedCallback> ImageChangedCallbackList;
+        typedef future<tuple<SDL_Surface*,chrono::time_point<std::chrono::system_clock>>> ImageFuture;
+        typedef map<ImageStoreIndex,ImageFuture> FutureStore;
 
         ImageStore mImageStore{};
+        FutureStore mFutureStore{};
 
-        class iterator {
-        public:
-            using iterator_category = std::output_iterator_tag;
-            using value_type = ImageData; // crap
-            using difference_type = std::ptrdiff_t;
-            using pointer = ImageData *;
-            using reference = ImageData &;
+        void getFuture(SDL_Renderer *renderer, ImageStoreIndex index, bool wait) {
+            // Check for a future
+            auto idx = mFutureStore.find(index);
 
-        protected:
-            vector<ImageDataList>::size_type first;
-            ImageDataList::size_type second;
-            sdlgui::ref<ImageRepository> imageRepository;
+            // No future means the exiting ImageData is all we have.
+            if (idx == mFutureStore.end())
+                return;
 
-        };
+            if (!idx->second.valid()) {
+                if (wait) {
+                    std::chrono::milliseconds span(100);
+                    while (idx->second.wait_for(span) == std::future_status::timeout) {}
+                } else
+                    return;
+            }
+
+            auto [surface, loaded] = idx->second.get();
+            mImageStore.at(index.first).at(index.second).set(SDL_CreateTextureFromSurface(renderer, surface));
+            mImageStore.at(index.first).at(index.second).loaded = loaded;
+            SDL_FreeSurface(surface);
+            mFutureStore.erase(idx);
+        }
+
     protected:
         map<ImageStoreIndex, ImageChangedCallbackList> mImageCallbackMap;
 
@@ -97,17 +117,31 @@ namespace sdlgui {
             return index;
         }
 
-        Vector2i imageSize(ImageStoreIndex imageStoreIndex) const {
-            return Vector2i(mImageStore.at(imageStoreIndex.first).at(imageStoreIndex.second).w,
-                            mImageStore.at(imageStoreIndex.first).at(imageStoreIndex.second).h);
+        Vector2i imageSize(SDL_Renderer *renderer, ImageStoreIndex imageStoreIndex) {
+            getFuture(renderer, imageStoreIndex, false);
+            if (mImageStore.at(imageStoreIndex.first).at(imageStoreIndex.second))
+                return Vector2i(mImageStore.at(imageStoreIndex.first).at(imageStoreIndex.second).w,
+                                mImageStore.at(imageStoreIndex.first).at(imageStoreIndex.second).h);
+            else
+                return Vector2i::Zero();
+        }
+
+        ImageData &image(ImageStoreIndex index) {
+            return mImageStore.at(index.first).at(index.second);
         }
 
         const string & imageName(ImageStoreIndex index) const {
             return mImageStore.at(index.first).at(index.second).name;
         }
 
+        const string & imagePath(ImageStoreIndex index) const {
+            return mImageStore.at(index.first).at(index.second).path;
+        }
+
         void renderCopy(SDL_Renderer *renderer, ImageStoreIndex index, SDL_Rect &imgSrcRect, SDL_Rect &imgPaintRect) {
-            SDL_RenderCopy(renderer, mImageStore.at(index.first).at(index.second).get(), &imgSrcRect, &imgPaintRect);
+            getFuture(renderer, index, false);
+            auto tex = mImageStore.at(index.first).at(index.second).get();
+            SDL_RenderCopy(renderer, tex, &imgSrcRect, &imgPaintRect);
         }
 
         void push_back(ImageStore::size_type index, ImageData imageData) {

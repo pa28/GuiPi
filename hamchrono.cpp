@@ -152,7 +152,8 @@ namespace guipi {
             SDL_FreeSurface(sshot);
         }
 
-        SDL_Texture *curlFetchImage(const string &url, const string &name) {
+        static tuple<SDL_Surface*,chrono::time_point<std::chrono::system_clock>>
+        curlFetchImage(SDL_Renderer *renderer, const string &url, const string &name) {
             SDL_Texture *texture = nullptr;
             try {
                 // Set the URL.
@@ -170,11 +171,7 @@ namespace guipi {
                     myRequest.perform();
                     response.close();
                     auto surface = IMG_Load(fileName.c_str());
-                    if (surface) {
-                        texture = SDL_CreateTextureFromSurface(mSDL_Renderer, surface);
-                        SDL_FreeSurface(surface);
-                        return texture;
-                    }
+                    return make_tuple(surface,chrono::system_clock::now());
                 }
             }
 
@@ -186,7 +183,7 @@ namespace guipi {
                 std::cout << e.what() << std::endl;
             }
 
-            return texture;
+            return make_tuple(nullptr,chrono::system_clock::now());
         }
 
         HamChrono(SDL_Window *pwindow, int rwidth, int rheight)
@@ -195,7 +192,6 @@ namespace guipi {
             buildIconRepository();
 
             mImageRepository = new ImageRepository();
-//            mImageRepository->addImageList(loadImageDataDirectory(mSDL_Renderer, string(image_path)));
             for (auto &image : NasaSolarImages) {
                 ImageData imageData{};
                 imageData.path = image.first;
@@ -203,9 +199,10 @@ namespace guipi {
                 mImageRepository->push_back(0, move(imageData));
             }
 
-            for (auto &image : mImageRepository->mImageStore.at(0)) {
-                image.set(curlFetchImage(image.path, image.name));
-                image.loaded = chrono::system_clock::now();
+            for (ImageRepository::ImageStoreIndex idx{0,0}; idx.second < mImageRepository->size(idx.first); ++idx.second) {
+                mImageRepository->mFutureStore[idx] = async(curlFetchImage, mSDL_Renderer,
+                                                      mImageRepository->image(idx).path,
+                                                      mImageRepository->image(idx).name);
             }
 
             qthLatLon = Vector2f(deg2rad(-76.0123), deg2rad(44.9016));
@@ -379,6 +376,11 @@ namespace guipi {
             mEphemerisModel.loadEphemerisLibrary();
             mEphemerisModel.setSatellitesOfInterest(); //"ISS,AO-92,FO-99,IO-26,DIWATA-2,FOX-1B,AO-7,AO-27,AO-73,SO-50");
             mEphemerisModel.timerCallback(0);
+
+//            while (!mImageRepository->mFutureStore.empty()) {
+//                auto fut = mImageRepository->mFutureStore.begin();
+//                mImageRepository->getFuture(mSDL_Renderer, fut->first, true);
+//            }
         }
 
         void drawContents() override {

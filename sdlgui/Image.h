@@ -7,6 +7,7 @@
 #include <memory>
 #include <chrono>
 #include <cstdint>
+#include <future>
 #include <utility>
 #include <vector>
 #include <SDL.h>
@@ -68,6 +69,7 @@ namespace sdlgui {
         string path{};
         string name{};
         bool dirty{true};
+//        future<tuple<SDL_Texture*,chrono::time_point<std::chrono::system_clock>>> futureTex;
         std::chrono::time_point<std::chrono::system_clock> loaded{}, life{};
 
         ~ImageData() {
@@ -123,7 +125,9 @@ namespace sdlgui {
             dirty = false;
         }
 
-        SDL_Texture* get() { return tex; }
+        SDL_Texture* get() {
+            return tex;
+        }
 
         explicit operator bool() const { return tex != nullptr; }
     };

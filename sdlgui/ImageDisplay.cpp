@@ -68,7 +68,7 @@ namespace sdlgui {
 //            mImageIndex = mImageIndex % (long) mImages.size();
             Vector2i p = Vector2i(mMargin, mMargin);
             p += Vector2i(ax, ay);
-            auto imageSize = mImageRepository->imageSize(mImageStoreIndex);
+            auto imageSize = mImageRepository->imageSize(renderer, mImageStoreIndex);
             int imgw = imageSize.x;
             int imgh = imageSize.y;
 
@@ -152,7 +152,7 @@ namespace sdlgui {
             return Vector2i(w, h);
         }
 
-        return Vector2i(mImageRepository->imageSize(mImageStoreIndex));
+        return Vector2i(const_cast<ImageRepository *>(mImageRepository.get())->imageSize(nullptr, mImageStoreIndex));
     }
 
     ImageRepeater::ImageRepeater(Widget *parent,
