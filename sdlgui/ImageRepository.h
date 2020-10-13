@@ -53,26 +53,20 @@ namespace sdlgui {
         FutureStore mFutureStore{};
 
         void getFuture(SDL_Renderer *renderer, ImageStoreIndex index, bool wait) {
-            // Check for a future
-            auto idx = mFutureStore.find(index);
-
-            // No future means the exiting ImageData is all we have.
-            if (idx == mFutureStore.end())
-                return;
-
-            if (!idx->second.valid()) {
-                if (wait) {
-                    std::chrono::milliseconds span(100);
-                    while (idx->second.wait_for(span) == std::future_status::timeout) {}
-                } else
-                    return;
+            // Check for futures
+            while (!mFutureStore.empty()) {
+                auto idx = mFutureStore.begin();
+                if (!idx->second.valid()) {
+                    std::chrono::milliseconds span (100);
+                    while (idx->second.wait_for(span)==std::future_status::timeout) {}
+                } else {
+                    auto [surface, loaded] = idx->second.get();
+                    mImageStore.at(idx->first.first).at(idx->first.second).set(SDL_CreateTextureFromSurface(renderer, surface));
+                    mImageStore.at(idx->first.first).at(idx->first.second).loaded = loaded;
+                    SDL_FreeSurface(surface);
+                    mFutureStore.erase(idx->first);
+                }
             }
-
-            auto [surface, loaded] = idx->second.get();
-            mImageStore.at(index.first).at(index.second).set(SDL_CreateTextureFromSurface(renderer, surface));
-            mImageStore.at(index.first).at(index.second).loaded = loaded;
-            SDL_FreeSurface(surface);
-            mFutureStore.erase(idx);
         }
 
     protected:
