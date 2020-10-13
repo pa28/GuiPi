@@ -56,7 +56,8 @@ namespace sdlgui {
             // Check for futures
             while (!mFutureStore.empty()) {
                 auto idx = mFutureStore.begin();
-                if (!idx->second.valid()) {
+                // If there is a future, it is not valid and the image is not valid wait.
+                if (!idx->second.valid() && !mImageStore.at(idx->first.first).at(idx->first.second)) {
                     std::chrono::milliseconds span (100);
                     while (idx->second.wait_for(span)==std::future_status::timeout) {}
                 } else {
