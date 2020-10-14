@@ -64,10 +64,6 @@ namespace guipi {
 
         // search up to a few days ahead for next rise and set times (for example for moon)
         while ((!set_ok || !rise_ok) && t_srch < t_now + 2.0F) {
-            std::cerr << __PRETTY_FUNCTION__ << '\n'
-            << localSat.period() << '\n'
-            << t_srch << '\n'
-            << t_now + 2.0 << '\n';
             // find circumstances at time t_srch
             localSat.predict(t_srch);
 #if __cplusplus == 201703L

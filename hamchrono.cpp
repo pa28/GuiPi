@@ -398,7 +398,7 @@ namespace guipi {
 
             mEphemerisModel.setObserver(mObserver);
             mEphemerisModel.loadEphemerisLibrary();
-            mEphemerisModel.setSatellitesOfInterest("ES'HAIL 2"); //"ISS,AO-92,FO-99,IO-26,DIWATA-2,FOX-1B,AO-7,AO-27,AO-73,SO-50");
+            mEphemerisModel.setSatellitesOfInterest(); //"ISS,AO-92,FO-99,IO-26,DIWATA-2,FOX-1B,AO-7,AO-27,AO-73,SO-50");
             mEphemerisModel.timerCallback(0);
         }
 
@@ -438,7 +438,7 @@ private:
 int main(int argc, char ** argv) {
     InputParser inputParser{argc, argv};
 
-    Vector2f geoCoord{1., 1.};
+    Vector2f geoCoord{0., 0.};
     string callsign = inputParser.getCmdOption("-cs");
     const string latitude = inputParser.getCmdOption("-lat");
     const string longitude = inputParser.getCmdOption("-lon");
