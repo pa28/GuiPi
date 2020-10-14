@@ -55,6 +55,8 @@ namespace guipi {
         ref<ImageRepository> mIconRepository;
         ref<SatelliteDataDisplay> mSatelliteDataDisplay;
 
+        string mHomeDir;
+
         EphemerisModel mEphemerisModel{};
 
     public:
@@ -66,9 +68,9 @@ namespace guipi {
         constexpr T deg2rad(T deg) { return deg * M_PI / 180.; }
 
 #if __cplusplus == 201703L
-        static constexpr string_view map_path = DIRECTORY_PREFIX "maps/";
-        static constexpr string_view image_path = DIRECTORY_PREFIX "images/";
-        static constexpr string_view background_path = DIRECTORY_PREFIX "backgrounds/";
+        static constexpr string_view map_path = "/var/lib/hamchrono/maps/";
+        static constexpr string_view image_path = "/.hamchrono/images/";
+        static constexpr string_view background_path = "/var/lib/hamchrono/backgrounds/";
         static constexpr string_view day_map = "day_earth_660x330.png";
         static constexpr string_view night_map = "night_earth_660x330.png";
         static constexpr string_view backdrop = "NASA_Nebula.png";
@@ -154,8 +156,8 @@ namespace guipi {
             SDL_FreeSurface(sshot);
         }
 
-        static tuple<SDL_Surface*,chrono::time_point<std::chrono::system_clock>>
-        curlFetchImage(SDL_Renderer *renderer, const string &url, const string &name) {
+        static tuple<SDL_Surface *, time_point<std::chrono::system_clock>>
+        curlFetchImage(SDL_Renderer *renderer, const string &url, const string &homedir, const string &name) {
             SDL_Texture *texture = nullptr;
             try {
                 // Set the URL.
@@ -163,8 +165,8 @@ namespace guipi {
                 curlpp::Easy myRequest;
 
                 ofstream response;
-                string fileName = string{image_path} + name + ".jpg";
-                response.open(fileName);
+                string fileName = homedir + string{image_path} + name + ".jpg";
+                response.open(fileName, fstream::out | fstream::trunc);
                 if (response) {
                     myRequest.setOpt(new curlpp::options::Url(url));
                     myRequest.setOpt(new curlpp::options::WriteStream(&response));
@@ -173,7 +175,14 @@ namespace guipi {
                     myRequest.perform();
                     response.close();
                     auto surface = IMG_Load(fileName.c_str());
-                    return make_tuple(surface,chrono::system_clock::now());
+                    if (surface == nullptr) {
+                        std::cerr << "Unable to load image from '" << fileName << "'\n";
+                    } else {
+                        return make_tuple(surface, chrono::system_clock::now());
+                    }
+                } else {
+                    std::cerr << "Unable to open '" << fileName << "' for writing.\n";
+                    perror("System Error.");
                 }
             }
 
@@ -190,16 +199,16 @@ namespace guipi {
 
         Uint32 timerCallback(Uint32 interval) {
             for (ImageRepository::ImageStoreIndex idx{0,0}; idx.second < mImageRepository->size(idx.first); ++idx.second) {
-                mImageRepository->mFutureStore[idx] = async(curlFetchImage, mSDL_Renderer,
-                                                            mImageRepository->image(idx).path,
-                                                            mImageRepository->image(idx).name);
+                mImageRepository->mFutureStore[idx] = async(curlFetchImage, mSDL_Renderer, mImageRepository->image(idx).path,
+                                                            mHomeDir, mImageRepository->image(idx).name);
             }
             return interval;
         }
 
-        HamChrono(SDL_Window *pwindow, int rwidth, int rheight)
+        HamChrono(SDL_Window *pwindow, int rwidth, int rheight, const string &homedir)
                 : GuiPiApplication(pwindow, rwidth, rheight, "HamChrono"),
                 mTimer{*this, &HamChrono::timerCallback, 3600000}{
+            mHomeDir = homedir;
             SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "2");
             mIconRepository = new ImageRepository{};
             buildIconRepository();
@@ -214,8 +223,8 @@ namespace guipi {
 
             for (ImageRepository::ImageStoreIndex idx{0,0}; idx.second < mImageRepository->size(idx.first); ++idx.second) {
                 mImageRepository->mFutureStore[idx] = async(curlFetchImage, mSDL_Renderer,
-                                                      mImageRepository->image(idx).path,
-                                                      mImageRepository->image(idx).name);
+                                                            mImageRepository->image(idx).path,
+                                                            mHomeDir, mImageRepository->image(idx).name);
             }
 
             qthLatLon = Vector2f(deg2rad(-76.0123), deg2rad(44.9016));
@@ -414,6 +423,10 @@ int main(int /* argc */, char ** /* argv */) {
     std::cerr << "X86HOST\n";
 #endif
 
+    string homdir{getenv("HOME")};
+    if (system( "mkdir -p ~/.hamchrono/images"))
+        std::cerr << "Could not make directory '~/.hamchrono/images'\n";
+
     char rendername[256] = {0};
     SDL_RendererInfo info;
 
@@ -462,7 +475,7 @@ int main(int /* argc */, char ** /* argv */) {
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-    sdlgui::ref<HamChrono> app{new HamChrono(window, winWidth, winHeight)};
+    sdlgui::ref<HamChrono> app{new HamChrono(window, winWidth, winHeight, homdir)};
 
     app->performLayout(app->sdlRenderer());
 

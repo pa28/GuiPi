@@ -140,7 +140,7 @@ NAMESPACE_BEGIN(sdlgui)
  */
     TTF_Font *getFont(const Theme &theme, const std::string &fontname, size_t ptsize) {
         // Compose a font name including the size as a key for caching
-        static constexpr std::string_view icon_font_path = DIRECTORY_PREFIX "fonts/entypo.ttf";
+        static constexpr std::string_view icon_font_path = "/var/lib/hamchrono/fonts/entypo.ttf";
 
         std::string shortFontName = fontname;
         if (shortFontName == "sans")
