@@ -64,6 +64,10 @@ namespace guipi {
 
         // search up to a few days ahead for next rise and set times (for example for moon)
         while ((!set_ok || !rise_ok) && t_srch < t_now + 2.0F) {
+            std::cerr << __PRETTY_FUNCTION__ << '\n'
+            << localSat.period() << '\n'
+            << t_srch << '\n'
+            << t_now + 2.0 << '\n';
             // find circumstances at time t_srch
             localSat.predict(t_srch);
 #if __cplusplus == 201703L
@@ -276,11 +280,13 @@ namespace guipi {
                     mSatellitePassData.clear();
                     for (auto &sat : mSatellitesOfInterest) {
                         sat.second.predict(now);
-                        Earthsat earthsat{};
-                        earthsat.FindNextPass(sat.second, mObserver);
-                        earthsat.roundPassTimes();
-                        if (earthsat.isEverUp())
-                            mSatellitePassData.emplace_back(sat.first, earthsat.riseTime(), earthsat.setTime());
+                        if (fmod(sat.second.period(), 1.0) < 0.9) {
+                            Earthsat earthsat{};
+                            earthsat.FindNextPass(sat.second, mObserver);
+                            earthsat.roundPassTimes();
+                            if (earthsat.isEverUp())
+                                mSatellitePassData.emplace_back(sat.first, earthsat.riseTime(), earthsat.setTime());
+                        }
                     }
 
                     std::sort(mSatellitePassData.begin(), mSatellitePassData.end(), [](auto &p0, auto &p1) {
