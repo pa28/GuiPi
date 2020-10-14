@@ -205,7 +205,7 @@ namespace guipi {
             return interval;
         }
 
-        HamChrono(SDL_Window *pwindow, int rwidth, int rheight, const string &homedir)
+        HamChrono(SDL_Window *pwindow, int rwidth, int rheight, const string &homedir, const string &callsign, const Vector2f &geoCoord)
                 : GuiPiApplication(pwindow, rwidth, rheight, "HamChrono"),
                 mTimer{*this, &HamChrono::timerCallback, 3600000}{
             mHomeDir = homedir;
@@ -227,11 +227,12 @@ namespace guipi {
                                                             mHomeDir, mImageRepository->image(idx).name);
             }
 
-            qthLatLon = Vector2f(deg2rad(-76.0123), deg2rad(44.9016));
+            qthLatLon.x = deg2rad(geoCoord.x);
+            qthLatLon.y = deg2rad(geoCoord.y);
             aQthLatLon = antipode(qthLatLon);
-            mObserver = Observer{44.9016, -76.0123, 0.};
+            mObserver = Observer{ geoCoord.y, geoCoord.x, 0.};
 
-            Vector2i mapAreaSize(660, 330);
+            Vector2i mapAreaSize(EARTH_BIG_W, EARTH_BIG_H);
             Vector2i topAreaSize(mScreenSize.x, mScreenSize.y - mapAreaSize.y);
             Vector2i botAreaSize(mScreenSize.x, mScreenSize.y - topAreaSize.y);
             Vector2i sideBarSize(mScreenSize.x - mapAreaSize.x, mapAreaSize.y);
@@ -252,9 +253,10 @@ namespace guipi {
 
             auto timeSet = topArea->add<Widget>()
                     ->withId("timeSet")
+                    ->withFixedWidth(220)
                     ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 5, 5);
 
-            auto qthButton = timeSet->add<Button>("VE3YSH", ENTYPO_ICON_COG)
+            auto qthButton = timeSet->add<Button>(callsign, ENTYPO_ICON_COG)
                     ->withIconFontSize(50)
                     ->withFontSize(40);
 
@@ -407,21 +409,46 @@ namespace guipi {
 
 using namespace guipi;
 
-int main(int /* argc */, char ** /* argv */) {
-#if __cplusplus == 201703L
-    std::cerr << "C++17\n";
-#elif __cplusplus == 201402L
-    std::cerr << "C++14\n";
-#else
-    std::cerr << "C++ unkonwn\n";
-#endif
+class InputParser{
+public:
+    InputParser (int &argc, char **argv){
+        for (int i=1; i < argc; ++i)
+            this->tokens.push_back(std::string(argv[i]));
+    }
+    /// @author iain
+    const std::string& getCmdOption(const std::string &option) const{
+        std::vector<std::string>::const_iterator itr;
+        itr =  std::find(this->tokens.begin(), this->tokens.end(), option);
+        if (itr != this->tokens.end() && ++itr != this->tokens.end()){
+            return *itr;
+        }
+        static const std::string empty_string;
+        return empty_string;
+    }
+    /// @author iain
+    bool cmdOptionExists(const std::string &option) const{
+        return std::find(this->tokens.begin(), this->tokens.end(), option)
+               != this->tokens.end();
+    }
+private:
+    std::vector <std::string> tokens;
+};
 
-#ifdef BCMHOST
-    std::cerr << "BCMHOST\n";
-#endif
-#ifdef X86HOST
-    std::cerr << "X86HOST\n";
-#endif
+
+int main(int argc, char ** argv) {
+    InputParser inputParser{argc, argv};
+
+    Vector2f geoCoord{1., 1.};
+    string callsign = inputParser.getCmdOption("-cs");
+    const string latitude = inputParser.getCmdOption("-lat");
+    const string longitude = inputParser.getCmdOption("-lon");
+
+    if (callsign.empty())
+        callsign = "CALL";
+    if (!latitude.empty() && !longitude.empty()) {
+        geoCoord.y = std::strtod(latitude.c_str(), nullptr);
+        geoCoord.x = std::strtod(longitude.c_str(), nullptr);
+    }
 
     string homdir{getenv("HOME")};
     if (system( "mkdir -p ~/.hamchrono/images"))
@@ -475,7 +502,7 @@ int main(int /* argc */, char ** /* argv */) {
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-    sdlgui::ref<HamChrono> app{new HamChrono(window, winWidth, winHeight, homdir)};
+    sdlgui::ref<HamChrono> app{new HamChrono(window, winWidth, winHeight, homdir, callsign, geoCoord)};
 
     app->performLayout(app->sdlRenderer());
 
