@@ -149,7 +149,11 @@ namespace guipi {
     }
 
     SatelliteEphemerisMap SatelliteEphemerisFetch::fetchAll() {
-        return std::move(curl_process((std::string) URL_FETCH_ALL));
+        std::string url_fetch_moon = std::string{URL_FETCH_NAME} + "Moon";
+        auto rest = std::move(curl_process((std::string) URL_FETCH_ALL));
+        auto moon = std::move(curl_process(url_fetch_moon));
+        rest["Moon"] = moon.at("Moon");
+        return std::move(rest);
     }
 
     SatelliteEphemerisMap SatelliteEphemerisFetch::curl_process(const std::string &url) {
@@ -186,7 +190,7 @@ namespace guipi {
                 if (l != std::string::npos && r != std::string::npos && l < r) {
                     ephemeris[0] = ephemeris[0].substr(l,r);
                 }
-                r = ephemeris[0].find_last_of("ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789") + 1;
+                r = ephemeris[0].find_last_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789") + 1;
                 if (r != std::string::npos)
                     ephemeris[0] = ephemeris[0].substr(0, r);
 
