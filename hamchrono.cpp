@@ -68,6 +68,7 @@ namespace guipi {
         constexpr T deg2rad(T deg) { return deg * M_PI / 180.; }
 
 #if __cplusplus == 201703L
+        static constexpr string_view moon_path = "/var/lib/hamchrono/moon/";
         static constexpr string_view map_path = "/var/lib/hamchrono/maps/";
         static constexpr string_view image_path = "/.hamchrono/images/";
         static constexpr string_view background_path = "/var/lib/hamchrono/backgrounds/";
@@ -139,6 +140,12 @@ namespace guipi {
                                                      get<3>(conf.color)})};
                 mIconRepository->push_back(idx.first, move(imageData));
             }
+
+            idx = pair<std::size_t,std::size_t> {1,1};
+            string moon_file = string{moon_path} + "Moon27_30x30.gif";
+            auto surface = IMG_Load(moon_file.c_str());
+            mIconRepository->image(idx).set(SDL_CreateTextureFromSurface(mSDL_Renderer, surface));
+            SDL_FreeSurface(surface);
         }
 
         static constexpr array<pair<string_view, string_view>, 5> NasaSolarImages {
