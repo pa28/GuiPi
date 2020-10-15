@@ -26,15 +26,22 @@
 #include <string_view>
 #include <soci/soci.h>
 #include <sqlite3/soci-sqlite3.h>
+#include <exception>
+#include <iostream>
 
 #define XSTR(arg) STR(arg)
 #define STR(arg) #arg
 
 #define SETTING_VALUES   \
-    X(mCallSign, std::string, "CALLSIGN") \
-    X(mLatitude, float, 0.f)    \
-    X(mLongitude, float, 0.f)   \
-    X(mElevation, float, 0.f)   \
+    X(CallSign, std::string, "CALLSIGN") \
+    X(Latitude, float, 0.f)      \
+    X(Longitude, float, 0.f)     \
+    X(Elevation, float, 0.f)     \
+    X(SideBarActiveTab, int, 0)  \
+    X(SatelliteTracking, int, 0) \
+    X(CelestialTracking, int, 0) \
+    X(AzimuthalDisplay, int, 0)  \
+    X(GeoPositions, int, 0)
 
 namespace guipi {
     class Settings {
@@ -42,7 +49,7 @@ namespace guipi {
         std::string mDbFileName;
     public:
         std::string mHomeDir;
-#define X(name,type,default) type name;
+#define X(name,type,default) type m ## name;
         SETTING_VALUES
 #undef X
 
@@ -57,9 +64,24 @@ namespace guipi {
         template<typename T>
         void setDatabaseValue(soci::session &sql, const std::string_view &name, T value);
 
+        template<typename T>
+        void writeValue(const std::string &name, T value) {
+            try {
+                soci::session sql(soci::sqlite3, mDbFileName);
+                setDatabaseValue(sql, name, value);
+            }
+            catch (std::exception const &e) {
+                std::cerr << e.what() << '\n';
+            }
+        }
+
         void readAllValues(soci::session &sql);
 
         void writeAllValues(soci::session &sql);
+
+#define X(name,type,default) void set ## name(type value) { m ## name = value; writeValue(# name, m ## name); }
+        SETTING_VALUES
+#undef X
     };
 }
 

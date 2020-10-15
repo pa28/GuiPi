@@ -317,6 +317,10 @@ namespace guipi {
                     ->withBackdropFile(string(background_path) + string(backdrop))
                     ->withFixedSize(Vector2i(EARTH_BIG_W, EARTH_BIG_H));
 
+            mGeoChrono->setSatelliteDisplay(mSettings.mSatelliteTracking);
+            mGeoChrono->setSunMoonDisplay(mSettings.mCelestialTracking);
+            mGeoChrono->setAzmuthalDisplay(mSettings.mAzimuthalDisplay);
+
             mGeoChrono->setGeoData(vector<GeoChrono::PositionData>{ {qthLatLon.y, qthLatLon.x, true, ImageRepository::ImageStoreIndex{ 0, 0}},
                                                           {aQthLatLon.y, aQthLatLon.x, true, ImageRepository::ImageStoreIndex{0, 1} }});
 
@@ -329,29 +333,40 @@ namespace guipi {
                     ->withPushed(mGeoChrono->satelliteDisplay())
                     ->withChangeCallback([&](bool state) {
                         mGeoChrono->setSatelliteDisplay(state);
+                        mSettings.setSatelliteTracking(state ? 1 : 0);
                         if (state)
-                            if (auto rocket = this->find("Location", true)) {
-                                dynamic_cast<ToolButton *>(rocket)->withPushed(false);
+                            if (auto location = this->find("Location", true)) {
+                                dynamic_cast<ToolButton *>(location)->withPushed(false);
+                                mSettings.setGeoPositions(0);
                             }
                     })
                     ->withId("Rocket")->_and()
                     ->add<ToolButton>(ENTYPO_ICON_MOON, Button::Flags::ToggleButton)
                     ->withPushed(mGeoChrono->sunMoonDisplay())
-                    ->withChangeCallback([&](bool state) { mGeoChrono->setSunMoonDisplay(state); })
+                    ->withChangeCallback([&](bool state) {
+                        mGeoChrono->setSunMoonDisplay(state);
+                        mSettings.setCelestialTracking(state ? 1 : 0);
+                    })
                     ->_and()
                     ->add<ToolButton>(ENTYPO_ICON_GLOBE, Button::Flags::ToggleButton)
                     ->withPushed(mGeoChrono->azmuthalDisplay())
-                    ->withChangeCallback([&](bool state) { mGeoChrono->setAzmuthalDisplay(state); });
+                    ->withChangeCallback([&](bool state) {
+                        mGeoChrono->setAzmuthalDisplay(state);
+                        mSettings.setAzimuthalDisplay(state ? 1 : 0);
+                    });
 
             switches->add<Widget>()->withPosition(Vector2i(620, 0))
                     ->withFixedSize(Vector2i(40, topAreaSize.y))
                     ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 10, 12)
                     ->add<ToolButton>(ENTYPO_ICON_LOCATION, Button::Flags::ToggleButton)
+                    ->withPushed(mSettings.mGeoPositions)
                     ->withChangeCallback([&](bool state) {
+                        mSettings.setGeoPositions(state ? 1 : 0);
                         if (state)
                             if (auto rocket = this->find("Rocket", true)) {
                                 dynamic_cast<ToolButton *>(rocket)->withPushed(false);
                                 mGeoChrono->setSatelliteDisplay(false);
+                                mSettings.setSatelliteTracking(0);
                             }
                     })->withId("Location")->_and()
                     ->add<ToolButton>(ENTYPO_ICON_NETWORK, Button::Flags::ToggleButton)->_and()
@@ -382,7 +397,10 @@ namespace guipi {
             // Use overloaded variadic add to fill the tab widget with Different tabs.
             layer->add<Label>("Stations", "sans-bold")->withFixedWidth(sideBarSize.x - 20);
 
-            tab->setActiveTab(0);
+            tab->setActiveTab(mSettings.mSideBarActiveTab);
+            tab->setCallback([this](int activeTab){
+                mSettings.setSideBarActiveTab(activeTab);
+            });
 
             mEphemerisModel.setPassMonitorCallback([this](auto data) {
                 mSatelliteDataDisplay->updateSatelliteData(data);

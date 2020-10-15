@@ -10,7 +10,7 @@ using namespace std;
 using namespace soci;
 
 guipi::Settings::Settings(const string &db_file_name)  : mDbFileName(db_file_name) {
-#define X(name,type,default) name = default;
+#define X(name,type,default) m ## name = default;
     SETTING_VALUES
 #undef X
 }
@@ -97,13 +97,13 @@ void guipi::Settings::initializeSettingsDatabase() {
 }
 
 void guipi::Settings::writeAllValues(session &sql) {
-#define X(name,type,default) setDatabaseValue<type>(sql, #name, name);
+#define X(name,type,default) setDatabaseValue<type>(sql, #name, m ## name);
     SETTING_VALUES
 #undef X
 }
 
 void guipi::Settings::readAllValues(session &sql) {
-#define X(name,type,default) {auto value = getDatabaseValue<type>(sql, #name); if (value) name = value.value();}
+#define X(name,type,default) {auto value = getDatabaseValue<type>(sql, #name); if (value) m ## name = value.value();}
     SETTING_VALUES
 #undef X
 }

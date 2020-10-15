@@ -101,3 +101,9 @@ used a proper declaration would be:
 ```
 This also makes use of the attribute `[[nodiscard]]` which will cause an error
 if the return value is not used.
+
+## std::future and std::async
+
+I have been slow to take up this idiom, preferring to use `std::thread` instead.
+Those days could be over, the `std::future`/`std::async` interface is so clean and
+easy to use. 
