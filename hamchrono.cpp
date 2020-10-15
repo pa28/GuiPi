@@ -30,7 +30,7 @@
 #include <guipi/GuiPiApplication.h>
 #include <guipi/EphemerisModel.h>
 #include <guipi/SatelliteDataDisplay.h>
-//#include <guipi/SatelliteDataDisplay.h>
+#include <guipi/Settings.h>
 
 using namespace sdlgui;
 
@@ -55,9 +55,9 @@ namespace guipi {
         ref<ImageRepository> mIconRepository;
         ref<SatelliteDataDisplay> mSatelliteDataDisplay;
 
-        string mHomeDir;
-
         EphemerisModel mEphemerisModel{};
+
+        Settings mSettings;
 
     public:
         ~HamChrono() override = default;
@@ -199,17 +199,21 @@ namespace guipi {
 
         Uint32 timerCallback(Uint32 interval) {
             for (ImageRepository::ImageStoreIndex idx{0,0}; idx.second < mImageRepository->size(idx.first); ++idx.second) {
-                mImageRepository->mFutureStore[idx] = async(curlFetchImage, mSDL_Renderer, mImageRepository->image(idx).path,
-                                                            mHomeDir, mImageRepository->image(idx).name);
+                mImageRepository->mFutureStore[idx] = async(curlFetchImage, mSDL_Renderer,
+                                                            mImageRepository->image(idx).path,
+                                                            mSettings.mHomeDir, mImageRepository->image(idx).name);
             }
             return interval;
         }
 
-        HamChrono(SDL_Window *pwindow, int rwidth, int rheight, const string &homedir, const string &callsign, const Vector2f &geoCoord)
+        HamChrono(SDL_Window *pwindow, int rwidth, int rheight, const string &homedir, const string &callsign,
+                  const Vector2f &geoCoord)
                 : GuiPiApplication(pwindow, rwidth, rheight, "HamChrono"),
-                mTimer{*this, &HamChrono::timerCallback, 3600000}{
-            mHomeDir = homedir;
-            SDL_SetHint( SDL_HINT_RENDER_SCALE_QUALITY, "2");
+                  mTimer{*this, &HamChrono::timerCallback, 3600000},
+                  mSettings(homedir + "/.hamchrono/settings.sqlite") {
+            mSettings.mHomeDir = homedir;
+            mSettings.initializeSettingsDatabase();
+            SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
             mIconRepository = new ImageRepository{};
             buildIconRepository();
 
@@ -224,13 +228,13 @@ namespace guipi {
             for (ImageRepository::ImageStoreIndex idx{0,0}; idx.second < mImageRepository->size(idx.first); ++idx.second) {
                 mImageRepository->mFutureStore[idx] = async(curlFetchImage, mSDL_Renderer,
                                                             mImageRepository->image(idx).path,
-                                                            mHomeDir, mImageRepository->image(idx).name);
+                                                            mSettings.mHomeDir, mImageRepository->image(idx).name);
             }
 
-            qthLatLon.x = deg2rad(geoCoord.x);
+            qthLatLon.x = deg2rad(mSettings.mLongitude);
             qthLatLon.y = deg2rad(geoCoord.y);
             aQthLatLon = antipode(qthLatLon);
-            mObserver = Observer{ geoCoord.y, geoCoord.x, 0.};
+            mObserver = Observer{mSettings.mLatitude, mSettings.mLongitude, mSettings.mElevation};
 
             Vector2i mapAreaSize(EARTH_BIG_W, EARTH_BIG_H);
             Vector2i topAreaSize(mScreenSize.x, mScreenSize.y - mapAreaSize.y);
@@ -256,7 +260,7 @@ namespace guipi {
                     ->withFixedWidth(220)
                     ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 5, 5);
 
-            auto qthButton = timeSet->add<Button>(callsign, ENTYPO_ICON_COG)
+            auto qthButton = timeSet->add<Button>(mSettings.mCallSign, ENTYPO_ICON_COG)
                     ->withIconFontSize(50)
                     ->withFontSize(40);
 

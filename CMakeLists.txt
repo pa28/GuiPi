@@ -6,6 +6,9 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake"
+        "${CMAKE_MODULE_PATH}")
+
 # Required libraries for linking against nngui (all targets)
 set(EXTRA_LIBS "")
 
@@ -17,7 +20,12 @@ else()
     add_compile_definitions(BCMHOST=1)
 endif()
 
+find_package(Soci REQUIRED COMPONENTS sqlite3)
+include_directories(${SOCI_INCLUDE_DIRS} "/usr/include")
+
 set(CMAKE_VERBOSE_MAKEFILE OFF)
+
+add_compile_definitions(VERSION=${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}-${PROJECT_VERSION_TWEAK})
 
 IF(CMAKE_BUILD_TYPE MATCHES Debug)
     add_compile_definitions(DIRECTORY_PREFIX="./")
@@ -28,7 +36,6 @@ ELSE()
 ENDIF(CMAKE_BUILD_TYPE MATCHES Debug)
 
 MESSAGE(STATUS "Dir prefix:  ${DIRECTORY_PREFIX}")
-
 
 if (NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
     message(STATUS "Setting build type to 'Release' as none was specified.")
@@ -76,7 +83,8 @@ if (BUILD_EXAMPLE)
             VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}
     )
 
-    target_link_libraries(hamchrono ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2IMAGE_LIBRARY} ${SDL2TTF_LIBRARY} ${CURLPP_LIBRARIES})
+    target_link_libraries(hamchrono ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2IMAGE_LIBRARY} ${SDL2TTF_LIBRARY} ${CURLPP_LIBRARIES}
+            ${SOCI_LIBRARY} ${SOCI_sqlite3_PLUGIN} -lsqlite3)
 
     # Copy icons for example application
     file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/maps)
