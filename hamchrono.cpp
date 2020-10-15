@@ -232,7 +232,7 @@ namespace guipi {
             }
 
             qthLatLon.x = deg2rad(mSettings.mLongitude);
-            qthLatLon.y = deg2rad(geoCoord.y);
+            qthLatLon.y = deg2rad(mSettings.mLatitude);
             aQthLatLon = antipode(qthLatLon);
             mObserver = Observer{mSettings.mLatitude, mSettings.mLongitude, mSettings.mElevation};
 
