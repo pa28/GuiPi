@@ -214,6 +214,11 @@ access.
 1. [SOCI](http://soci.sourceforge.net/) a C++ Database Access Library.
     1. `sudo apt install libsoci-dev`
 
+1. [SQLite3](https://www.sqlite.org/index.html) QLite is a C-language
+library that implements a small, fast, self-contained, high-reliability,
+full-featured, SQL database engine.
+    1. `sudo apt install libsqlite3-dev`
+
 1. [libcurl](https://curl.haxx.se/libcurl/) the multiprotocol transfer library. ```sudo apt-get install libcurl4-openssl-dev```
 
     1. [curlpp](http://www.curlpp.org/) C++ wrapper around libcURL. ```sudo apt-get install libcurlpp-dev```
