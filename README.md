@@ -131,7 +131,7 @@ and the Graphics Co-processor the program isn't limited to displaying pre-sized
 thumb nails. The new program downloads the original images from the NASA
 website and can display them in nearly full size in a pop-up window.
 
-### New Widgets
+### New Widgets and Classes
 
 Writing any program on top of a general purpose GUI library will eventually
 lead to writing new Widgets. These are the ones I have written for HamChrono.
@@ -168,6 +168,9 @@ of objects being tracked.
 
 1. **Ephemeris Model** This class manages all the ephemeris data and calculations in
 one location, distributing the results as needed throughout the program using callbacks.
+
+1. **Settings** A class to maintain user modifiable sttings in an SQLite3 database in
+the users' home directory.
 
 # Dependencies
 
