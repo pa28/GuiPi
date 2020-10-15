@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.0)
 
-project("GuiPi" VERSION 0.2.2.0)
+project("GuiPi" VERSION 0.2.3.0)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -113,10 +113,6 @@ install(DIRECTORY resources/backgrounds/ DESTINATION /var/lib/hamchrono/backgrou
 install(DIRECTORY resources/fonts/ DESTINATION /var/lib/hamchrono/fonts
         USE_SOURCE_PERMISSIONS
         PATTERN "fonts/*")
-
-install(DIRECTORY resources/images/ DESTINATION /var/lib/hamchrono/images
-        USE_SOURCE_PERMISSIONS
-        PATTERN "images/*")
 
 set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}")
 set(CPACK_PACKAGE_RELEASE ${PROJECT_VERSION_TWEAK})
