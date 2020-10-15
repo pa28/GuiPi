@@ -180,12 +180,12 @@ the users' home directory.
 a "Light and Versitile Graphics Library". The use of this
 libbrary on the 7 inch RaspberryPi display is described by
 [VK3ERW](http://www.vk3erw.com/index.php/16-software/63-raspberry-pi-official-7-touchscreen-and-littlevgl).
-This library needs to be compile for the target. It was my
+This library needs to be compiled for the target. It was my
 intention to provide a package for use on the RaspberryPi.
 Unfortunately I found the following:
     1. No standardized build environment;
         1. Have to move Makefiles around and put your own together.
-        There is flexability here, but this makes geeping up with 
+        There is flexibility here, but this makes keeping up with 
         changes hard.
         1. Shared library not provided for, again you can build it
         yourself...
@@ -198,10 +198,11 @@ Unfortunately I found the following:
     have also become busy with other things. However, it is open source and I can fork 
     the repository and begin taking it in the direction I need. My port of NanoGUI-SDL
     is included in the project.
-    1. Install on Debian derivatives: `sudo apt install libsdl2-dev libsdl2-ttf-def libsdl2-image-dev`
+    1. Install SDL2 on Debian derivatives: `sudo apt install libsdl2-dev libsdl2-ttf-def libsdl2-image-dev`
     
 1. [SDL2_gfx](https://www.ferzkopp.net/Software/SDL2_gfx/Docs/html/index.html) a graphics
-primitive library that adds additional drawing capability to SDL2. Under consideration.
+primitive library that adds additional drawing capability to SDL2. Using the primitive drawing
+functions. Still thinking about the rest.
 
 1. [GNU CGICC](https://www.gnu.org/software/cgicc/doc/index.html)
 a [Common Gateway Interface](https://en.wikipedia.org/wiki/Common_Gateway_Interface)
