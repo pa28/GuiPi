@@ -57,15 +57,11 @@ namespace guipi {
 
     protected:
         template<typename T>
-        std::string realToString(T value) {
+        std::string realToString(T value, int precision) {
             static_assert(std::is_floating_point<T>::value, "value must be floating point.");
             std::stringstream strm;
-            strm << std::fixed << std::setw( 9 ) << std::setprecision( 4 ) << value;
-            auto str = strm.str();
-            auto spc = str.find_first_not_of(' ');
-            if (spc != std::string::npos && spc > 0)
-                return str.substr(spc);
-            return str;
+            strm << std::fixed << std::setprecision( precision ) << value;
+            return strm.str();
         }
     };
 }

@@ -65,7 +65,7 @@ void guipi::SettingsDialog::initialize() {
     latitude->setEditable(true);
     latitude->setUnits("Deg");
 //    latitude->setFixedSize(Vector2i(100, 40));
-    latitude->setValue(realToString(mSettings->mLatitude));
+    latitude->setValue(realToString(mSettings->mLatitude, 4));
     latitude->setFontSize(20);
     latitude->setFormat("[-]?[0-9]{0,2}\\.?[0-9]{1,4}");
     latitude->setMaxLength(8);
@@ -81,13 +81,29 @@ void guipi::SettingsDialog::initialize() {
     longitude->setEditable(true);
     longitude->setUnits("Deg");
 //    longitude->setFixedSize(Vector2i(100, 40));
-    longitude->setValue(realToString(mSettings->mLongitude));
+    longitude->setValue(realToString(mSettings->mLongitude, 4));
     longitude->setFontSize(20);
     longitude->setFormat("[+-]?[0-9]{0,3}.?[0-9]{0,4}");
     longitude->setMaxLength(9);
     longitude->setFixedWidth(150);
     longitude->setCallback([this](const std::string &text) -> bool {
         mSettings->setLongitude(std::strtof(text.c_str(), nullptr));
+        return true;
+    });
+
+    panel00->add<Label>("Elevation")->withFontSize(20);
+    auto elevation = panel00->add<TextBox>();
+    elevation->setAlignment(TextBox::Alignment::Left);
+    elevation->setEditable(true);
+    elevation->setUnits("m");
+//    elevation->setFixedSize(Vector2i(100, 40));
+    elevation->setValue(realToString(mSettings->mElevation, 1));
+    elevation->setFontSize(20);
+    elevation->setFormat("[+-]?[0-9]{0,4}.?[0-9]{0,1}");
+    elevation->setMaxLength(9);
+    elevation->setFixedWidth(150);
+    elevation->setCallback([this](const std::string &text) -> bool {
+        mSettings->setElevation(std::strtof(text.c_str(), nullptr));
         return true;
     });
 }
