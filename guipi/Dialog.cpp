@@ -15,16 +15,10 @@ using namespace std;
 guipi::Dialog::Dialog(Widget *parent, const std::string &title, const Vector2i &position)
         : Window(parent, title, position) {
     if (buttonPanel())
-        buttonPanel()->withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 0, 0)
-                ->withFixedHeight(35)
-                ->add<ToolButton>(ENTYPO_ICON_CHECK, Button::Flags::NormalButton)
+        buttonPanel()->add<ToolButton>(ENTYPO_ICON_SQUARED_CROSS, Button::Flags::NormalButton)
                 ->withCallback([&]() {
                     dispose();
                 });
-    buttonPanel()->add<ToolButton>(ENTYPO_ICON_SQUARED_CROSS, Button::Flags::NormalButton)
-            ->withCallback([&]() {
-                dispose();
-            });
     setModal(true);
     dynamic_cast<Screen *>(window()->parent())->moveWindowToFront(window());
 }
@@ -47,17 +41,22 @@ void guipi::SettingsDialog::initialize() {
 
     auto panel00 = panel0->add<Widget>();
     panel00->withLayout<GridLayout>(Orientation::Horizontal, 2,
-                                   Alignment::Middle,
-                                   0, 10);
+                                    Alignment::Middle,
+                                    0, 10);
 
     panel00->add<Label>("Callsign")->withFontSize(20);
     auto callsign = panel00->add<TextBox>();
     callsign->setAlignment(TextBox::Alignment::Left);
     callsign->setEditable(true);
-    callsign->setFixedSize(Vector2i(100, 40));
     callsign->setValue(mSettings->mCallSign);
     callsign->setFontSize(20);
-    callsign->setFormat("[A-Z0-9]{3,6}");
+    callsign->setFormat("[A-Z0-9]{3,8}");
+    callsign->setMaxLength(8);
+    callsign->setFixedWidth(150);
+    callsign->setCallback([this](const std::string &text) -> bool {
+        mSettings->setCallSign(text);
+        return true;
+    });
 
     panel00->add<Label>("Latitude")->withFontSize(20);
     auto latitude = panel00->add<TextBox>();
@@ -69,6 +68,11 @@ void guipi::SettingsDialog::initialize() {
     latitude->setFontSize(20);
     latitude->setFormat("[-]?[0-9]{0,2}\\.?[0-9]{1,4}");
     latitude->setMaxLength(8);
+    latitude->setFixedWidth(150);
+    latitude->setCallback([this](const std::string &text) -> bool {
+        mSettings->setLatitude(std::strtof(text.c_str(), nullptr));
+        return true;
+    });
 
     panel00->add<Label>("Longitude")->withFontSize(20);
     auto longitude = panel00->add<TextBox>();
@@ -80,5 +84,9 @@ void guipi::SettingsDialog::initialize() {
     longitude->setFontSize(20);
     longitude->setFormat("[+-]?[0-9]{0,3}.?[0-9]{0,4}");
     longitude->setMaxLength(9);
-
+    longitude->setFixedWidth(150);
+    longitude->setCallback([this](const std::string &text) -> bool {
+        mSettings->setLongitude(std::strtof(text.c_str(), nullptr));
+        return true;
+    });
 }
