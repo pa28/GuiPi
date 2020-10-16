@@ -58,6 +58,11 @@ optional<string> guipi::Settings::getDatabaseValue(session &sql, const string_vi
 
 template<typename T>
 void guipi::Settings::setDatabaseValue(session &sql, const string_view &name, T value) {
+    throw std::logic_error("Type not handled by setDatabaseValue.");
+}
+
+template<>
+void guipi::Settings::setDatabaseValue(session &sql, const string_view &name, std::string value) {
     sql << "INSERT OR REPLACE INTO settings_string (name,value) VALUES (\"" << name << "\",\"" << value << "\")";
 }
 
