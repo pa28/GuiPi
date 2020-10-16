@@ -53,6 +53,7 @@ void Widget::setTheme(ref <Theme> theme)
     void Widget::setSettings(ref<guipi::Settings> settings) {
         if (mSettings == settings)
             return;
+        mSettings = settings;
         for (auto child : mChildren)
             child->setSettings(settings);
     }

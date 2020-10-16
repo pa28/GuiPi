@@ -57,8 +57,6 @@ namespace guipi {
 
         EphemerisModel mEphemerisModel{};
 
-        sdlgui::ref<Settings> mSettings;
-
     public:
         ~HamChrono() override = default;
 
@@ -217,6 +215,7 @@ namespace guipi {
             mSettings = new Settings{homedir + "/.hamchrono/settings.sqlite"};
             mSettings->mHomeDir = homedir;
             mSettings->initializeSettingsDatabase();
+            setSettings(mSettings);
             SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
             mIconRepository = new ImageRepository{};
             buildIconRepository();
@@ -266,8 +265,7 @@ namespace guipi {
 
             auto qthButton = timeSet->add<Button>(mSettings->mCallSign)
                     ->withCallback([this](){
-                        add<SettingsDialog>( "Settings", Vector2i{40,40}, Vector2i{600,400})
-                            ->withSettings(mSettings);
+                        add<SettingsDialog>( "Settings", Vector2i{40,40}, Vector2i{600,400});
                         this->performLayout();
                     })
                     ->withIconFontSize(50)

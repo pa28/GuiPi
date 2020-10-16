@@ -26,6 +26,7 @@ guipi::Dialog::Dialog(Widget *parent, const std::string &title, const Vector2i &
 guipi::SettingsDialog::SettingsDialog(Widget *parent, const string &title, const Vector2i &position,
                                       const Vector2i &fixedSize)
         : Dialog(parent, title, position) {
+    initialize();
 }
 
 void guipi::SettingsDialog::initialize() {

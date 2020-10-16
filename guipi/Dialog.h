@@ -55,15 +55,7 @@ namespace guipi {
 
         void initialize();
 
-        sdlgui::ref<SettingsDialog> withSettings(sdlgui::ref<Settings> settings) {
-            mSettings = std::move(settings);
-            initialize();
-            return sdlgui::ref<SettingsDialog>{this};
-        }
-
     protected:
-        sdlgui::ref<Settings> mSettings;
-
         template<typename T>
         std::string realToString(T value) {
             static_assert(std::is_floating_point<T>::value, "value must be floating point.");
