@@ -57,7 +57,7 @@ namespace guipi {
 
         EphemerisModel mEphemerisModel{};
 
-        Settings mSettings;
+        sdlgui::ref<Settings> mSettings;
 
     public:
         ~HamChrono() override = default;
@@ -201,7 +201,7 @@ namespace guipi {
             for (ImageRepository::ImageStoreIndex idx{0,0}; idx.second < mImageRepository->size(idx.first); ++idx.second) {
                 mImageRepository->mFutureStore[idx] = async(curlFetchImage, mSDL_Renderer,
                                                             mImageRepository->image(idx).path,
-                                                            mSettings.mHomeDir, mImageRepository->image(idx).name);
+                                                            mSettings->mHomeDir, mImageRepository->image(idx).name);
             }
             return interval;
         }
@@ -213,10 +213,10 @@ namespace guipi {
         HamChrono(SDL_Window *pwindow, int rwidth, int rheight, const string &homedir, const string &callsign,
                   const Vector2f &geoCoord)
                 : GuiPiApplication(pwindow, rwidth, rheight, "HamChrono"),
-                  mTimer{*this, &HamChrono::timerCallback, 3600000},
-                  mSettings(homedir + "/.hamchrono/settings.sqlite") {
-            mSettings.mHomeDir = homedir;
-            mSettings.initializeSettingsDatabase();
+                  mTimer{*this, &HamChrono::timerCallback, 3600000} {
+            mSettings = new Settings{homedir + "/.hamchrono/settings.sqlite"};
+            mSettings->mHomeDir = homedir;
+            mSettings->initializeSettingsDatabase();
             SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
             mIconRepository = new ImageRepository{};
             buildIconRepository();
@@ -232,13 +232,13 @@ namespace guipi {
             for (ImageRepository::ImageStoreIndex idx{0,0}; idx.second < mImageRepository->size(idx.first); ++idx.second) {
                 mImageRepository->mFutureStore[idx] = async(curlFetchImage, mSDL_Renderer,
                                                             mImageRepository->image(idx).path,
-                                                            mSettings.mHomeDir, mImageRepository->image(idx).name);
+                                                            mSettings->mHomeDir, mImageRepository->image(idx).name);
             }
 
-            qthLatLon.x = deg2rad(mSettings.mLongitude);
-            qthLatLon.y = deg2rad(mSettings.mLatitude);
+            qthLatLon.x = deg2rad(mSettings->mLongitude);
+            qthLatLon.y = deg2rad(mSettings->mLatitude);
             aQthLatLon = antipode(qthLatLon);
-            mObserver = Observer{mSettings.mLatitude, mSettings.mLongitude, mSettings.mElevation};
+            mObserver = Observer{mSettings->mLatitude, mSettings->mLongitude, mSettings->mElevation};
 
             Vector2i mapAreaSize(EARTH_BIG_W, EARTH_BIG_H);
             Vector2i topAreaSize(mScreenSize.x, mScreenSize.y - mapAreaSize.y);
@@ -261,15 +261,17 @@ namespace guipi {
 
             auto timeSet = topArea->add<Widget>()
                     ->withId("timeSet")
-                    ->withFixedWidth(220)
+//                    ->withFixedWidth(220)
                     ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 5, 5);
 
-            auto qthButton = timeSet->add<Button>(mSettings.mCallSign, ENTYPO_ICON_COG)
+            auto qthButton = timeSet->add<Button>(mSettings->mCallSign)
                     ->withCallback([this](){
-                        add<SettingsDialog>( "Settings", Vector2i{40,40}, Vector2i{600,400});
+                        add<SettingsDialog>( "Settings", Vector2i{40,40}, Vector2i{600,400})
+                            ->withSettings(mSettings);
                         this->performLayout();
                     })
                     ->withIconFontSize(50)
+                    ->withFixedWidth(210)
                     ->withFontSize(40);
 
             timeSet->add<TimeBox>()
@@ -324,9 +326,9 @@ namespace guipi {
                     ->withBackdropFile(string(background_path) + string(backdrop))
                     ->withFixedSize(Vector2i(EARTH_BIG_W, EARTH_BIG_H));
 
-            mGeoChrono->setSatelliteDisplay(mSettings.mSatelliteTracking);
-            mGeoChrono->setSunMoonDisplay(mSettings.mCelestialTracking);
-            mGeoChrono->setAzmuthalDisplay(mSettings.mAzimuthalDisplay);
+            mGeoChrono->setSatelliteDisplay(mSettings->mSatelliteTracking);
+            mGeoChrono->setSunMoonDisplay(mSettings->mCelestialTracking);
+            mGeoChrono->setAzmuthalDisplay(mSettings->mAzimuthalDisplay);
 
             mGeoChrono->setGeoData(vector<GeoChrono::PositionData>{ {qthLatLon.y, qthLatLon.x, true, ImageRepository::ImageStoreIndex{ 0, 0}},
                                                           {aQthLatLon.y, aQthLatLon.x, true, ImageRepository::ImageStoreIndex{0, 1} }});
@@ -340,11 +342,11 @@ namespace guipi {
                     ->withPushed(mGeoChrono->satelliteDisplay())
                     ->withChangeCallback([&](bool state) {
                         mGeoChrono->setSatelliteDisplay(state);
-                        mSettings.setSatelliteTracking(state ? 1 : 0);
+                        mSettings->setSatelliteTracking(state ? 1 : 0);
                         if (state)
                             if (auto location = this->find("Location", true)) {
                                 dynamic_cast<ToolButton *>(location)->withPushed(false);
-                                mSettings.setGeoPositions(0);
+                                mSettings->setGeoPositions(0);
                             }
                     })
                     ->withId("Rocket")->_and()
@@ -352,28 +354,28 @@ namespace guipi {
                     ->withPushed(mGeoChrono->sunMoonDisplay())
                     ->withChangeCallback([&](bool state) {
                         mGeoChrono->setSunMoonDisplay(state);
-                        mSettings.setCelestialTracking(state ? 1 : 0);
+                        mSettings->setCelestialTracking(state ? 1 : 0);
                     })
                     ->_and()
                     ->add<ToolButton>(ENTYPO_ICON_GLOBE, Button::Flags::ToggleButton)
                     ->withPushed(mGeoChrono->azmuthalDisplay())
                     ->withChangeCallback([&](bool state) {
                         mGeoChrono->setAzmuthalDisplay(state);
-                        mSettings.setAzimuthalDisplay(state ? 1 : 0);
+                        mSettings->setAzimuthalDisplay(state ? 1 : 0);
                     });
 
             switches->add<Widget>()->withPosition(Vector2i(620, 0))
                     ->withFixedSize(Vector2i(40, topAreaSize.y))
                     ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 10, 12)
                     ->add<ToolButton>(ENTYPO_ICON_LOCATION, Button::Flags::ToggleButton)
-                    ->withPushed(mSettings.mGeoPositions)
+                    ->withPushed(mSettings->mGeoPositions)
                     ->withChangeCallback([&](bool state) {
-                        mSettings.setGeoPositions(state ? 1 : 0);
+                        mSettings->setGeoPositions(state ? 1 : 0);
                         if (state)
                             if (auto rocket = this->find("Rocket", true)) {
                                 dynamic_cast<ToolButton *>(rocket)->withPushed(false);
                                 mGeoChrono->setSatelliteDisplay(false);
-                                mSettings.setSatelliteTracking(0);
+                                mSettings->setSatelliteTracking(0);
                             }
                     })->withId("Location")->_and()
                     ->add<ToolButton>(ENTYPO_ICON_NETWORK, Button::Flags::ToggleButton)->_and()
@@ -404,9 +406,9 @@ namespace guipi {
             // Use overloaded variadic add to fill the tab widget with Different tabs.
             layer->add<Label>("Stations", "sans-bold")->withFixedWidth(sideBarSize.x - 20);
 
-            tab->setActiveTab(mSettings.mSideBarActiveTab);
+            tab->setActiveTab(mSettings->mSideBarActiveTab);
             tab->setCallback([this](int activeTab){
-                mSettings.setSideBarActiveTab(activeTab);
+                mSettings->setSideBarActiveTab(activeTab);
             });
 
             mEphemerisModel.setPassMonitorCallback([this](auto data) {

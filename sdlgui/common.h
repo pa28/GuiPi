@@ -80,6 +80,12 @@ namespace sdlgui {
         return (int) round(value);
     }
 
+    template<typename T>
+    float roundToFloat(T value, T multiplier = 1.) {
+        static_assert(std::is_floating_point<T>::value, "value must be floating point.");
+        return (float) (round(value*multiplier)/multiplier);
+    }
+
     template<typename R, typename V>
     R roundTo(V value) {
         static_assert(std::is_unsigned<R>::value, "return value must be an unsigned type.");

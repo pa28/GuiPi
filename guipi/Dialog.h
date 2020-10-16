@@ -23,6 +23,11 @@
 #pragma once
 
 #include <sdlgui/window.h>
+#include <string>
+#include <utility>
+#include <guipi/Settings.h>
+#include <sstream>
+#include <iomanip>
 
 namespace guipi {
     using namespace sdlgui;
@@ -45,7 +50,27 @@ namespace guipi {
 
         SettingsDialog() = delete;
 
-        SettingsDialog(Widget *parent, const std::string &title, const Vector2i &position, const Vector2i &fixedSize);
+        SettingsDialog(Widget *parent, const std::string &title, const Vector2i &position,
+                       const Vector2i &fixedSize);
+
+        void initialize();
+
+        sdlgui::ref<SettingsDialog> withSettings(sdlgui::ref<Settings> settings) {
+            mSettings = std::move(settings);
+            initialize();
+            return sdlgui::ref<SettingsDialog>{this};
+        }
+
+    protected:
+        sdlgui::ref<Settings> mSettings;
+
+        template<typename T>
+        std::string realToString(T value) {
+            static_assert(std::is_floating_point<T>::value, "value must be floating point.");
+            std::stringstream strm;
+            strm << std::fixed << std::setw( 9 ) << std::setprecision( 4 ) << value;
+            return strm.str();
+        }
     };
 }
 
