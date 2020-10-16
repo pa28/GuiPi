@@ -13,6 +13,7 @@
 
 #include <sdlgui/theme.h>
 #include <sdlgui/layout.h>
+#include <guipi/Settings.h>
 #include <vector>
 
 NAMESPACE_BEGIN(sdlgui)
@@ -67,6 +68,9 @@ public:
     const Theme *theme() const { return mTheme.get(); }
     /// Set the \ref Theme used to draw this widget
     virtual void setTheme(ref <Theme> theme);
+
+    ref<guipi::Settings> settings() { return mSettings; }
+    virtual void setSettings(ref<guipi::Settings> settings);
 
     /// Return the position relative to the parent widget
     const Vector2i &position() const { return _pos; }
@@ -327,6 +331,7 @@ protected:
 protected:
     Widget *mParent;
     ref<Theme> mTheme;
+    ref<guipi::Settings> mSettings;
     ref<Layout> mLayout;
     std::string mId;
     Vector2i _pos;

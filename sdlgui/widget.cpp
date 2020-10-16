@@ -50,7 +50,14 @@ void Widget::setTheme(ref <Theme> theme)
         child->setTheme(theme);
 }
 
-int Widget::fontSize() const 
+    void Widget::setSettings(ref<guipi::Settings> settings) {
+        if (mSettings == settings)
+            return;
+        for (auto child : mChildren)
+            child->setSettings(settings);
+    }
+
+    int Widget::fontSize() const
 {
     return (mFontSize < 0 && mTheme) 
                       ? mTheme->mStandardFontSize 
@@ -194,6 +201,7 @@ void Widget::addChild(int index, Widget * widget)
     widget->incRef();
     widget->setParent(this);
     widget->setTheme(mTheme);
+    widget->setSettings(mSettings);
 }
 
 void Widget::addChild(Widget * widget) 
