@@ -68,7 +68,8 @@ public:
     ref<Window> withVisible(bool isVisible) { mVisible = isVisible; return ref<Window>{this}; }
 
     /// Handle a focus change event (default implementation: record the focus status, but do nothing)
-    bool focusEvent(bool focused);
+    bool focusEvent(bool focused) override;
+
     bool blank() const { return mBlank; }
 
 protected:
