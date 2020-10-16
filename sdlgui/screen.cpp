@@ -14,6 +14,7 @@
 #include <sdlgui/theme.h>
 #include <sdlgui/window.h>
 #include <sdlgui/popup.h>
+#include <guipi/Dialog.h>
 #include <iostream>
 #include <map>
 
@@ -429,6 +430,26 @@ void Screen::centerWindow(Window *window)
 }
 
 void Screen::moveWindowToFront(Window *window) {
+#if 1
+    std::sort(mChildren.begin(), mChildren.end(), [window](auto p0, auto p1){
+        auto w0 = dynamic_cast<Window*>(p0);
+        auto w1 = dynamic_cast<Window*>(p1);
+        if (w1->blank()) return false;
+        if (w0 != nullptr && w1 != nullptr) {
+            if (w0->visible() && w1->visible()) {
+                if (w0->modal() && w1->modal()) {
+                    return w1 == window;
+                } else {
+                    return w1->modal();
+                }
+            } else {
+                return w1->visible();
+            }
+        } else {
+            return w1 != nullptr;
+        }
+    });
+#else
     std::sort(mChildren.begin(), mChildren.end(), [window](auto p0, auto p1){
        if (p1 == window) return true;
        return false;
@@ -442,7 +463,7 @@ void Screen::moveWindowToFront(Window *window) {
                 baseIndex = index;
         changed = false;
         for (size_t index = 0; index < mChildren.size(); ++index) {
-            Popup *pw = dynamic_cast<Popup *>(mChildren[index]);
+            auto *pw = dynamic_cast<Popup *>(mChildren[index]);
             if (pw && pw->parentWindow() == window && index < baseIndex) {
                 moveWindowToFront(pw);
                 changed = true;
@@ -450,6 +471,7 @@ void Screen::moveWindowToFront(Window *window) {
             }
         }
     } while (changed);
+#endif
 }
 
 void Screen::performLayout(SDL_Renderer* ctx)

@@ -69,6 +69,7 @@ public:
 
     /// Handle a focus change event (default implementation: record the focus status, but do nothing)
     bool focusEvent(bool focused);
+    bool blank() const { return mBlank; }
 
 protected:
     /// Internal helper function to maintain nested window position values; overridden in \ref Popup
