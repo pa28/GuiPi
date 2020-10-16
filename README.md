@@ -242,7 +242,7 @@ full-featured, SQL database engine.
 1. [Entypo Font](http://fontello.github.io/entypo/demo.html) was shipped with Nanogui-SDL, I am coninuing to use it.
 1. [www.die.net](https://www.die.net) I hope to be able to use the Moon Phases imagery found there. Either way
 the site deserves your attention.
-1. [https://www.celestrak.com/NORAD/elements/](CelesTrack) NORAD Two-Line Element Sets.
+1. [CelesTrack](https://www.celestrak.com/NORAD/elements/) NORAD Two-Line Element Sets.
 
 *73*
 Richard Buckley
