@@ -166,7 +166,7 @@ NAMESPACE_BEGIN(sdlgui)
                 const_cast<Widget*>(mButtonPanel.get())->setVisible(true);
 
             int w, h;
-            const_cast<Window *>(this)->mTheme->getTextBounds(const_cast<Window *>(this)->mTheme->mStandardFont.c_str(), 18.0, mTitle.c_str(), &w, &h);
+            const_cast<Window *>(this)->mTheme->getTextBounds(const_cast<Window *>(this)->mTheme->mStandardFont.c_str(), 25.0, mTitle.c_str(), &w, &h);
 
             return result.cmax(Vector2i(w + 20, h));
         } else {

@@ -48,7 +48,7 @@ NAMESPACE_BEGIN(sdlgui)
         mTimeBoxSmallDateFontSize = 20;
         mToolButtonSize = 35;
         mWindowCornerRadius = 2;
-        mWindowHeaderHeight = 30;
+        mWindowHeaderHeight = 40;
         mWindowDropShadowSize = 10;
         mButtonCornerRadius = 2;
         mTabBorderWidth = 0.75f;
