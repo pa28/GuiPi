@@ -1,4 +1,5 @@
 list(APPEND GUIPI_SOURCES
+        ${CMAKE_CURRENT_LIST_DIR}/Dialog.cpp
         ${CMAKE_CURRENT_LIST_DIR}/EphemerisModel.cpp
         ${CMAKE_CURRENT_LIST_DIR}/GeoChrono.cpp
         ${CMAKE_CURRENT_LIST_DIR}/GfxPrimitives.cpp

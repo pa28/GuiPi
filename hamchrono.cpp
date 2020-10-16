@@ -18,7 +18,6 @@
 #include <curlpp/Options.hpp>
 #include <curlpp/Exception.hpp>
 #include <sdlgui/entypo.h>
-#include <guipi/GeoChrono.h>
 #include <sdlgui/ImageRepository.h>
 #include <sdlgui/ImageDisplay.h>
 #include <sdlgui/button.h>
@@ -27,6 +26,8 @@
 #include <sdlgui/widget.h>
 #include <sdlgui/tabwidget.h>
 #include <sdlgui/TimeBox.h>
+#include <guipi/Dialog.h>
+#include <guipi/GeoChrono.h>
 #include <guipi/GuiPiApplication.h>
 #include <guipi/EphemerisModel.h>
 #include <guipi/SatelliteDataDisplay.h>
@@ -49,7 +50,6 @@ namespace guipi {
         sdlgui::ref<GeoChrono> mGeoChrono;
         sdlgui::ref<ToolButton> mAzmuthalButton;
         sdlgui::ref<Window> mMainWindow;
-        sdlgui::ref<Window> mPopupWindow;
         sdlgui::ref<ImageRepository> mImageRepository;
 
         ref<ImageRepository> mIconRepository;
@@ -206,6 +206,10 @@ namespace guipi {
             return interval;
         }
 
+        void createSettingsDialog() {
+            add<SettingsDialog>( "Settings", Vector2i{400,100}, Vector2i{300,300});
+        }
+
         HamChrono(SDL_Window *pwindow, int rwidth, int rheight, const string &homedir, const string &callsign,
                   const Vector2f &geoCoord)
                 : GuiPiApplication(pwindow, rwidth, rheight, "HamChrono"),
@@ -261,6 +265,10 @@ namespace guipi {
                     ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 5, 5);
 
             auto qthButton = timeSet->add<Button>(mSettings.mCallSign, ENTYPO_ICON_COG)
+                    ->withCallback([this](){
+                        add<SettingsDialog>( "Settings", Vector2i{40,40}, Vector2i{600,400});
+                        this->performLayout();
+                    })
                     ->withIconFontSize(50)
                     ->withFontSize(40);
 
@@ -281,16 +289,15 @@ namespace guipi {
             sideBar->add<TimeBox>(true, true)->withId("localtime");
 
             // Create an image repeater to use with the image display.
-            auto imageRepeater = add<ImageRepeater>(Vector2i(210, 0), Vector2i(450, 450));
-            imageRepeater->setCallback([=](ImageDisplay &w, ImageRepository::EventType e) {
-                        screenShot();
-                    });
             topArea->add<ImageDisplay>()->withImageRepository(mImageRepository)
-                    ->withRepeater(imageRepeater)
                     ->setCallback([=](ImageDisplay &w, ImageRepository::EventType e) {
                         auto index = w.getImageIndex();
-                        if (e == ImageRepository::CLICK_EVENT)
+                        if (e == ImageRepository::CLICK_EVENT) {
+                            auto imageRepeater = add<ImageRepeater>(Vector2i(210, 0), Vector2i(440, 440));
+                            performLayout();
+                            w.withRepeater(imageRepeater);
                             w.repeatImage();
+                        }
                         else
                             w.setImageIndex(w.imageRepository()->actionEvent(e, w.getImageIndex()));
                     })

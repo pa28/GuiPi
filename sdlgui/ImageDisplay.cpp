@@ -164,7 +164,7 @@ namespace sdlgui {
                     ->withFixedHeight(35)
                     ->add<ToolButton>(ENTYPO_ICON_SQUARED_CROSS, Button::Flags::NormalButton)
                             ->withCallback([&]() {
-                                window()->setVisible(false);
+                                window()->dispose();
                             });
         mImageDisplay = add<ImageDisplay>()->withFixedSize(fixedSize);
         setVisible(false);
