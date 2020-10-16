@@ -320,6 +320,7 @@ void TextBox::draw(SDL_Renderer* renderer)
     Vector2i oldDrawPos(drawPos);
     drawPos.x += mTextOffset; 
     drawPos.y += (mSize.y - _captionTex.h()) / 2;
+    oldDrawPos.y += (mSize.y - _captionTex.h()) / 2; // Fix the odd vertical shift when editing the text.
 
     if (_captionTex.dirty)
       mTheme->getTexAndRectUtf8(renderer, _captionTex, 0, 0, mValue.c_str(), mTheme->mStandardFont.c_str(),
