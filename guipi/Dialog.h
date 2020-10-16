@@ -69,7 +69,11 @@ namespace guipi {
             static_assert(std::is_floating_point<T>::value, "value must be floating point.");
             std::stringstream strm;
             strm << std::fixed << std::setw( 9 ) << std::setprecision( 4 ) << value;
-            return strm.str();
+            auto str = strm.str();
+            auto spc = str.find_first_not_of(' ');
+            if (spc != std::string::npos && spc > 0)
+                return str.substr(spc);
+            return str;
         }
     };
 }
