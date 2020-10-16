@@ -46,7 +46,7 @@ void guipi::SettingsDialog::initialize() {
                                   0, 10);
 
     auto panel00 = panel0->add<Widget>();
-    panel00->withLayout<BoxLayout>(Orientation::Horizontal,
+    panel00->withLayout<GridLayout>(Orientation::Horizontal, 2,
                                    Alignment::Middle,
                                    0, 10);
 
@@ -59,26 +59,26 @@ void guipi::SettingsDialog::initialize() {
     callsign->setFontSize(20);
     callsign->setFormat("[A-Z0-9]{3,6}");
 
-    auto panel01 = panel0->add<Widget>()->withLayout<BoxLayout>(Orientation::Horizontal,
-                                                                Alignment::Middle, 0, 10);
-    panel01->add<Label>("Latitude")->withFontSize(20);
-    auto latitude = panel01->add<TextBox>();
-    latitude->setAlignment(TextBox::Alignment::Right);
+    panel00->add<Label>("Latitude")->withFontSize(20);
+    auto latitude = panel00->add<TextBox>();
+    latitude->setAlignment(TextBox::Alignment::Left);
     latitude->setEditable(true);
-    latitude->setFixedSize(Vector2i(100, 40));
+    latitude->setUnits("Deg");
+//    latitude->setFixedSize(Vector2i(100, 40));
     latitude->setValue(realToString(mSettings->mLatitude));
     latitude->setFontSize(20);
-//    latitude->setFormat("[+-]?[1-9][0-9].[0-9]{0-4}");
+    latitude->setFormat("[-]?[0-9]{0,2}\\.?[0-9]{1,4}");
+    latitude->setMaxLength(8);
 
-    auto panel02 = panel0->add<Widget>()->withLayout<BoxLayout>(Orientation::Horizontal,
-                                                                Alignment::Middle, 0, 10);
-    panel02->add<Label>("Longitude")->withFontSize(20);
-    auto longitude = panel02->add<TextBox>();
-    longitude->setAlignment(TextBox::Alignment::Right);
+    panel00->add<Label>("Longitude")->withFontSize(20);
+    auto longitude = panel00->add<TextBox>();
+    longitude->setAlignment(TextBox::Alignment::Left);
     longitude->setEditable(true);
-    longitude->setFixedSize(Vector2i(100, 40));
+    longitude->setUnits("Deg");
+//    longitude->setFixedSize(Vector2i(100, 40));
     longitude->setValue(realToString(mSettings->mLongitude));
     longitude->setFontSize(20);
-//    latitude->setFormat("[+-]?[1-9][0-9].[0-9]{0-4}");
+    longitude->setFormat("[+-]?[0-9]{0,3}.?[0-9]{0,4}");
+    longitude->setMaxLength(9);
 
 }
