@@ -662,12 +662,14 @@ bool TextBox::keyboardCharacterEvent(unsigned int codepoint)
         std::ostringstream convert;
         convert << (char) codepoint;
 
-        deleteSelection();
-        mValueTemp.insert(mCursorPos, convert.str());
-        mCursorPos++;
+        if (mMaxLength < 0 || mValueTemp.size() < mMaxLength) {
+            deleteSelection();
+            mValueTemp.insert(mCursorPos, convert.str());
+            mCursorPos++;
 
-        mValidFormat = (mValueTemp == "") || checkFormat(mValueTemp, mFormat);
-        _tempTex.dirty = true;
+            mValidFormat = (mValueTemp == "") || checkFormat(mValueTemp, mFormat);
+            _tempTex.dirty = true;
+        }
 
         return true;
     }

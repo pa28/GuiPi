@@ -69,6 +69,8 @@ public:
     /// Set the \ref Theme used to draw this widget
     void setTheme(ref <Theme> theme) override;
 
+    void setMaxLength(int length) { mMaxLength = length; }
+
     /// Set the change callback
     std::function<bool(const std::string& str)> callback() const { return mCallback; }
     void setCallback(const std::function<bool(const std::string& str)> &callback) { mCallback = callback; }
@@ -119,6 +121,7 @@ protected:
     float mTextOffset;
     double mLastClick;
     int caretLastTickCount = 0;
+    int mMaxLength{-1};
 
     Texture _captionTex;
     Texture _unitsTex;
