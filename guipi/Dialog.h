@@ -64,6 +64,22 @@ namespace guipi {
             return strm.str();
         }
     };
+
+    class ControlsDialog : public Dialog {
+    public:
+        ~ControlsDialog() override = default;
+
+        ControlsDialog() = delete;
+
+        ControlsDialog(Widget *parent, const std::string &title, const Vector2i &position,
+        const Vector2i &fixedSize);
+
+        void initialize();
+
+    protected:
+
+        void ephemerisSelectButton(sdlgui::ref<Widget> &parent, std::string_view label, int value);
+    };
 }
 
 

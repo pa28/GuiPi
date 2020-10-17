@@ -85,5 +85,32 @@ void guipi::SettingsDialog::initialize() {
     REAL_TEXT_BOX_SET(panel00,Elevation,Deg, 5, 1, "[+-]?[0-9]{0,4}\\.?[0-9]{0,1}",4000.);
 }
 
+guipi::ControlsDialog::ControlsDialog(Widget *parent, const string &title, const Vector2i &position,
+                                      const Vector2i &fixedSize) : Dialog(parent, title, position) {
+    initialize();
+}
 
+void guipi::ControlsDialog::initialize() {
+    withLayout<BoxLayout>(Orientation::Horizontal,
+                          Alignment::Minimum,
+                          10, 10);
+
+    auto panel1 = add<Widget>();
+    panel1->withLayout<GroupLayout>(8);
+    panel1->add<Label>("Ephemeris Source")
+            ->withFontSize(20);
+    ephemerisSelectButton(panel1, "Clear Sky Institude", 0);
+    ephemerisSelectButton(panel1, "CelesTrack - Amateur Radio", 1);
+    ephemerisSelectButton(panel1, "CelesTrack - Brightest", 2);
+    ephemerisSelectButton(panel1, "CelesTrack - Cubesats", 3);
+}
+
+void guipi::ControlsDialog::ephemerisSelectButton(sdlgui::ref<Widget> &parent, std::string_view label, int value) {
+    parent->add<Button>(std::string{label})
+            ->withFlags(Button::RadioButton)
+            ->withPushed(mSettings->mEphemerisSource == value)
+            ->withCallback([this,value](){
+                mSettings->setEphemerisSource(value);
+            })
+            ->withFontSize(15);
 }
