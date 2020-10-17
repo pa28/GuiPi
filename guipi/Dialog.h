@@ -39,9 +39,6 @@ namespace guipi {
         Dialog() = delete;
 
         Dialog(Widget *parent, const std::string &title, const Vector2i &position);
-
-    protected:
-        Window *mParentWindow;
     };
 
     class SettingsDialog : public Dialog {
