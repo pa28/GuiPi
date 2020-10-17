@@ -232,21 +232,26 @@ namespace guipi {
          * @param rheight screen height
          * @param homedir the user's home directory
          * @param callsign the user's callsign, if provided on the command line
-         * @param geoCoord the user's location if provided on the command line
+         * @param observer the user's location if provided on the command line
          */
         HamChrono(SDL_Window *pwindow, int rwidth, int rheight, const string &homedir, const string &callsign,
-                  const Vector2f &geoCoord)
+                  const Observer &observer)
                 : GuiPiApplication(pwindow, rwidth, rheight, "HamChrono"),
                   mTimer{*this, &HamChrono::timerCallback, 3600000} {
             mSettings = new Settings{homedir + "/.hamchrono/settings.sqlite"};
             mSettings->mHomeDir = homedir;
+            mSettings->initializeSettingsDatabase();
 
-            if (geoCoord.y > -200.) {
-                mSettings->mLongitude = geoCoord.x;
-                mSettings->mLatitude = geoCoord.y;
+            if (!callsign.empty()) {
+                mSettings->mCallSign = callsign;
+                if (observer.LO > -200.) {
+                    mSettings->mLongitude = (float) observer.LO;
+                    mSettings->mLatitude = (float) observer.LA;
+                    mSettings->mElevation = (float) observer.HT;
+                }
+                mSettings->writeAllValues();
             }
 
-            mSettings->initializeSettingsDatabase();
             initialize();
         }
 
@@ -543,19 +548,17 @@ private:
 
 int main(int argc, char ** argv) {
     InputParser inputParser{argc, argv};
+    Observer observer{-100, -200, 0};
+    string callsign{};
 
-    Vector2f geoCoord{0., 0.};
-    string callsign = inputParser.getCmdOption("-cs");
-    const string latitude = inputParser.getCmdOption("-lat");
-    const string longitude = inputParser.getCmdOption("-lon");
-
-    if (callsign.empty())
-        callsign = "CALL";
-    if (!latitude.empty() && !longitude.empty()) {
-        geoCoord.y = std::strtod(latitude.c_str(), nullptr);
-        geoCoord.x = std::strtod(longitude.c_str(), nullptr);
-    } else {
-        geoCoord = Vector2f{-200., -100};
+    if (inputParser.cmdOptionExists("-cs")) {
+        callsign = inputParser.getCmdOption("-cs");
+        if (inputParser.cmdOptionExists("-lat"))
+            observer.LA = std::strtod(inputParser.getCmdOption("-lat").c_str(), nullptr);
+        if (inputParser.cmdOptionExists("-lon"))
+            observer.LO = std::strtod(inputParser.getCmdOption("-lon").c_str(), nullptr);
+        if (inputParser.cmdOptionExists("-el"))
+            observer.HT = std::strtod(inputParser.getCmdOption("-el").c_str(), nullptr);
     }
 
     string homdir{getenv("HOME")};
@@ -610,7 +613,7 @@ int main(int argc, char ** argv) {
     SDL_Renderer *renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED);
     SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
 
-    sdlgui::ref<HamChrono> app{new HamChrono(window, winWidth, winHeight, homdir, callsign, geoCoord)};
+    sdlgui::ref<HamChrono> app{new HamChrono(window, winWidth, winHeight, homdir, callsign, observer)};
 
     app->performLayout(app->sdlRenderer());
 
