@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <chrono>
+#include <filesystem>
 #include <SDL2/SDL.h>
 #include <SDL_image.h>
 #include <curlpp/Easy.hpp>
@@ -550,6 +551,9 @@ int main(int argc, char ** argv) {
     InputParser inputParser{argc, argv};
     Observer observer{-100, -200, 0};
     string callsign{};
+
+    for(auto& p: std::filesystem::recursive_directory_iterator("/home/richard/.hamchrono"))
+        std::cout << p.path() << '\n';
 
     if (inputParser.cmdOptionExists("-cs")) {
         callsign = inputParser.getCmdOption("-cs");

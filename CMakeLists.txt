@@ -18,6 +18,7 @@ if (NOT BCMHOST)
     add_compile_definitions(X86HOST=1)
 else()
     add_compile_definitions(BCMHOST=1)
+    set(EXTRA_LIBS "${EXTRA_LIBS} -lstdc++fs")
 endif()
 
 find_package(Soci REQUIRED COMPONENTS sqlite3)
@@ -84,7 +85,7 @@ if (BUILD_EXAMPLE)
     )
 
     target_link_libraries(hamchrono ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2IMAGE_LIBRARY} ${SDL2TTF_LIBRARY} ${CURLPP_LIBRARIES}
-            ${SOCI_LIBRARY} ${SOCI_sqlite3_PLUGIN} -lsqlite3)
+            ${SOCI_LIBRARY} ${SOCI_sqlite3_PLUGIN} ${EXTRA_LIBS} -lsqlite3)
 
     # Copy icons for example application
     file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/maps)
