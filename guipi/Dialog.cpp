@@ -29,6 +29,27 @@ guipi::SettingsDialog::SettingsDialog(Widget *parent, const string &title, const
     initialize();
 }
 
+#define REAL_TEXT_BOX_SET(parent, value, units, length, precision, format, range)  \
+{                                                               \
+    parent->add<Label>(# value)->withFontSize(20);              \
+    auto widget = parent->add<TextBox>();                       \
+    widget->setAlignment(TextBox::Alignment::Left);             \
+    widget->setEditable(true);                                  \
+    widget->setUnits(# units);                                  \
+    widget->setValue(realToString(mSettings->m ## value, precision));    \
+    widget->setFontSize(20);                                    \
+    widget->setFormat(format);                                  \
+    widget->setMaxLength(length);                               \
+    widget->setFixedWidth(150);                                 \
+    widget->setCallback([this](const std::string &text) -> bool {                  \
+        auto v = std::strtof(text.c_str(), nullptr);            \
+        if (abs(v) <= range)                                \
+            mSettings->set ## value (v);                        \
+        return true;                                            \
+    });                                                         \
+}
+
+
 void guipi::SettingsDialog::initialize() {
 
     withLayout<BoxLayout>(Orientation::Horizontal,
@@ -59,51 +80,10 @@ void guipi::SettingsDialog::initialize() {
         return true;
     });
 
-    panel00->add<Label>("Latitude")->withFontSize(20);
-    auto latitude = panel00->add<TextBox>();
-    latitude->setAlignment(TextBox::Alignment::Left);
-    latitude->setEditable(true);
-    latitude->setUnits("Deg");
-//    latitude->setFixedSize(Vector2i(100, 40));
-    latitude->setValue(realToString(mSettings->mLatitude, 4));
-    latitude->setFontSize(20);
-    latitude->setFormat("[-]?[0-9]{0,2}\\.?[0-9]{1,4}");
-    latitude->setMaxLength(8);
-    latitude->setFixedWidth(150);
-    latitude->setCallback([this](const std::string &text) -> bool {
-        mSettings->setLatitude(std::strtof(text.c_str(), nullptr));
-        return true;
-    });
+    REAL_TEXT_BOX_SET(panel00,Latitude,Deg, 8, 4, "[-]?[0-9]{0,2}\\.?[0-9]{1,4}",90.);
+    REAL_TEXT_BOX_SET(panel00,Longitude,Deg, 9, 4, "[-]?[0-9]{0,3}\\.?[0-9]{1,4}",180.);
+    REAL_TEXT_BOX_SET(panel00,Elevation,Deg, 5, 1, "[+-]?[0-9]{0,4}\\.?[0-9]{0,1}",4000.);
+}
 
-    panel00->add<Label>("Longitude")->withFontSize(20);
-    auto longitude = panel00->add<TextBox>();
-    longitude->setAlignment(TextBox::Alignment::Left);
-    longitude->setEditable(true);
-    longitude->setUnits("Deg");
-//    longitude->setFixedSize(Vector2i(100, 40));
-    longitude->setValue(realToString(mSettings->mLongitude, 4));
-    longitude->setFontSize(20);
-    longitude->setFormat("[+-]?[0-9]{0,3}.?[0-9]{0,4}");
-    longitude->setMaxLength(9);
-    longitude->setFixedWidth(150);
-    longitude->setCallback([this](const std::string &text) -> bool {
-        mSettings->setLongitude(std::strtof(text.c_str(), nullptr));
-        return true;
-    });
 
-    panel00->add<Label>("Elevation")->withFontSize(20);
-    auto elevation = panel00->add<TextBox>();
-    elevation->setAlignment(TextBox::Alignment::Left);
-    elevation->setEditable(true);
-    elevation->setUnits("m");
-//    elevation->setFixedSize(Vector2i(100, 40));
-    elevation->setValue(realToString(mSettings->mElevation, 1));
-    elevation->setFontSize(20);
-    elevation->setFormat("[+-]?[0-9]{0,4}.?[0-9]{0,1}");
-    elevation->setMaxLength(9);
-    elevation->setFixedWidth(150);
-    elevation->setCallback([this](const std::string &text) -> bool {
-        mSettings->setElevation(std::strtof(text.c_str(), nullptr));
-        return true;
-    });
 }
