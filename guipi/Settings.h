@@ -32,16 +32,27 @@
 #define XSTR(arg) STR(arg)
 #define STR(arg) #arg
 
-#define SETTING_VALUES   \
+#define SETTING_STRING_VALUES \
     X(CallSign, std::string, "CALLSIGN") \
+    X(SatellitesOfInterest, std::string, "")
+
+#define SETTING_FLOAT_VALUES  \
     X(Latitude, float, 0.f)      \
     X(Longitude, float, 0.f)     \
-    X(Elevation, float, 0.f)     \
+    X(Elevation, float, 0.f)
+
+#define SETTING_INT_VALUES   \
     X(SideBarActiveTab, int, 0)  \
     X(SatelliteTracking, int, 0) \
     X(CelestialTracking, int, 0) \
     X(AzimuthalDisplay, int, 0)  \
-    X(GeoPositions, int, 0)
+    X(GeoPositions, int, 0)      \
+    X(EphemerisSource, int, 0)
+
+#define SETTING_VALUES \
+    SETTING_INT_VALUES \
+    SETTING_STRING_VALUES \
+    SETTING_FLOAT_VALUES \
 
 namespace guipi {
     class Settings {
@@ -95,7 +106,33 @@ namespace guipi {
 
         void writeAllValues(soci::session &sql);
 
-#define X(name,type,default) void set ## name(type value) { m ## name = value; writeValue(# name, m ## name); }
+#define X(name,type,default) type get ## name() const { return m ## name; }
+        SETTING_VALUES
+#undef X
+
+[[nodiscard]] float getFloatParameter(Parameter parameter) const {
+    switch (parameter) {
+#define X(name,type,default) case name : return m ## name;
+        SETTING_FLOAT_VALUES
+#undef X
+        default:
+            throw std::logic_error("Requested parameter is not a float");
+    }
+}
+
+[[nodiscard]] std::string_view getParameterName(Parameter parameter) const {
+    switch (parameter) {
+#define X(name,type,default) case name : return #name;
+                SETTING_VALUES
+#undef X
+    }
+}
+
+#define X(name,type,default) void set ## name(type value) { \
+            m ## name = value; \
+            writeValue(# name, m ## name); \
+            callCalbacks(name);   \
+        }
         SETTING_VALUES
 #undef X
     };
