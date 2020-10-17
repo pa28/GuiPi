@@ -6,8 +6,7 @@
 
 #include <utility>
 #include <chrono>
-#include <mutex>
-#include <thread>
+#include <future>
 #include <sdlgui/widget.h>
 #include <sdlgui/TimeBox.h>
 #include <sdlgui/Image.h>
@@ -43,9 +42,9 @@ namespace guipi {
         };
 
     private:
-        mutex mTransparentMutex;
-        thread mTransparentThread;
-        atomic<bool> mTransparentReady{false};
+        future<bool> mTransparentFuture;
+        atomic_bool mTransparentReady;
+        atomic_bool mTextureDirty{true};   //< True when the image needs to be re-drawn
         ImageData mForeground;      //< The foreground image
         ImageData mBackground;      //< The background image
         ImageData mForegroundAz;
@@ -57,14 +56,12 @@ namespace guipi {
         Surface mNightMap;          //< The surface holding the night map
         Surface mDayAzMap;          //< The surface holding the generated day Azmuthal map
         Surface mNightAzMap;        //< The surface holding the generated night Azuthal map
-//        Surface mBackdropImage;
         ref<ImageRepository> mIconRepository;
         bool mBackdropDirty{};
         bool mAzimuthalDisplay{false};
         bool mAzimuthalEffective{false};
         bool mSunMoonDisplay{false};
         bool mSatelliteDisplay{false};
-        bool mTextureDirty{true};   //< True when the image needs to be re-drawn
         bool mMapsDirty{true};      //< True when the map surfaces need to be re-drawn
 
         bool mButton{false};        //< True when button 1 has been pressed
@@ -122,6 +119,10 @@ namespace guipi {
             }
             mPassTracker->setVisible(mPassTracker->activeTracking() && mSatelliteDisplay);
             return mAzimuthalEffective;
+        }
+
+        static bool asyncTransparentForeground(GeoChrono *self) {
+            return self->transparentForeground();
         }
 
     public:
@@ -278,7 +279,7 @@ namespace guipi {
                 mPassTracker->setPassTrackingData(data);
         }
 
-        void transparentForeground();
+        bool transparentForeground();
 
         /**
          * Render an icon on the map at a given geographic location.

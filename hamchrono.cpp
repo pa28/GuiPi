@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <chrono>
 #include <filesystem>
+#include <future>
 #include <SDL2/SDL.h>
 #include <SDL_image.h>
 #include <curlpp/Easy.hpp>

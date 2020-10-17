@@ -6,7 +6,6 @@
 #include <cmath>
 #include <tuple>
 #include <functional>
-#include <thread>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_pixels.h>
@@ -221,29 +220,24 @@ namespace guipi {
             p += Vector2i(ax, ay);
             int imgh = mForeground.h;
 
-            // If the asynchronous drawing thread is done, join it.
-            if (mTransparentThread.joinable()) {
-                mTransparentThread.join();
+            // If the drawing future is done, get it.
+            if (mTransparentFuture.valid()) {
+                mTransparentReady = mTransparentFuture.get();
             }
 
             // Textures are dirty when there is an event that makes them out of date with the
             // desired display state. Periodically for the sun illumination foot print.
-            // Spawn up a thread to get things back in sync in the background.
+            // Create an async to compute in the background.
             if (mTextureDirty) {
-                mTransparentReady = false;
-                mTransparentThread = thread([this]() {
-                    lock_guard<mutex> lockGuard(mTransparentMutex);
-                    transparentForeground();
-                    mTextureDirty = false;
-                });
+                mTransparentReady = mTextureDirty = false;
+                mTransparentFuture = async(asyncTransparentForeground,this);
             }
 
             // Regardless of the current state carry on using the old textures until new ones are ready.
 
-            // If they are ready, replace the old ones.
+            // If they are ready, replace the old ones. If they aren't ready use the old ones for a few
+            // more milliseconds.
             if (mTransparentReady) {
-                lock_guard<mutex> lockGuard(mTransparentMutex);
-
                 mForegroundAz.set(SDL_CreateTextureFromSurface(renderer, mTransparentMapAz.get()));
                 mForegroundAz.h = mTransparentMapAz->h;
                 mForegroundAz.w = mTransparentMapAz->w;
@@ -506,7 +500,7 @@ namespace guipi {
     /**
      * Plot the solar illumination area in the Alpha channel of the daytime map for Mercator and Azimuthal.
      */
-    void GeoChrono::transparentForeground() {
+    bool GeoChrono::transparentForeground() {
 
         mTransparentMap.reset(SDL_CreateRGBSurface(0, mDayMap->w, mDayMap->h, 32, rmask, gmask, bmask, amask));
         mTransparentMapAz.reset(SDL_CreateRGBSurface(0, mDayMap->w, mDayMap->h, 32, rmask, gmask, bmask, amask));
@@ -579,7 +573,7 @@ namespace guipi {
         }
 
         // They're ready!
-        mTransparentReady = true;
+        return true;
     }
 
     GeoChrono::GeoChrono(Widget *parent) : Widget(parent), mTimer(*this, &GeoChrono::timerCallback, 60000),
