@@ -216,6 +216,31 @@ namespace guipi {
             mSettings->mHomeDir = homedir;
             mSettings->initializeSettingsDatabase();
             setSettings(mSettings);
+
+
+
+            mSettings->addCallback([this](guipi::Settings::Parameter parameter){
+                switch(parameter) {
+                    case Settings::Parameter::EphemerisSource:
+                        mEphemerisModel.loadEphemerisLibrary(mSettings->mEphemerisSource);
+                        mEphemerisModel.setSatellitesOfInterest(mSettings->mSatellitesOfInterest); //"ISS,AO-92,FO-99,IO-26,DIWATA-2,FOX-1B,AO-7,AO-27,AO-73,SO-50");
+                        mEphemerisModel.timerCallback(0);
+                        break;
+                    case Settings::Parameter::SatellitesOfInterest:
+                        mEphemerisModel.setSatellitesOfInterest(mSettings->mSatellitesOfInterest); //"ISS,AO-92,FO-99,IO-26,DIWATA-2,FOX-1B,AO-7,AO-27,AO-73,SO-50");
+                        break;
+                    case Settings::Parameter::CallSign:
+                        if (Widget *widget = find("qthButton", true); widget != nullptr) {
+                            if (auto button = dynamic_cast<Button*>(widget); button != nullptr) {
+                                button->setCaption(mSettings->mCallSign);
+                            }
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            });
+
             SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
             mIconRepository = new ImageRepository{};
             buildIconRepository();
@@ -270,7 +295,8 @@ namespace guipi {
                     })
                     ->withIconFontSize(50)
                     ->withFixedWidth(210)
-                    ->withFontSize(40);
+                    ->withFontSize(40)
+                    ->withId("qthButton");
 
             timeSet->add<TimeBox>()
                     ->setCallback([&](TimeBox &tb, float value) {
@@ -426,8 +452,8 @@ namespace guipi {
             });
 
             mEphemerisModel.setObserver(mObserver);
-            mEphemerisModel.loadEphemerisLibrary();
-            mEphemerisModel.setSatellitesOfInterest(); //"ISS,AO-92,FO-99,IO-26,DIWATA-2,FOX-1B,AO-7,AO-27,AO-73,SO-50");
+            mEphemerisModel.loadEphemerisLibrary(mSettings->mEphemerisSource);
+            mEphemerisModel.setSatellitesOfInterest(mSettings->mSatellitesOfInterest); //"ISS,AO-92,FO-99,IO-26,DIWATA-2,FOX-1B,AO-7,AO-27,AO-73,SO-50");
             mEphemerisModel.timerCallback(0);
         }
 
