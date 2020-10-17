@@ -148,12 +148,33 @@ namespace guipi {
         return std::move(data.begin()->second);
     }
 
-    SatelliteEphemerisMap SatelliteEphemerisFetch::fetchAll() {
+    SatelliteEphemerisMap SatelliteEphemerisFetch::fetchAll(int source) {
+        SatelliteEphemerisMap result;
+        SatelliteEphemerisMap moon;
         std::string url_fetch_moon = std::string{URL_FETCH_NAME} + "Moon";
-        auto rest = std::move(curl_process((std::string) URL_FETCH_ALL));
-        auto moon = std::move(curl_process(url_fetch_moon));
-        rest["Moon"] = moon.at("Moon");
-        return std::move(rest);
+        switch(source) {
+            case 0:
+                result = std::move(curl_process((std::string) URL_FETCH_ALL));
+                break;
+            case 1:
+                result = std::move(curl_process((std::string) CT_AMATEUR));
+                moon = std::move(curl_process(url_fetch_moon));
+                result["Moon"] = moon.at("Moon");
+                break;
+            case 2:
+                result = std::move(curl_process((std::string) CT_BRIGHT));
+                moon = std::move(curl_process(url_fetch_moon));
+                result["Moon"] = moon.at("Moon");
+                break;
+            case 3:
+                result = std::move(curl_process((std::string) CT_CUBESAT));
+                moon = std::move(curl_process(url_fetch_moon));
+                result["Moon"] = moon.at("Moon");
+                break;
+            default:
+                throw std::logic_error("SatelliteEphemerisFetch, source not handled.");
+        }
+        return std::move(result);
     }
 
     SatelliteEphemerisMap SatelliteEphemerisFetch::curl_process(const std::string &url) {
@@ -214,10 +235,12 @@ namespace guipi {
         return std::move(ephemerisMap);
     }
 
-    void EphemerisModel::loadEphemerisLibrary() {
-        mEphemerisLibaryLoad = std::thread([this]() {
+    void EphemerisModel::loadEphemerisLibrary(int source) {
+        mEphemerisLibaryLoad = std::thread([this,source]() {
             std::lock_guard<std::mutex> libraryLock(mEphmerisLibraryMutex);
-            mEphmerisLibrary.loadEphemeris();
+            mEphmerisLibrary.loadEphemeris(source);
+            mDivider = 0;
+            mInitialize = true;
         });
     }
 

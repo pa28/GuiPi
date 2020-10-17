@@ -73,8 +73,10 @@ namespace guipi {
 
 #if __cplusplus == 201703L
     constexpr static std::string_view URL_FETCH_NAME = "http://clearskyinstitute.com/ham/HamClock/esats.pl?tlename=";
-//    constexpr static std::string_view URL_FETCH_ALL = "http://clearskyinstitute.com/ham/HamClock/esats.pl?getall=";
-    constexpr static std::string_view URL_FETCH_ALL = "https://www.celestrak.com/NORAD/elements/amateur.txt";
+    constexpr static std::string_view URL_FETCH_ALL = "http://clearskyinstitute.com/ham/HamClock/esats.pl?getall=";
+    constexpr static std::string_view CT_AMATEUR = "https://www.celestrak.com/NORAD/elements/amateur.txt";
+    constexpr static std::string_view CT_BRIGHT = "https://www.celestrak.com/NORAD/elements/visual.txt";
+    constexpr static std::string_view CT_CUBESAT = "https://www.celestrak.com/NORAD/elements/cubesat.txt";
 #else
         #define URL_FETCH_NAME "http://clearskyinstitute.com/ham/HamClock/esats.pl?tlename="
 #define URL_FETCH_ALL "http://clearskyinstitute.com/ham/HamClock/esats.pl?getall="
@@ -111,7 +113,7 @@ namespace guipi {
 
     public:
 
-        static SatelliteEphemerisMap fetchAll();
+        static SatelliteEphemerisMap fetchAll(int source);
 
         static SatelliteEphemeris fetchNamed(const std::string &name);
 
@@ -123,8 +125,8 @@ namespace guipi {
         SatelliteEphemerisMap satelliteEphemerisMap;
 
     public:
-        void loadEphemeris() {
-            satelliteEphemerisMap = SatelliteEphemerisFetch::fetchAll();
+        void loadEphemeris(int source) {
+            satelliteEphemerisMap = SatelliteEphemerisFetch::fetchAll(source);
         }
 
         auto begin() noexcept { return satelliteEphemerisMap.begin(); }
@@ -188,7 +190,7 @@ namespace guipi {
     public:
         EphemerisModel();
 
-        void loadEphemerisLibrary();
+        void loadEphemerisLibrary(int source = 0);
 
         void setObserver(const Observer &observer);
 
