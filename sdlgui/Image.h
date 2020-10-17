@@ -26,6 +26,7 @@ namespace sdlgui {
     static constexpr int DISPLAY_HEIGHT = 480;
     static constexpr int EARTH_BIG_W = 660;
     static constexpr int EARTH_BIG_H = 330;
+    static constexpr std::string_view EARTH_BIG_S = "660x330";
 #endif
 
 #if SDL_BYTEORDER == SDL_BIG_ENDIAN
