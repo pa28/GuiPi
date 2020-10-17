@@ -47,8 +47,6 @@ namespace guipi {
         Vector2i mScreenSize{DISPLAY_WIDTH, DISPLAY_HEIGHT};
         Observer mObserver{};   //!< Observer for pass prediction (Latitude, Longitude, Altitude ) in degrees/meters.
 
-        bool mHasBrightnessControl{true};   //!< Raspberry Pi brightness control detected
-
         //* Local references to child widgets
         sdlgui::ref<GeoChrono> mGeoChrono;      //!< The GeoChron widget
         sdlgui::ref<Window> mMainWindow;        //!< The main window
@@ -175,7 +173,6 @@ namespace guipi {
          */
         static tuple<SDL_Surface *, time_point<std::chrono::system_clock>>
         curlFetchImage(const string &url, const string &homedir, const string &name) {
-            SDL_Texture *texture = nullptr;
             try {
                 // Set the URL.
                 curlpp::options::Url myUrl(url);
@@ -337,7 +334,6 @@ namespace guipi {
 
             auto timeSet = topArea->add<Widget>()
                     ->withId("timeSet")
-//                    ->withFixedWidth(220)
                     ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 5, 5);
 
             auto qthButton = timeSet->add<Button>(mSettings->mCallSign)
@@ -369,7 +365,6 @@ namespace guipi {
             // Create an image repeater to use with the image display.
             topArea->add<ImageDisplay>()->withImageRepository(mImageRepository)
                     ->setCallback([=](ImageDisplay &w, ImageRepository::EventType e) {
-                        auto index = w.getImageIndex();
                         if (e == ImageRepository::CLICK_EVENT) {
                             auto imageRepeater = add<ImageRepeater>(Vector2i(210, 0), Vector2i(440, 440));
                             performLayout();
@@ -597,7 +592,7 @@ int main(int argc, char ** argv) {
     );
 
     // Check that the window was successfully made
-    if (window == NULL) {
+    if (window == nullptr) {
         // In the event that the window could not be made...
         std::cout << "Could not create window: " << SDL_GetError() << '\n';
         SDL_Quit();
