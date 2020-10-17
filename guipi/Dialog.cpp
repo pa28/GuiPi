@@ -80,9 +80,9 @@ void guipi::SettingsDialog::initialize() {
         return true;
     });
 
-    REAL_TEXT_BOX_SET(panel00,Latitude,Deg, 8, 4, "[-]?[0-9]{0,2}\\.?[0-9]{1,4}",90.);
-    REAL_TEXT_BOX_SET(panel00,Longitude,Deg, 9, 4, "[-]?[0-9]{0,3}\\.?[0-9]{1,4}",180.);
-    REAL_TEXT_BOX_SET(panel00,Elevation,Deg, 5, 1, "[+-]?[0-9]{0,4}\\.?[0-9]{0,1}",4000.);
+    REAL_TEXT_BOX_SET(panel00,Latitude,Deg, 8, 4, "[-]?[0-9]{0,2}\\.?[0-9]{1,4}",90.)
+    REAL_TEXT_BOX_SET(panel00,Longitude,Deg, 9, 4, "[-]?[0-9]{0,3}\\.?[0-9]{1,4}",180.)
+    REAL_TEXT_BOX_SET(panel00,Elevation,m, 5, 1, "[+-]?[0-9]{0,4}\\.?[0-9]{0,1}",4000.)
 }
 
 guipi::ControlsDialog::ControlsDialog(Widget *parent, const string &title, const Vector2i &position,
