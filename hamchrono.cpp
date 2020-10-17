@@ -408,7 +408,11 @@ namespace guipi {
             switches->add<Widget>()->withPosition(Vector2i(620, 0))
                     ->withFixedSize(Vector2i(40, topAreaSize.y))
                     ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 10, 12)
-                    ->add<ToolButton>(ENTYPO_ICON_THREE_DOTS, Button::Flags::ToggleButton)->_and()
+                    ->add<ToolButton>(ENTYPO_ICON_THREE_DOTS, Button::Flags::NormalButton)
+                    ->withCallback([this](){
+                        add<ControlsDialog>( "Controls", Vector2i{40,40}, Vector2i{600,400});
+                        this->performLayout();
+                    })->_and()
                     ->add<ToolButton>(ENTYPO_ICON_LIGHT_DOWN, Button::Flags::ToggleButton)->_and()
                     ->add<ToolButton>(ENTYPO_ICON_CAMERA, Button::Flags::NormalButton)
                             ->withCallback([&](){
