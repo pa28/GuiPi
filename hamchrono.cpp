@@ -298,6 +298,16 @@ namespace guipi {
                 ImageData imageData{};
                 imageData.path = image.first;
                 imageData.name = image.second;
+
+                // If there is already an image in cache, load it to display while waiting on new images.
+                string fileName = mSettings->mHomeDir + string{image_path} + imageData.name + ".jpg";
+                std::filesystem::path imagePath = fileName;
+                std::error_code ec;
+                if (std::filesystem::exists(imagePath,ec)) {
+                    auto surface = IMG_Load(fileName.c_str());
+                    imageData.set(SDL_CreateTextureFromSurface(mSDL_Renderer, surface));
+                    SDL_FreeSurface(surface);
+                }
                 mImageRepository->push_back(0, move(imageData));
             }
 
@@ -551,9 +561,6 @@ int main(int argc, char ** argv) {
     InputParser inputParser{argc, argv};
     Observer observer{-100, -200, 0};
     string callsign{};
-
-    for(auto& p: std::filesystem::recursive_directory_iterator("/home/richard/.hamchrono"))
-        std::cout << p.path() << '\n';
 
     if (inputParser.cmdOptionExists("-cs")) {
         callsign = inputParser.getCmdOption("-cs");
