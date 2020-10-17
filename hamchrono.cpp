@@ -13,7 +13,6 @@
 #include <chrono>
 #include <SDL2/SDL.h>
 #include <SDL_image.h>
-#include <curlpp/cURLpp.hpp>
 #include <curlpp/Easy.hpp>
 #include <curlpp/Options.hpp>
 #include <curlpp/Exception.hpp>
@@ -36,61 +35,66 @@
 using namespace sdlgui;
 
 namespace guipi {
+    /**
+     * @class
+     * HamChrono is the main class of the application by the same name.
+     */
     class HamChrono : public GuiPiApplication {
     protected:
 
-        Vector2f qthLatLon;
-        Vector2f aQthLatLon;
-        Vector2i mScreenSize{800, 480};
-        Observer mObserver{};
+        Vector2f qthLatLon;     //!< The station location (Latitude Longitude) in radians
+        Vector2f aQthLatLon;    //!< The station antipode.
+        Vector2i mScreenSize{DISPLAY_WIDTH, DISPLAY_HEIGHT};
+        Observer mObserver{};   //!< Observer for pass prediction (Latitude, Longitude, Altitude ) in degrees/meters.
 
-        bool mHasBrightnessControl{true};
-        bool mRunEventLoop{true};
+        bool mHasBrightnessControl{true};   //!< Raspberry Pi brightness control detected
 
-        sdlgui::ref<GeoChrono> mGeoChrono;
-        sdlgui::ref<ToolButton> mAzmuthalButton;
-        sdlgui::ref<Window> mMainWindow;
-        sdlgui::ref<ImageRepository> mImageRepository;
+        //* Local references to child widgets
+        sdlgui::ref<GeoChrono> mGeoChrono;      //!< The GeoChron widget
+        sdlgui::ref<Window> mMainWindow;        //!< The main window
+        sdlgui::ref<ImageRepository> mImageRepository;      //!< The image repository for images
+        ref<ImageRepository> mIconRepository;       //!< The image repository for icons
+        ref<SatelliteDataDisplay> mSatelliteDataDisplay;        //!< Satellite data display widget
 
-        ref<ImageRepository> mIconRepository;
-        ref<SatelliteDataDisplay> mSatelliteDataDisplay;
-
-        EphemerisModel mEphemerisModel{};
+        EphemerisModel mEphemerisModel{};       //!< The epheris model, includes the current library
 
     public:
         ~HamChrono() override = default;
 
-        Timer<HamChrono> mTimer;
+        Timer<HamChrono> mTimer;        //!< An interval timer, computing satellite predictions
 
-        template<typename T>
-        constexpr T deg2rad(T deg) { return deg * M_PI / 180.; }
+        // Path names to installed resources
+        static constexpr string_view map_path = "/var/lib/hamchrono/maps/";     //!< Maps directory
+        static constexpr string_view image_path = "/.hamchrono/images/";        //!< Image cache directory
+        static constexpr string_view background_path = "/var/lib/hamchrono/backgrounds/";       //!< Backgrounds
+        static constexpr pair<string_view,string_view> day_map = {"day_earth_" ,".png"};    //!< Day map
+        static constexpr pair<string_view,string_view> night_map = {"night_earth_" ,".png"};    //!< Night map
+        static constexpr string_view backdrop = "NASA_Nebula.png";  //! The current background.
 
-#if __cplusplus == 201703L
-        static constexpr string_view map_path = "/var/lib/hamchrono/maps/";
-        static constexpr string_view image_path = "/.hamchrono/images/";
-        static constexpr string_view background_path = "/var/lib/hamchrono/backgrounds/";
-        static constexpr string_view day_map = "day_earth_660x330.png";
-        static constexpr string_view night_map = "night_earth_660x330.png";
-        static constexpr string_view backdrop = "NASA_Nebula.png";
-#else
-        const char *map_path = "maps/";
-        const char *image_path = "images/";
-        const char *background_path = "backgrounds/";
-        const char *day_map = "day_earth_660x330.png";
-        const char *night_map = "night_earth_660x330.png";
-        const char *backdrop = "NASA_Nebula.png";
-#endif
-
+        /**
+         * Compute an antipode
+         * @param location y -> latitude, x-> longitude in radians
+         * @return the antipode
+         */
         static Vector2f antipode(const Vector2f &location) {
             return Vector2f{(location.x < 0 ? 1.f : -1.f) * ((float) M_PI - abs(location.x)), -location.y};
         }
 
+        /**
+         * @struct IconRepositoryData
+         * Structure to hold initialization data for icons
+         */
         struct IconRepositoryData {
-            int icon;
-            int size;
-            array<uint8_t, 4> color;
+            int icon;   //!< the icon code for the ENTYPO icon font.
+            int size;   //!< the icon size as a point in font speak.
+            array<uint8_t, 4> color;    //!< The requested colour.
         };
 
+        /**
+         * @brief Icons are held in an ImageRepository so they may be rendered by multiple widgets. Images in the
+         * repository are addressed by a std::pair of integers. In this case the first selects a category, second
+         * selects a specific icon.
+         */
         // Icons for geographic locations ImageRepository::ImageStoreIndex idx{0, x}
         static constexpr array<IconRepositoryData, 3> mGeoLocationIcons = {
                 IconRepositoryData{ENTYPO_ICON_HAIR_CROSS, 50, {0x00, 0xFF, 0x00, 0xFF}},
@@ -113,6 +117,9 @@ namespace guipi {
                 IconRepositoryData{ENTYPO_ICON_RECORD,30, {0xFF, 0x00, 0, 0xFF}}
         };
 
+        /**
+         * @brief build the icon repository
+         */
         void buildIconRepository() {
             ImageRepository::ImageStoreIndex idx{0, 0};
             for (auto &conf : mGeoLocationIcons) {
@@ -139,6 +146,17 @@ namespace guipi {
             }
         }
 
+        /**
+         * @brief Capture a screen shot.
+         */
+        void screenShot() {
+            SDL_Surface *sshot = SDL_CreateRGBSurface(0, DISPLAY_WIDTH, DISPLAY_HEIGHT, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
+            SDL_RenderReadPixels(mSDL_Renderer, nullptr, SDL_PIXELFORMAT_ARGB8888, sshot->pixels, sshot->pitch);
+            SDL_SaveBMP(sshot, "screenshot.bmp");
+            SDL_FreeSurface(sshot);
+        }
+
+        // Links to NASA solar images downloaded for display
         static constexpr array<pair<string_view, string_view>, 5> NasaSolarImages {
         pair<string_view, string_view>{ "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_512_0193.jpg", "AIA 193 Å" },
         pair<string_view, string_view>{ "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_512_211193171.jpg", "AIA 211 Å, 193 Å, 171 Å" },
@@ -147,15 +165,16 @@ namespace guipi {
         pair<string_view, string_view>{ "https://sdo.gsfc.nasa.gov/assets/img/latest/latest_512_0171.jpg", "AIA 171 Å" }
         };
 
-        void screenShot() {
-            SDL_Surface *sshot = SDL_CreateRGBSurface(0, DISPLAY_WIDTH, DISPLAY_HEIGHT, 32, 0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000);
-            SDL_RenderReadPixels(mSDL_Renderer, nullptr, SDL_PIXELFORMAT_ARGB8888, sshot->pixels, sshot->pitch);
-            SDL_SaveBMP(sshot, "screenshot.bmp");
-            SDL_FreeSurface(sshot);
-        }
-
+        /**
+         * @brief Fetch an image and render it to a surface which is then rendered to a texture.
+         * Intended to be called in a std::future to fetch the image in the background.
+         * @param url the URL to fetch
+         * @param homedir the users home directory, used to find the image cache directory.
+         * @param name the name, displayed to the user, and used to generate the cache file name.
+         * @return
+         */
         static tuple<SDL_Surface *, time_point<std::chrono::system_clock>>
-        curlFetchImage(SDL_Renderer *renderer, const string &url, const string &homedir, const string &name) {
+        curlFetchImage(const string &url, const string &homedir, const string &name) {
             SDL_Texture *texture = nullptr;
             try {
                 // Set the URL.
@@ -195,39 +214,61 @@ namespace guipi {
             return make_tuple(nullptr,chrono::system_clock::now());
         }
 
+        /**
+         * @brief Update the images at regular intervals
+         * @param interval the interval in milliseconds
+         * @return the value used for the next interval
+         */
         Uint32 timerCallback(Uint32 interval) {
             for (ImageRepository::ImageStoreIndex idx{0,0}; idx.second < mImageRepository->size(idx.first); ++idx.second) {
-                mImageRepository->mFutureStore[idx] = async(curlFetchImage, mSDL_Renderer,
+                mImageRepository->mFutureStore[idx] = async(curlFetchImage,
                                                             mImageRepository->image(idx).path,
                                                             mSettings->mHomeDir, mImageRepository->image(idx).name);
             }
             return interval;
         }
 
-        void createSettingsDialog() {
-            add<SettingsDialog>( "Settings", Vector2i{400,100}, Vector2i{300,300});
-        }
-
+        /**
+         * @brief The main application class, and top level widget. The constructor builds the widget tree.
+         * @param pwindow the SDL_Window which becomes the Screen
+         * @param rwidth screen width
+         * @param rheight screen height
+         * @param homedir the user's home directory
+         * @param callsign the user's callsign, if provided on the command line
+         * @param geoCoord the user's location if provided on the command line
+         */
         HamChrono(SDL_Window *pwindow, int rwidth, int rheight, const string &homedir, const string &callsign,
                   const Vector2f &geoCoord)
                 : GuiPiApplication(pwindow, rwidth, rheight, "HamChrono"),
                   mTimer{*this, &HamChrono::timerCallback, 3600000} {
             mSettings = new Settings{homedir + "/.hamchrono/settings.sqlite"};
             mSettings->mHomeDir = homedir;
+
+            if (geoCoord.y > -200.) {
+                mSettings->mLongitude = geoCoord.x;
+                mSettings->mLatitude = geoCoord.y;
+            }
+
             mSettings->initializeSettingsDatabase();
+            initialize();
+        }
+
+        void initialize() {
             setSettings(mSettings);
 
-
-
+            /*
+             * Process the callback initiated when the value of settings is changed at some point in
+             * the system.
+             */
             mSettings->addCallback([this](guipi::Settings::Parameter parameter){
                 switch(parameter) {
                     case Settings::Parameter::EphemerisSource:
                         mEphemerisModel.loadEphemerisLibrary(mSettings->mEphemerisSource);
-                        mEphemerisModel.setSatellitesOfInterest(mSettings->mSatellitesOfInterest); //"ISS,AO-92,FO-99,IO-26,DIWATA-2,FOX-1B,AO-7,AO-27,AO-73,SO-50");
+                        mEphemerisModel.setSatellitesOfInterest(mSettings->mSatellitesOfInterest);
                         mEphemerisModel.timerCallback(0);
                         break;
                     case Settings::Parameter::SatellitesOfInterest:
-                        mEphemerisModel.setSatellitesOfInterest(mSettings->mSatellitesOfInterest); //"ISS,AO-92,FO-99,IO-26,DIWATA-2,FOX-1B,AO-7,AO-27,AO-73,SO-50");
+                        mEphemerisModel.setSatellitesOfInterest(mSettings->mSatellitesOfInterest);
                         break;
                     case Settings::Parameter::CallSign:
                         if (Widget *widget = find("qthButton", true); widget != nullptr) {
@@ -241,10 +282,14 @@ namespace guipi {
                 }
             });
 
+            // Set image scaling quality to the highest value available
             SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "2");
+
+            // Create the image repository for icons and build it
             mIconRepository = new ImageRepository{};
             buildIconRepository();
 
+            // Create the image repository for images and fill it with the initialization data
             mImageRepository = new ImageRepository();
             for (auto &image : NasaSolarImages) {
                 ImageData imageData{};
@@ -253,22 +298,29 @@ namespace guipi {
                 mImageRepository->push_back(0, move(imageData));
             }
 
+            // Create the std::future / std::async to fetch the images.
             for (ImageRepository::ImageStoreIndex idx{0,0}; idx.second < mImageRepository->size(idx.first); ++idx.second) {
-                mImageRepository->mFutureStore[idx] = async(curlFetchImage, mSDL_Renderer,
+                mImageRepository->mFutureStore[idx] = async(curlFetchImage,
                                                             mImageRepository->image(idx).path,
                                                             mSettings->mHomeDir, mImageRepository->image(idx).name);
             }
 
+            // TODO: Deprecate since widgets can get this information from the Settings object.
             qthLatLon.x = deg2rad(mSettings->mLongitude);
             qthLatLon.y = deg2rad(mSettings->mLatitude);
             aQthLatLon = antipode(qthLatLon);
             mObserver = Observer{mSettings->mLatitude, mSettings->mLongitude, mSettings->mElevation};
 
+            // Set up sizes of the various screen areas
             Vector2i mapAreaSize(EARTH_BIG_W, EARTH_BIG_H);
             Vector2i topAreaSize(mScreenSize.x, mScreenSize.y - mapAreaSize.y);
             Vector2i botAreaSize(mScreenSize.x, mScreenSize.y - topAreaSize.y);
             Vector2i sideBarSize(mScreenSize.x - mapAreaSize.x, mapAreaSize.y);
 
+            /**
+             * @brief The remainder of the constructor/initialization creates the widget tree and sets up internal
+             * linkages.
+             */
             mMainWindow = add<Window>("", Vector2i::Zero())->withBlank(true)
                     ->withFixedSize(mScreenSize)
                     ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 0, 0);
@@ -345,8 +397,8 @@ namespace guipi {
                     ->withImageRepository(mIconRepository, satIdx, orbBgnd, trackIdx)
                     ->withObserver(mObserver)
                     ->withStationCoordinates(qthLatLon)
-                    ->withBackgroundFile(string(map_path) + string(night_map))
-                    ->withForegroundFile(string(map_path) + string(day_map))
+                    ->withBackgroundFile(string(map_path) + string(night_map.first) + string(EARTH_BIG_S) + string(night_map.second))
+                    ->withForegroundFile(string(map_path) + string(day_map.first) + string(EARTH_BIG_S) + string(day_map.second))
                     ->withBackdropFile(string(background_path) + string(backdrop))
                     ->withFixedSize(Vector2i(EARTH_BIG_W, EARTH_BIG_H));
 
@@ -472,10 +524,10 @@ class InputParser{
 public:
     InputParser (int &argc, char **argv){
         for (int i=1; i < argc; ++i)
-            this->tokens.push_back(std::string(argv[i]));
+            this->tokens.emplace_back(argv[i]);
     }
     /// @author iain
-    const std::string& getCmdOption(const std::string &option) const{
+    [[nodiscard]] const std::string& getCmdOption(const std::string &option) const{
         std::vector<std::string>::const_iterator itr;
         itr =  std::find(this->tokens.begin(), this->tokens.end(), option);
         if (itr != this->tokens.end() && ++itr != this->tokens.end()){
@@ -485,7 +537,7 @@ public:
         return empty_string;
     }
     /// @author iain
-    bool cmdOptionExists(const std::string &option) const{
+    [[nodiscard]] bool cmdOptionExists(const std::string &option) const{
         return std::find(this->tokens.begin(), this->tokens.end(), option)
                != this->tokens.end();
     }
@@ -507,6 +559,8 @@ int main(int argc, char ** argv) {
     if (!latitude.empty() && !longitude.empty()) {
         geoCoord.y = std::strtod(latitude.c_str(), nullptr);
         geoCoord.x = std::strtod(longitude.c_str(), nullptr);
+    } else {
+        geoCoord = Vector2f{-200., -100};
     }
 
     string homdir{getenv("HOME")};
