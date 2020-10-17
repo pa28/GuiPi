@@ -106,6 +106,16 @@ namespace guipi {
 
         void writeAllValues(soci::session &sql);
 
+        void writeAllValues() {
+            try {
+                soci::session sql(soci::sqlite3, mDbFileName);
+                writeAllValues(sql);
+            }
+            catch (std::exception const &e) {
+                std::cerr << e.what() << '\n';
+            }
+        }
+
 #define X(name,type,default) type get ## name() const { return m ## name; }
         SETTING_VALUES
 #undef X
