@@ -18,7 +18,7 @@ if (NOT BCMHOST)
     add_compile_definitions(X86HOST=1)
 else()
     add_compile_definitions(BCMHOST=1)
-    set(EXTRA_LIBS "${EXTRA_LIBS} -lstdc++fs")
+    set(EXTRA_LIBS ${EXTRA_LIBS} -lstdc++fs)
 endif()
 
 find_package(Soci REQUIRED COMPONENTS sqlite3)
