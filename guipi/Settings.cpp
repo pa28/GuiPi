@@ -112,3 +112,12 @@ void guipi::Settings::readAllValues(session &sql) {
     SETTING_VALUES
 #undef X
 }
+
+void guipi::Settings::callCalbacks(guipi::Settings::Parameter parameter) {
+    for (auto &callback : callbackList)
+        callback(parameter);
+}
+
+void guipi::Settings::addCallback(const ParameterChangeCallback &parameterChangeCallback) {
+    callbackList.push_back(parameterChangeCallback);
+}

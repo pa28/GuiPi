@@ -45,8 +45,24 @@
 
 namespace guipi {
     class Settings {
+    public:
+        enum Parameter {
+#define X(name,type,default) name,
+            SETTING_VALUES
+#undef X
+        };
+
+        using ParameterChangeCallback = std::function<void(Parameter)>;
+
+        void addCallback(const std::function<void(Parameter)> &parameterChangeCallback);
+
     protected:
         std::string mDbFileName;
+
+        std::vector<ParameterChangeCallback> callbackList{};
+
+        void callCalbacks(Parameter parameter);
+
     public:
         std::string mHomeDir;
 #define X(name,type,default) type m ## name;
