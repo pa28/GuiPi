@@ -21,6 +21,7 @@ namespace sdlgui {
     static constexpr int DISPLAY_HEIGHT = 480;
     static constexpr int EARTH_BIG_W = 660;
     static constexpr int EARTH_BIG_H = 330;
+    static constexpr std::string_view EARTH_BIG_S = "660x330";
 #else
     static constexpr int DISPLAY_WIDTH = 800;
     static constexpr int DISPLAY_HEIGHT = 480;
@@ -70,7 +71,6 @@ namespace sdlgui {
         string path{};
         string name{};
         bool dirty{true};
-//        future<tuple<SDL_Texture*,chrono::time_point<std::chrono::system_clock>>> futureTex;
         std::chrono::time_point<std::chrono::system_clock> loaded{}, life{};
 
         ~ImageData() {
@@ -79,10 +79,6 @@ namespace sdlgui {
         }
 
         ImageData() = default;
-//        ImageInfo(SDL_Texture *tex, string path, string name)
-//            : tex(tex), path(std::move(path)), name(std::move(name)) {
-//            SDL_QueryTexture(tex, nullptr, nullptr, &w, &h);
-//        }
 
         ImageData(ImageData &) = delete;
         ImageData(const ImageData &) = delete;
@@ -134,26 +130,4 @@ namespace sdlgui {
     };
 
     typedef vector<ImageData> ImageDataList;
-
-//    struct PntRect {
-//        int x1, y1, x2, y2;
-//    };
-//
-//    struct PntFRect {
-//        float x1, y1, x2, y2;
-//    };
-
-#if 0
-    SDL_Rect clip_rects(SDL_Rect af, const SDL_Rect& bf);
-
-    PntRect clip_rects(PntRect a, const PntRect& b);
-
-    PntRect srect2pntrect(const SDL_Rect& srect);
-
-    SDL_Rect pntrect2srect(const PntRect& frect);
-#endif
-
-    ImageDataList loadImageDataDirectory(SDL_Renderer *renderer, const std::string &path);
-
-    ImageData loadImage(SDL_Renderer *renderer, const std::string &path);
 }
