@@ -2,9 +2,7 @@
 // Created by richard on 2020-09-12.
 //
 
-#ifndef SDLGUI_GEOCHRONO_H
-#define SDLGUI_GEOCHRONO_H
-
+#pragma once
 
 #include <utility>
 #include <chrono>
@@ -17,10 +15,6 @@
 #include <sdlgui/ImageRepository.h>
 #include <guipi/GfxPrimitives.h>
 #include <guipi/PassTracker.h>
-
-
-#define USE_COMPILED_MAPS 0
-#define USER_SET_CENTRE_LONG 1
 
 namespace guipi {
     using namespace sdlgui;
@@ -63,7 +57,7 @@ namespace guipi {
         Surface mNightMap;          //< The surface holding the night map
         Surface mDayAzMap;          //< The surface holding the generated day Azmuthal map
         Surface mNightAzMap;        //< The surface holding the generated night Azuthal map
-        Surface mBackdropImage;
+//        Surface mBackdropImage;
         ref<ImageRepository> mIconRepository;
         bool mBackdropDirty{};
         bool mAzimuthalDisplay{false};
@@ -79,7 +73,7 @@ namespace guipi {
         Vector2i mMotionEnd{};      //< The ending point of the motion;
 
         Vector2f mStationLocation;  //< The longitude x, latitude y (in radians, West/South negative) of the station.
-        Observer mObserver;
+        Observer mObserver{};
 
         EphemerisModel::OrbitTrackingData mNewOrbitData;
 
@@ -116,19 +110,18 @@ namespace guipi {
         typedef std::shared_ptr<AsyncTexture> AsyncTexturePtr;
         std::vector<AsyncTexturePtr> _txs;
 
-        Vector2f mSun_GeoCoord;
-
     public:
         ref<PassTracker> mPassTracker;
     protected:
         friend class PassTracker;
-        void setAzimuthalEffective() {
+        bool setAzimuthalEffective() {
             bool ae = mAzimuthalDisplay | (mPassTracker->activeTracking() && mSatelliteDisplay);
             if (mAzimuthalEffective != ae) {
                 mAzimuthalEffective = ae;
                 invalidateMapCoordinates();
             }
             mPassTracker->setVisible(mPassTracker->activeTracking() && mSatelliteDisplay);
+            return mAzimuthalEffective;
         }
 
     public:
@@ -154,11 +147,6 @@ namespace guipi {
          * @param foreground
          * @return a reference to this GeoChrono
          */
-        ref<GeoChrono> withForeground(ImageData &foreground) {
-            mForeground = std::move(foreground);
-            return ref<GeoChrono>{this};
-        }
-
         ref<GeoChrono> withForegroundFile(const string &filePath) {
             mForeground.path = filePath;
             mMapsDirty = true;
@@ -176,11 +164,6 @@ namespace guipi {
          * @param background
          * @return a reference to this GeoChrono
          */
-        ref<GeoChrono> withBackground(ImageData &background) {
-            mBackground = std::move(background);
-            return ref<GeoChrono>{this};
-        }
-
         ref<GeoChrono> withBackgroundFile(const string &filePath) {
             mBackground.path = filePath;
             mMapsDirty = true;
@@ -306,15 +289,6 @@ namespace guipi {
          */
 //        void renderMapIcon(SDL_Renderer *renderer, const Vector2i& mapLocation, PlotPackage &plotItem) const;
 
-        /**
-         * Create a texture of an icon
-         * @param renderer
-         * @param iconSize the point size of the font generating the icon
-         * @param iconColor
-         * @return
-         */
-        ImageData createMapIcon(SDL_Renderer *renderer, int icon, int iconSize, const Color &iconColor);
-
         /*
          * Convert a latitude longitude in radians to map coordinates.
          * @param lat latitude
@@ -325,13 +299,10 @@ namespace guipi {
          */
         Vector2i latLongToMap(float lat, float lon);
 
-        auto passTracker() { return mPassTracker; }
+        auto passTracker() const { return mPassTracker; }
 
         vector <pair<SDL_Rect, SDL_Rect>>
-        renderMapIconRect(const Vector2i &mapLocation, const Vector2i &geoCoord, const Vector2i &iconsSize);
+        renderMapIconRect(const Vector2i &mapLocation, const Vector2i &geoCoord, const Vector2i &iconsSize) const;
     };
 
 }
-
-
-#endif //SDLGUI_GEOCHRONO_H

@@ -7,16 +7,12 @@
 #include <tuple>
 #include <functional>
 #include <thread>
-#include <iostream>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include <SDL2/SDL_pixels.h>
-#include <sdlgui/entypo.h>
 #include <sdlgui/screen.h>
 #include <sdlgui/Image.h>
 #include "GeoChrono.h"
-
-#include "sdlgui/nanovg.h"
 
 #define NANOVG_RT_IMPLEMENTATION
 #define NANORT_IMPLEMENTATION
@@ -121,7 +117,7 @@ namespace guipi {
             sA = sinf(A);
             y = sA * sb * sc;
             x = cb - ca * cc;
-            B = y != 0.0 ? (x != 0.0 ? atan2(y, x) : (y > 0.0 ? M_PI_2 : -M_PI_2)) : (x >= 0.0 ? 0.0 : M_PI);
+            B = y != 0.0 ? (x != 0.0 ? atan2(y, x) : (float)(y > 0.0 ? M_PI_2 : -M_PI_2)) : (float)(x >= 0.0 ? 0.0 : M_PI);
         }
 
         Bp = B;
@@ -153,25 +149,28 @@ namespace guipi {
             float ca, B;
             solveSphere(A, b, (onAntipode ? -siny : siny), cosy, ca, B);
             auto lt = (float) M_PI_2 - acos(ca);
-            auto lat_d = rad2deg(lt);
             auto lg = fmod(location.x + B + (onAntipode ? 6. : 5.) * (float) M_PI, 2 * M_PI) - (float) M_PI;
-            auto long_d = rad2deg(lg);
             return tuple<bool, float, float>{true, lt, lg};
         }
         return tuple<bool, float, float>{false, 0, 0};
     }
 
+    /**
+     * @brief Convert latitude and longitude to map coordinates;
+     * @param lat latitude in radians
+     * @param lon longitude in radians
+     * @return a Vector2i with map cordinates (x,y) from the top left corner.
+     */
     Vector2i
     GeoChrono::latLongToMap(float lat, float lon) {
-        setAzimuthalEffective();
-        if (mAzimuthalEffective) {
+        if (setAzimuthalEffective()) {
             float ca, B;
             solveSphere(lon - mStationLocation.x, M_PI_2 - lat, sin(mStationLocation.y),
                         cos(mStationLocation.y), ca, B);
             if (ca > 0) {
                 float a = acos(ca);
                 float R0 = (float) mForeground.w / 4.f - 1.f;
-                float R = a * (float) mForeground.w / (2.f * M_PI);
+                float R = a * (float) mForeground.w / (2.f * (float)M_PI);
                 R = min(R, R0);
                 float dx = R * sin(B);
                 float dy = R * cos(B);
@@ -179,7 +178,7 @@ namespace guipi {
             } else {
                 float a = M_PI - acos(ca);
                 float R0 = (float) mForeground.w / 4 - 1;
-                float R = a * (float) mForeground.w / (2 * M_PI);
+                float R = a * (float) mForeground.w / (2.f * (float)M_PI);
                 R = min(R, R0);
                 float dx = -R * sin(B);
                 float dy = R * cos(B);
@@ -196,11 +195,9 @@ namespace guipi {
      * @param renderer
      */
     void GeoChrono::draw(SDL_Renderer *renderer) {
+        // Absolute location of the top left corner of the map.
         int ax = getAbsoluteLeft();
         int ay = getAbsoluteTop();
-
-        PntRect clip = getAbsoluteCliprect();
-        SDL_Rect clipRect = pntrect2srect(clip);
 
         /**
          * Maps are dirty when the base images have changed, or been loaded.
@@ -211,9 +208,10 @@ namespace guipi {
 
         if (mBackdropDirty) {
             mBackdropDirty = false;
-            mBackdropImage.reset(IMG_Load(mBackdropTex.path.c_str()));
-            if (mBackdropImage) {
-                mBackdropTex.set(SDL_CreateTextureFromSurface(renderer, mBackdropImage.get()));
+            auto surface = IMG_Load(mBackdropTex.path.c_str());
+            if (surface) {
+                mBackdropTex.set(SDL_CreateTextureFromSurface(renderer, surface));
+                SDL_FreeSurface(surface);
             }
         }
 
@@ -221,7 +219,6 @@ namespace guipi {
         if (mDayMap && mNightMap && mDayAzMap and mNightAzMap) {
             Vector2i p = Vector2i(0, 0);
             p += Vector2i(ax, ay);
-            int imgw = mForeground.w;
             int imgh = mForeground.h;
 
             // If the asynchronous drawing thread is done, join it.
@@ -234,7 +231,7 @@ namespace guipi {
             // Spawn up a thread to get things back in sync in the background.
             if (mTextureDirty) {
                 mTransparentReady = false;
-                mTransparentThread = thread([this, renderer]() {
+                mTransparentThread = thread([this]() {
                     lock_guard<mutex> lockGuard(mTransparentMutex);
                     transparentForeground();
                     mTextureDirty = false;
@@ -262,8 +259,7 @@ namespace guipi {
 
             // Display the map with solar illumination by stacking the day map (transparent where it is dark)
             // on top of the night map.
-            setAzimuthalEffective();
-            if (mAzimuthalEffective) {
+            if (setAzimuthalEffective()) {
                 SDL_BlendMode mode;
                 SDL_GetTextureBlendMode(mForegroundAz.get(), &mode);
                 SDL_SetTextureBlendMode(mForegroundAz.get(), SDL_BLENDMODE_BLEND);
@@ -294,9 +290,8 @@ namespace guipi {
                 SDL_RenderCopy(renderer, mForeground.get(), &src1, &dst1);
             }
 
+            // Check for updated icon locations, then plot them on the map.
             if (mForeground) {
-                auto passTrackerVisible = mPassTracker->visible();
-
                 if (!mNewCellestialData.empty()) {
                     mWorkingCelestialData.clear();
                     for (auto &cel : mNewCellestialData) {
@@ -363,95 +358,22 @@ namespace guipi {
                             mIconRepository->renderCopy(renderer, orbit.iconIdx,copySet.first,copySet.second);
                         }
                     }
-
-#if 0
-                for (auto &plotItem : mPlotPackage) {
-                    switch (plotItem.mPlotItemType) {
-                        case CELESTIAL_BODY:
-                        case CELESTIAL_BODY_MOON:
-                            if (mSunMoonDisplay) {
-                                plotItem.mMapCoord = latLongToMap(plotItem.mGeoCoord.y, plotItem.mGeoCoord.x);
-                                plotItem.mMapCoordValid = true;
-                            } else {
-                                plotItem.mMapCoordValid = false;
-                                continue;
-                            }
-                            break;
-                        case CELESTIAL_BODY_SUN:
-                            if (mSunMoonDisplay) {
-                                plotItem.mMapCoord = latLongToMap(mSun.mGeoCoord.y, mSun.mGeoCoord.x);
-                                plotItem.mMapCoordValid = true;
-                            } else {
-                                plotItem.mMapCoordValid = false;
-                                continue;
-                            }
-                            break;
-                        case EARTH_SATELLITE:
-                            if (mSatelliteDisplay) {
-                                plotItem.mMapCoord = latLongToMap(plotItem.mGeoCoord.y, plotItem.mGeoCoord.x);
-                                plotItem.mMapCoordValid = true;
-                            } else {
-                                plotItem.mMapCoordValid = false;
-                                continue;
-                            }
-                            break;
-                        default:
-                            if (!plotItem.mMapCoordValid) {
-                                plotItem.mMapCoord = latLongToMap(plotItem.mGeoCoord.y, plotItem.mGeoCoord.x);
-                                plotItem.mMapCoordValid = true;
-                            }
-                    }
-                    if (plotItem.mMapCoordValid) {
-                        Vector2i imageSize;
-                        switch (plotItem.mPlotItemType) {
-                            case CELESTIAL_BODY:
-                            case CELESTIAL_BODY_MOON:
-                            case CELESTIAL_BODY_SUN:
-                                if (mSunMoonDisplay) {
-                                    imageSize = plotItem.mDrawSize == Vector2i::Zero() ?
-                                                plotItem.mImageRepository->imageSize(plotItem.mImageIndex) :
-                                                plotItem.mDrawSize;
-                                    auto list = renderMapIconRect(p, plotItem.mMapCoord, imageSize);
-                                    for (auto &copySet : list) {
-                                        plotItem.mImageRepository->renderCopy(renderer, plotItem.mImageIndex,
-                                                                              copySet.first,
-                                                                              copySet.second);
-                                    }
-                                }
-                                break;
-                            case EARTH_SATELLITE:
-                                if (mSatelliteDisplay) {
-                                    imageSize = plotItem.mDrawSize == Vector2i::Zero() ?
-                                                plotItem.mImageRepository->imageSize(plotItem.mImageIndex) :
-                                                plotItem.mDrawSize;
-                                    auto list = renderMapIconRect(p, plotItem.mMapCoord, imageSize);
-                                    for (auto &copySet : list) {
-                                        plotItem.mImageRepository->renderCopy(renderer, plotItem.mImageIndex,
-                                                                              copySet.first,
-                                                                              copySet.second);
-                                    }
-                                }
-                            default:
-                                imageSize = plotItem.mDrawSize == Vector2i::Zero() ?
-                                            plotItem.mImageRepository->imageSize(plotItem.mImageIndex) :
-                                            plotItem.mDrawSize;
-                                auto list = renderMapIconRect(p, plotItem.mMapCoord, imageSize);
-                                for (auto &copySet : list) {
-                                    plotItem.mImageRepository->renderCopy(renderer, plotItem.mImageIndex, copySet.first,
-                                                                          copySet.second);
-                                }
-                        }
-                    }
-                }
-#endif
             }
         }
 
         Widget::draw(renderer);
     }
 
+    /**
+     * @brief Compute the source and destination rectangles to render a map icon. The destination rectangle
+     * is computed to place the center of the icon over the map location of the object.
+     * @param mapLocation the top left corner of the map
+     * @param mapCoord the coordinates of the object represented by the icon
+     * @param iconsSize the size of the icon
+     * @return a pair of SDL_Rect objects that represent the source and destination rectangles for the render copy.
+     */
     vector<pair<SDL_Rect, SDL_Rect>>
-    GeoChrono::renderMapIconRect(const Vector2i &mapLocation, const Vector2i &mapCoord, const Vector2i &iconsSize) {
+    GeoChrono::renderMapIconRect(const Vector2i &mapLocation, const Vector2i &mapCoord, const Vector2i &iconsSize) const {
         vector<pair<SDL_Rect, SDL_Rect>> result;
 
         if (mapCoord.x < iconsSize.x / 2) {
@@ -488,13 +410,6 @@ namespace guipi {
         return result;
     }
 
-    ImageData GeoChrono::createMapIcon(SDL_Renderer *renderer, int iconCode, int iconSize, const Color &iconColor) {
-        auto icon = utf8(iconCode);
-        Texture texture;
-        mTheme->getTexAndRectUtf8(renderer, texture, 0, 0, icon.data(), "icons", iconSize, iconColor);
-        return ImageData{move(texture)};
-    }
-
     /**
      * Generate Mercator and Azimuthal maps from a set of Mercator maps which are images on disk.
      * @param renderer
@@ -523,19 +438,8 @@ namespace guipi {
         for (int y = 0; y < mDayMap->h; y += 1) {
             for (int x = 0; x < mDayMap->w; x += 1) {
                 // Radius from centre of the hempishpere
-#if __cplusplus == 201703L
                 auto[valid, lat, lon] = xyToAzLatLong(x, y, Vector2i(EARTH_BIG_W, EARTH_BIG_H), mStationLocation, siny,
                                                       cosy);
-#else
-                auto _t = xyToAzLatLong(x, y, Vector2i(EARTH_BIG_W, EARTH_BIG_H), mStationLocation, siny,
-                                        cosy);
-                auto valid = std::get<0>(_t);
-                auto lat = std::get<1>(_t);
-                auto lon = std::get<2>(_t);
-#endif
-                auto lat_d = rad2deg(lat);
-                auto lon_d = rad2deg(lon);
-
                 if (valid) {
                     auto xx = min(EARTH_BIG_W - 1, (int) round((float) EARTH_BIG_W * ((lon + M_PI) / (2 * M_PI))));
                     auto yy = min(EARTH_BIG_H - 1, (int) round((float) EARTH_BIG_H * ((M_PI_2 - lat) / M_PI)));
@@ -613,17 +517,10 @@ namespace guipi {
         SDL_SetSurfaceBlendMode(mDayMap.get(), SDL_BLENDMODE_BLEND);
         SDL_BlitSurface(mDayMap.get(), nullptr, mTransparentMap.get(), nullptr);
 
-#if __cplusplus == 201703L
         auto[latS, lonS] = subSolar();
-#else
-        auto _t = subSolar();
-        auto latS = std::get<0>(_t);
-        auto lonS = std::get<1>(_t);
-#endif
         Vector2f mSubSolar;
         mSubSolar.x = lonS;
         mSubSolar.y = latS;
-        mSun_GeoCoord = mSubSolar;
 
         float siny = sin(mStationLocation.y);
         float cosy = cos(mStationLocation.y);
