@@ -269,6 +269,9 @@ namespace guipi {
                 case Settings::Parameter::Elevation:
                     mDivider = 0;
                     mInitialize = true;
+                    mSatelliteTrackData.clear();
+                    if (mPassTrackingCallback)
+                        mPassTrackingCallback(PassTrackingData{mSatelliteTrackData});
                 default:
                     break;
             }
