@@ -51,30 +51,14 @@ namespace guipi {
 
         // init pel and make first step
         localSat.predict(t_srch);
-#if __cplusplus == 201703L
         auto[tel, taz, trange, trate] = localSat.topo(observer);
-#else
-        auto _t = localSat.topo(observer);
-        auto tel = std::get<0>(_t);
-        auto taz = std::get<1>(_t);
-        auto trange = std::get<2>(_t);
-        auto trate = std::get<3>(_t);
-#endif
         t_srch += dt;
 
         // search up to a few days ahead for next rise and set times (for example for moon)
         while ((!set_ok || !rise_ok) && t_srch < t_now + 2.0F) {
             // find circumstances at time t_srch
             localSat.predict(t_srch);
-#if __cplusplus == 201703L
             auto[tel, taz, trange, trate] = localSat.topo(observer);
-#else
-            _t = localSat.topo(observer);
-            tel = std::get<0>(_t);
-            taz = std::get<1>(_t);
-            trange = std::get<2>(_t);
-            trate = std::get<3>(_t);
-#endif
 
             // check for rising or setting events
             if (tel >= SAT_MIN_EL) {
@@ -103,15 +87,7 @@ namespace guipi {
                         // would jump over it and find the NEXT set.
                         DateTime check_set = t_srch + COARSE_DT;
                         localSat.predict(check_set);
-#if __cplusplus == 201703L
                         auto[check_tel, check_taz, check_trange, check_trate] = localSat.topo(observer);
-#else
-                        _t = localSat.topo(observer);
-                        auto check_tel = std::get<0>(_t);
-                        auto check_taz = std::get<1>(_t);
-                        auto check_trange = std::get<2>(_t);
-                        auto check_trate = std::get<3>(_t);
-#endif
                         if (check_tel >= SAT_MIN_EL) {
                             rise_time = t_srch;
                             rise_az = taz;
@@ -137,47 +113,7 @@ namespace guipi {
         set_time.TN = round(set_time.TN * 86400.) / 86400.;
     }
 
-    SatelliteEphemeris SatelliteEphemerisFetch::fetchNamed(const std::string &name) {
-        std::ostringstream url;
-        url << URL_FETCH_NAME << name;
-        auto data = curl_process(url.str());
-
-        if (data.size() != 1)
-            throw curlpp::LogicError("Should be one, and only one, ephemeris");
-
-        return std::move(data.begin()->second);
-    }
-
-    SatelliteEphemerisMap SatelliteEphemerisFetch::fetchAll(int source) {
-        SatelliteEphemerisMap result;
-        SatelliteEphemerisMap moon;
-        std::string url_fetch_moon = std::string{URL_FETCH_NAME} + "Moon";
-        switch(source) {
-            case 0:
-                result = std::move(curl_process((std::string) URL_FETCH_ALL));
-                break;
-            case 1:
-                result = std::move(curl_process((std::string) CT_AMATEUR));
-                moon = std::move(curl_process(url_fetch_moon));
-                result["Moon"] = moon.at("Moon");
-                break;
-            case 2:
-                result = std::move(curl_process((std::string) CT_BRIGHT));
-                moon = std::move(curl_process(url_fetch_moon));
-                result["Moon"] = moon.at("Moon");
-                break;
-            case 3:
-                result = std::move(curl_process((std::string) CT_CUBESAT));
-                moon = std::move(curl_process(url_fetch_moon));
-                result["Moon"] = moon.at("Moon");
-                break;
-            default:
-                throw std::logic_error("SatelliteEphemerisFetch, source not handled.");
-        }
-        return std::move(result);
-    }
-
-    SatelliteEphemerisMap SatelliteEphemerisFetch::curl_process(const std::string &url) {
+    SatelliteEphemerisMap curl_process(const std::string &url) {
         SatelliteEphemerisMap ephemerisMap;
 
         try {
@@ -209,7 +145,7 @@ namespace guipi {
                 auto l = ephemeris[0].find_first_of('(') + 1;
                 auto r = ephemeris[0].find_last_of(')');
                 if (l != std::string::npos && r != std::string::npos && l < r) {
-                    ephemeris[0] = ephemeris[0].substr(l,r);
+                    ephemeris[0] = ephemeris[0].substr(l, r);
                 }
                 r = ephemeris[0].find_last_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789") + 1;
                 if (r != std::string::npos)
@@ -235,42 +171,77 @@ namespace guipi {
         return std::move(ephemerisMap);
     }
 
+    SatelliteEphemerisMap fetchAll(int source) {
+        SatelliteEphemerisMap result;
+        SatelliteEphemerisMap moon;
+        std::string url_fetch_moon = std::string{URL_FETCH_NAME} + "Moon";
+        switch (source) {
+            case 0:
+                result = std::move(curl_process((std::string) URL_FETCH_ALL));
+                break;
+            case 1:
+                result = std::move(curl_process((std::string) CT_AMATEUR));
+                moon = std::move(curl_process(url_fetch_moon));
+                result["Moon"] = moon.at("Moon");
+                break;
+            case 2:
+                result = std::move(curl_process((std::string) CT_BRIGHT));
+                moon = std::move(curl_process(url_fetch_moon));
+                result["Moon"] = moon.at("Moon");
+                break;
+            case 3:
+                result = std::move(curl_process((std::string) CT_CUBESAT));
+                moon = std::move(curl_process(url_fetch_moon));
+                result["Moon"] = moon.at("Moon");
+                break;
+            default:
+                throw std::logic_error("SatelliteEphemerisFetch, source not handled.");
+        }
+        return std::move(result);
+    }
+
+    bool EphemerisModel::asyncEphemerisFetch(EphemerisModel *self, int source) {
+        self->mNewSatelliteEphemerisMap = std::move(fetchAll(source));
+        self->mDivider = 0;
+        self->mInitialize = true;
+        return true;
+    }
+
     void EphemerisModel::loadEphemerisLibrary(int source) {
-        mEphemerisLibaryLoad = std::thread([this,source]() {
-            std::lock_guard<std::mutex> libraryLock(mEphmerisLibraryMutex);
-            mEphmerisLibrary.loadEphemeris(source);
-            mDivider = 0;
-            mInitialize = true;
-        });
+        mEphemerisLibaryLoad = std::async(asyncEphemerisFetch, this, source);
+    }
+
+    void EphemerisModel::loadEphemerisLibraryWait(int source) {
+        std::lock_guard<std::mutex> lockGuard(mEphemerisLibraryMutex);
+        mSatelliteEphemerisMap = std::move(fetchAll(source));
+        mDivider = 0;
+        mInitialize = true;
     }
 
     std::optional<Satellite> EphemerisModel::getSatellite(const std::string &name) {
-        if (mEphmerisLibrary.haveEphemeris(name))
-            return mEphmerisLibrary.satellite(name);
+        if (auto sat = mSatelliteEphemerisMap.find(name); sat != mSatelliteEphemerisMap.end())
+            return Satellite(sat->second);
         return std::nullopt;
     }
 
     int EphemerisModel::setSatellitesOfInterest(const std::string &satelliteNameList) {
-        if (mEphemerisLibaryLoad.joinable())
-            mEphemerisLibaryLoad.join();
-
-        std::lock_guard<std::mutex> libraryLock(mEphmerisLibraryMutex);
+        std::lock_guard<std::mutex> lockGuard(mEphemerisLibraryMutex);
 
         mSatellitesOfInterest.clear();
 
         if (satelliteNameList.empty()) {
-            for (auto & sat : mEphmerisLibrary)
+            for (auto &sat : mSatelliteEphemerisMap)
                 if (sat.first != "Moon")
                     mSatellitesOfInterest[sat.first] = Satellite{sat.second};
-        } else{
-                std::stringstream strm;
-                strm << satelliteNameList;
-                std::string name;
-                while (getline(strm, name, ',')) {
-                    auto sat = getSatellite(name);
-                    if (sat)
-                        mSatellitesOfInterest[name] = sat.value();
-                }
+        } else {
+            std::stringstream strm;
+            strm << satelliteNameList;
+            std::string name;
+            while (getline(strm, name, ',')) {
+                auto sat = getSatellite(name);
+                if (sat)
+                    mSatellitesOfInterest[name] = sat.value();
+            }
         }
 
         mDivider = 0;
@@ -286,93 +257,99 @@ namespace guipi {
     }
 
     Uint32 EphemerisModel::timerCallback(Uint32 interval) {
-        if (mEphmerisLibraryMutex.try_lock()) {
-            if (!mEphmerisLibrary.empty()) {
-
-                if (mEphemerisLibaryLoad.joinable())
-                    mEphemerisLibaryLoad.join();
-
-                mDivider += interval;
-
-                DateTime now{true};
-                if (mInitialize || mDivider >= 60000) {
-                    mSatellitePassData.clear();
-                    for (auto &sat : mSatellitesOfInterest) {
-                        sat.second.predict(now);
-                        if (fmod(sat.second.period(), 1.0) < 0.9) {
-                            Earthsat earthsat{};
-                            earthsat.FindNextPass(sat.second, mObserver);
-                            earthsat.roundPassTimes();
-                            if (earthsat.isEverUp())
-                                mSatellitePassData.emplace_back(sat.first, earthsat.riseTime(), earthsat.setTime());
-                        }
-                    }
-
-                    std::sort(mSatellitePassData.begin(), mSatellitePassData.end(), [](auto &p0, auto &p1) {
-                        return std::get<1>(p0) < std::get<1>(p1);
-                    });
-
-                    if (mPassMonitorCallback) {
-                        mPassMonitorCallback(PassMonitorData{mSatellitePassData});
-                    }
-
-                    if (mCelestialTrackingCallback) {
-                        CelestialTrackingData celestialData;
-                        auto[sLat, sLon] = subSolar();
-                        celestialData.emplace_back(sLat, sLon, std::pair{1, 0});
-                        auto moon = getSatellite("Moon");
-                        if (moon) {
-                            moon->predict(now);
-                            auto[mLat, mLon] = moon->geo();
-                            celestialData.emplace_back(mLat, mLon, std::pair{1, 1});
-                        }
-                        mCelestialTrackingCallback(celestialData);
-                    }
-                }
-
-                if (mInitialize || mDivider >= 10000) {
-                    mSatelliteOrbitData.clear();
-                    for (auto &pass : mSatellitePassData) {
-                        auto sat = mSatellitesOfInterest.at(std::get<0>(pass));
-                        if (abs(now - sat.mPrediction) > 10. / 86400.)
-                            sat.predict(now);
-                        auto[lat, lon] = sat.geo();
-                        mSatelliteOrbitData.emplace_back(std::get<0>(pass), lat, lon);
-                    }
-
-                    if (mOrbitTrackingCallback) {
-                        mOrbitTrackingCallback(OrbitTrackingData{mSatelliteOrbitData});
-                    }
-                }
-
-                if (mInitialize || mDivider >= 5000) {
-                    mSatelliteTrackData.clear();
-                    for (auto &track : mSatellitePassData) {
-                        auto sat = mSatellitesOfInterest.at(std::get<0>(track));
-                        if (abs(now - sat.mPrediction) > 5. / 86400.)
-                            sat.predict(now);
-                        if ((std::get<1>(track) - now) * 86400. < 60. && (std::get<2>(track) - now) * 86400. > -60. ) {
-                            auto[el, az, range, rate] = sat.topo(mObserver);
-                            mSatelliteTrackData.emplace_back(std::get<0>(track), el, az, range, rate);
-                        }
-                    }
-
-                    if (mPassTrackingCallback)
-                        mPassTrackingCallback(PassTrackingData{mSatelliteTrackData});
-                }
-
-                mInitialize = false;
-            }
-            mEphmerisLibraryMutex.unlock();
+        // If model is locked return.
+        if (!mEphemerisLibraryMutex.try_lock()) {
+            return interval;
         }
+
+        // If a new library is waiting load it and reset calculations.
+        if (mEphemerisLibaryLoad.valid()) {
+            if (mEphemerisLibaryLoad.get()) {
+                mSatelliteEphemerisMap = std::move(mNewSatelliteEphemerisMap);
+            }
+        }
+
+        // If the library is empty return
+        if (mSatelliteEphemerisMap.empty()) {
+            mEphemerisLibraryMutex.unlock();
+            return interval;
+        }
+
+        mDivider += interval;
+
+        DateTime now{true};
+        if (mInitialize || mDivider >= 60000) {
+            mSatellitePassData.clear();
+            for (auto &sat : mSatellitesOfInterest) {
+                sat.second.predict(now);
+                if (fmod(sat.second.period(), 1.0) < 0.9) {
+                    Earthsat earthsat{};
+                    earthsat.FindNextPass(sat.second, mObserver);
+                    earthsat.roundPassTimes();
+                    if (earthsat.isEverUp())
+                        mSatellitePassData.emplace_back(sat.first, earthsat.riseTime(), earthsat.setTime());
+                }
+            }
+
+            std::sort(mSatellitePassData.begin(), mSatellitePassData.end(), [](auto &p0, auto &p1) {
+                return std::get<1>(p0) < std::get<1>(p1);
+            });
+
+            if (mPassMonitorCallback) {
+                mPassMonitorCallback(PassMonitorData{mSatellitePassData});
+            }
+
+            if (mCelestialTrackingCallback) {
+                CelestialTrackingData celestialData;
+                auto[sLat, sLon] = subSolar();
+                celestialData.emplace_back(sLat, sLon, std::pair{1, 0});
+                auto moon = getSatellite("Moon");
+                if (moon) {
+                    moon->predict(now);
+                    auto[mLat, mLon] = moon->geo();
+                    celestialData.emplace_back(mLat, mLon, std::pair{1, 1});
+                }
+                mCelestialTrackingCallback(celestialData);
+            }
+        }
+
+        if (mInitialize || mDivider >= 10000) {
+            mSatelliteOrbitData.clear();
+            for (auto &pass : mSatellitePassData) {
+                auto sat = mSatellitesOfInterest.at(std::get<0>(pass));
+                if (abs(now - sat.mPrediction) > 10. / 86400.)
+                    sat.predict(now);
+                auto[lat, lon] = sat.geo();
+                mSatelliteOrbitData.emplace_back(std::get<0>(pass), lat, lon);
+            }
+
+            if (mOrbitTrackingCallback) {
+                mOrbitTrackingCallback(OrbitTrackingData{mSatelliteOrbitData});
+            }
+        }
+
+        if (mInitialize || mDivider >= 5000) {
+            mSatelliteTrackData.clear();
+            for (auto &track : mSatellitePassData) {
+                auto sat = mSatellitesOfInterest.at(std::get<0>(track));
+                if (abs(now - sat.mPrediction) > 5. / 86400.)
+                    sat.predict(now);
+                if ((std::get<1>(track) - now) * 86400. < 60. && (std::get<2>(track) - now) * 86400. > -60.) {
+                    auto[el, az, range, rate] = sat.topo(mObserver);
+                    mSatelliteTrackData.emplace_back(std::get<0>(track), el, az, range, rate);
+                }
+            }
+
+            if (mPassTrackingCallback)
+                mPassTrackingCallback(PassTrackingData{mSatelliteTrackData});
+        }
+
+        mInitialize = false;
+        mEphemerisLibraryMutex.unlock();
         return interval;
     }
 
     void EphemerisModel::setObserver(const Observer &observer) {
-        std::lock_guard<std::mutex> libraryLock(mEphmerisLibraryMutex);
-        if (mEphemerisLibaryLoad.joinable())
-            mEphemerisLibaryLoad.join();
-
         mObserver = observer;
     }
 }

@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.0)
 
-project("GuiPi" VERSION 0.4.2.9)
+project("GuiPi" VERSION 0.4.3.10)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -18,7 +18,7 @@ if (NOT BCMHOST)
     add_compile_definitions(X86HOST=1)
 else()
     add_compile_definitions(BCMHOST=1)
-    set(EXTRA_LIBS ${EXTRA_LIBS} -lstdc++fs)
+    set(APPEND EXTRA_LIBS -lstdc++fs)
 endif()
 
 find_package(Soci REQUIRED COMPONENTS sqlite3)
@@ -66,8 +66,6 @@ include_directories(${CURLPP_INCLUDE_DIR})
 # Required core libraries on various platforms
 list(APPEND EXTRA_LIBS GL Xxf86vm Xrandr Xinerama Xcursor Xi X11 pthread dl rt m)
 
-message(${EXTRA_LIBS})
-
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/include
         ${CMAKE_CURRENT_BINARY_DIR})
@@ -84,7 +82,7 @@ if (BUILD_EXAMPLE)
             VERSION ${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}.${PROJECT_VERSION_PATCH}
     )
 
-    target_link_libraries(hamchrono ${EXTRA_LIBS} ${SDL2_LIBRARY} ${SDL2IMAGE_LIBRARY} ${SDL2TTF_LIBRARY} ${CURLPP_LIBRARIES}
+    target_link_libraries(hamchrono ${SDL2_LIBRARY} ${SDL2IMAGE_LIBRARY} ${SDL2TTF_LIBRARY} ${CURLPP_LIBRARIES}
             ${SOCI_LIBRARY} ${SOCI_sqlite3_PLUGIN} ${EXTRA_LIBS} -lsqlite3)
 
     # Copy icons for example application

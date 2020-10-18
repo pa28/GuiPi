@@ -59,16 +59,6 @@ constexpr double DEGREES(double rad) {
     return rad * 180. / M_PI;
 }
 
-typedef std::array<std::string, 3> SatelliteEphemeris;
-
-inline std::ostream& operator<<(std::ostream& os, const SatelliteEphemeris &satelliteEphemeris) {
-    return os << satelliteEphemeris[0] << '\n'
-        << satelliteEphemeris[1] << '\n'
-        << satelliteEphemeris[2] << '\n';
-}
-
-typedef std::map<std::string, SatelliteEphemeris> SatelliteEphemerisMap;
-
 struct P13 {
     constexpr static double RE = 6378.137;
     constexpr static double FL = 1. / 298.257224;
@@ -368,7 +358,7 @@ public:
      * Initialize satellite from two line ephemeris data
      * @param ephemeris An array containing the name, line 1, and line 2
      */
-    explicit Satellite(const SatelliteEphemeris &ephemeris);
+    explicit Satellite(const std::array<std::string, 3> &ephemeris);
 
     ~Satellite() = default;
 

@@ -23,11 +23,11 @@
 #pragma once
 
 #include <array>
-#include <functional>
+#include <future>
 #include <mutex>
+#include <functional>
 #include <optional>
 #include <string_view>
-#include <thread>
 #include <tuple>
 #include <sdlgui/TimeBox.h>
 #include <guipi/p13.h>
@@ -71,81 +71,50 @@ namespace guipi {
         void roundPassTimes();
     };
 
-#if __cplusplus == 201703L
     constexpr static std::string_view URL_FETCH_NAME = "http://clearskyinstitute.com/ham/HamClock/esats.pl?tlename=";
     constexpr static std::string_view URL_FETCH_ALL = "http://clearskyinstitute.com/ham/HamClock/esats.pl?getall=";
     constexpr static std::string_view CT_AMATEUR = "https://www.celestrak.com/NORAD/elements/amateur.txt";
     constexpr static std::string_view CT_BRIGHT = "https://www.celestrak.com/NORAD/elements/visual.txt";
     constexpr static std::string_view CT_CUBESAT = "https://www.celestrak.com/NORAD/elements/cubesat.txt";
-#else
-        #define URL_FETCH_NAME "http://clearskyinstitute.com/ham/HamClock/esats.pl?tlename="
-#define URL_FETCH_ALL "http://clearskyinstitute.com/ham/HamClock/esats.pl?getall="
-#endif
 
-#if __cplusplus == 201703L
-        static constexpr std::array<std::string_view, 10> initialSatelliteList{
-                "ISS",
-                "AO-92", // AO-91
-                "FO-99", //"SO-50",
-                "IO-26",
-                "DIWATA-2",
-                "FOX-1B",
-                "AO-7",
-                "AO-27",
-                "AO-73",
-                "SO-50"
-        };
-#else
-        vector<char const *> initialSatelliteList{
-                "ISS",
-                "AO-92", // AO-91
-                "SO-50",
-                "IO-26",
-                "DIWATA-2",
-                "FOX-1B",
-                "AO-7",
-                "AO-27",
-                "AO-73"
-        };
-#endif
+    typedef std::array<std::string, 3> SatelliteEphemeris;
 
-    class SatelliteEphemerisFetch {
+    inline std::ostream& operator<<(std::ostream& os, const SatelliteEphemeris &satelliteEphemeris) {
+        return os << satelliteEphemeris[0] << '\n'
+                  << satelliteEphemeris[1] << '\n'
+                  << satelliteEphemeris[2] << '\n';
+    }
 
-    public:
+    typedef std::map<std::string, SatelliteEphemeris> SatelliteEphemerisMap;
 
-        static SatelliteEphemerisMap fetchAll(int source);
-
-        static SatelliteEphemeris fetchNamed(const std::string &name);
-
-        static SatelliteEphemerisMap curl_process(const std::string &url);
-    };
-
-    class EphmerisLibrary {
-    protected:
-        SatelliteEphemerisMap satelliteEphemerisMap;
-
-    public:
-        void loadEphemeris(int source) {
-            satelliteEphemerisMap = SatelliteEphemerisFetch::fetchAll(source);
-        }
-
-        auto begin() noexcept { return satelliteEphemerisMap.begin(); }
-
-        auto end() noexcept { return satelliteEphemerisMap.end(); }
-
-        [[nodiscard]] bool empty() const noexcept { return satelliteEphemerisMap.empty(); }
-
-        [[nodiscard]] bool haveEphemeris(const std::string &name) const {
-            return satelliteEphemerisMap.find(name) != satelliteEphemerisMap.cend();
-        }
-
-        [[nodiscard]] std::optional<Satellite> satellite(const std::string &name) const {
-            if (haveEphemeris(name)) {
-                return Satellite{satelliteEphemerisMap.at(name)};
-            }
-            return std::nullopt;
-        }
-    };
+//    class EphmerisLibrary {
+//    protected:
+//        friend class EphemerisModel;
+//        SatelliteEphemerisMap satelliteEphemerisMap;
+//        SatelliteEphemerisMap newSatelliteEphemerisMap;
+//
+//    public:
+//        void setNewEphemeris() {
+//            satelliteEphemerisMap = std::move(newSatelliteEphemerisMap);
+//        }
+//
+//        auto begin() noexcept { return satelliteEphemerisMap.begin(); }
+//
+//        auto end() noexcept { return satelliteEphemerisMap.end(); }
+//
+//        [[nodiscard]] bool empty() const noexcept { return satelliteEphemerisMap.empty(); }
+//
+//        [[nodiscard]] bool haveEphemeris(const std::string &name) const {
+//            return satelliteEphemerisMap.find(name) != satelliteEphemerisMap.cend();
+//        }
+//
+//        [[nodiscard]] std::optional<Satellite> satellite(const std::string &name) const {
+//            if (haveEphemeris(name)) {
+//                return Satellite{satelliteEphemerisMap.at(name)};
+//            }
+//            return std::nullopt;
+//        }
+//    };
 
     class EphemerisModel {
     public:
@@ -168,15 +137,17 @@ namespace guipi {
         bool mInitialize;
 
         Observer mObserver;
-        EphmerisLibrary mEphmerisLibrary{};
+        SatelliteEphemerisMap mSatelliteEphemerisMap{};
+        SatelliteEphemerisMap mNewSatelliteEphemerisMap{};
         std::map<std::string,Satellite> mSatellitesOfInterest{};
 
         PassMonitorData mSatellitePassData{};
         OrbitTrackingData mSatelliteOrbitData{};
         PassTrackingData mSatelliteTrackData{};
 
-        std::mutex mEphmerisLibraryMutex;
-        std::thread mEphemerisLibaryLoad;
+        std::mutex mEphemerisLibraryMutex;
+        std::future<bool> mEphemerisLibaryLoad{};
+        static bool asyncEphemerisFetch(EphemerisModel *self, int source);
 
         sdlgui::Timer<EphemerisModel> mPredictionTimer;
 
@@ -191,6 +162,8 @@ namespace guipi {
         EphemerisModel();
 
         void loadEphemerisLibrary(int source = 0);
+
+        void loadEphemerisLibraryWait(int source = 0);
 
         void setObserver(const Observer &observer);
 

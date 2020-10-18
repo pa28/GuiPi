@@ -200,7 +200,7 @@ getlong(const std::string &c, int i0, int i1) {
     return strtol(buf, nullptr, 10);
 }
 
-Satellite::Satellite(const SatelliteEphemeris &ephemeris)
+Satellite::Satellite(const std::array<std::string, 3> &ephemeris)
         : Satellite() {
     name = ephemeris[0];
     isMoon = name == "Moon";
