@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.0)
 
-project("GuiPi" VERSION 0.4.3.10)
+project("GuiPi" VERSION 0.4.4.11)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -18,7 +18,6 @@ if (NOT BCMHOST)
     add_compile_definitions(X86HOST=1)
 else()
     add_compile_definitions(BCMHOST=1)
-    set(APPEND EXTRA_LIBS -lstdc++fs)
 endif()
 
 find_package(Soci REQUIRED COMPONENTS sqlite3)
@@ -83,7 +82,7 @@ if (BUILD_EXAMPLE)
     )
 
     target_link_libraries(hamchrono ${SDL2_LIBRARY} ${SDL2IMAGE_LIBRARY} ${SDL2TTF_LIBRARY} ${CURLPP_LIBRARIES}
-            ${SOCI_LIBRARY} ${SOCI_sqlite3_PLUGIN} ${EXTRA_LIBS} -lsqlite3)
+            ${SOCI_LIBRARY} ${SOCI_sqlite3_PLUGIN} ${EXTRA_LIBS} -lsqlite3 -lstdc++fs)
 
     # Copy icons for example application
     file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/maps)

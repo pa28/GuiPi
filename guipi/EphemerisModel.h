@@ -135,6 +135,7 @@ namespace guipi {
     protected:
         size_t mDivider;
         bool mInitialize;
+        std::string mSatelliteNameList;
 
         Observer mObserver;
         SatelliteEphemerisMap mSatelliteEphemerisMap{};
@@ -157,6 +158,8 @@ namespace guipi {
         CelestialTrackingCallback mCelestialTrackingCallback{};
 
         std::optional<Satellite> getSatellite(const std::string &name);
+
+        int setSatellitesOfInterestImpl(const std::string &satelliteNameList);
 
     public:
         EphemerisModel();

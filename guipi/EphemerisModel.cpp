@@ -224,9 +224,8 @@ namespace guipi {
         return std::nullopt;
     }
 
-    int EphemerisModel::setSatellitesOfInterest(const std::string &satelliteNameList) {
-        std::lock_guard<std::mutex> lockGuard(mEphemerisLibraryMutex);
-
+    int EphemerisModel::setSatellitesOfInterestImpl(const std::string &satelliteNameList) {
+        mSatelliteNameList = satelliteNameList;
         mSatellitesOfInterest.clear();
 
         if (satelliteNameList.empty()) {
@@ -250,6 +249,11 @@ namespace guipi {
         return mSatellitesOfInterest.size();
     }
 
+    int EphemerisModel::setSatellitesOfInterest(const std::string &satelliteNameList) {
+        std::lock_guard<std::mutex> lockGuard(mEphemerisLibraryMutex);
+        return setSatellitesOfInterestImpl(satelliteNameList);
+    }
+
     EphemerisModel::EphemerisModel() : mPredictionTimer(*this, &EphemerisModel::timerCallback, 5000),
                                        mObserver() {
         mDivider = 0;
@@ -266,6 +270,7 @@ namespace guipi {
         if (mEphemerisLibaryLoad.valid()) {
             if (mEphemerisLibaryLoad.get()) {
                 mSatelliteEphemerisMap = std::move(mNewSatelliteEphemerisMap);
+                setSatellitesOfInterestImpl(mSatelliteNameList);
             }
         }
 
