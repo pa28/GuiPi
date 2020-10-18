@@ -433,3 +433,11 @@ void Button::renderBodyTexture(NVGcontext* &ctx, int &realw, int &realh)
 }
 
 NAMESPACE_END(sdlgui)
+    void Button::setEnabled(bool enabled) {
+        if (enabled && !mEnabled) {
+            _captionTex.dirty = true;
+            _iconTex.dirty = true;
+        }
+        Widget::setEnabled(enabled);
+    }
+

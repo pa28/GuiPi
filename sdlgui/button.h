@@ -80,9 +80,11 @@ public:
     void setButtonGroup(const std::vector<Button *> &buttonGroup) { mButtonGroup = buttonGroup; }
     const std::vector<Button *> &buttonGroup() const { return mButtonGroup; }
 
-    virtual Vector2i preferredSize(SDL_Renderer *ctx) const override;
-    virtual bool mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers) override;
-    virtual void draw(SDL_Renderer* renderer) override;
+    Vector2i preferredSize(SDL_Renderer *ctx) const override;
+    bool mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers) override;
+    void draw(SDL_Renderer* renderer) override;
+
+    void setEnabled(bool enabled) override;
     virtual void drawBody(SDL_Renderer* renderer);
     virtual void drawBodyTemp(SDL_Renderer* renderer);
     virtual Color bodyColor();
