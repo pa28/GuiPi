@@ -348,7 +348,8 @@ namespace guipi {
 
             auto qthButton = timeSet->add<Button>(mSettings->mCallSign)
                     ->withCallback([this](){
-                        add<SettingsDialog>( "Settings", Vector2i{40,40}, Vector2i{600,400});
+                        add<SettingsDialog>( find("qthButton", true), "Settings",
+                                             Vector2i{40,40}, Vector2i{600,400});
                         this->performLayout();
                     })
                     ->withIconFontSize(50)
@@ -462,9 +463,11 @@ namespace guipi {
                     ->withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 10, 12)
                     ->add<ToolButton>(ENTYPO_ICON_THREE_DOTS, Button::Flags::NormalButton)
                     ->withCallback([this](){
-                        add<ControlsDialog>( "Controls", Vector2i{40,40}, Vector2i{600,400});
+                        add<ControlsDialog>( find("switches_controls", true), "Controls",
+                                             Vector2i{40,40}, Vector2i{600,400});
                         this->performLayout();
-                    })->_and()
+                    })
+                    ->withId("switches_controls")->_and()
                     ->add<ToolButton>(ENTYPO_ICON_LIGHT_DOWN, Button::Flags::ToggleButton)->_and()
                     ->add<ToolButton>(ENTYPO_ICON_CAMERA, Button::Flags::NormalButton)
                             ->withCallback([&](){

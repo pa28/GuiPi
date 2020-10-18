@@ -12,9 +12,11 @@
 using namespace sdlgui;
 using namespace std;
 
-guipi::Dialog::Dialog(Widget *parent, const std::string &title, const Vector2i &position)
-        : Window(parent, title, position) {
-    if (buttonPanel())
+guipi::Dialog::Dialog(Widget *parent, Widget *trigger, const std::string &title, const Vector2i &position,
+                      bool buttonBar)
+        : Window(parent, title, position), mTrigger(trigger) {
+    mTrigger->setEnabled(false);
+    if (buttonPanel() && buttonBar)
         buttonPanel()->add<ToolButton>(ENTYPO_ICON_SQUARED_CROSS, Button::Flags::NormalButton)
                 ->withCallback([&]() {
                     dispose();
@@ -24,8 +26,10 @@ guipi::Dialog::Dialog(Widget *parent, const std::string &title, const Vector2i &
 }
 
 guipi::SettingsDialog::SettingsDialog(Widget *parent, const string &title, const Vector2i &position,
+guipi::SettingsDialog::SettingsDialog(Widget *parent, Widget *trigger, const std::string &title,
+                                      const Vector2i &position,
                                       const Vector2i &fixedSize)
-        : Dialog(parent, title, position) {
+        : Dialog(parent, trigger, "Settings Ver " XSTR(VERSION), position, true) {
     initialize();
 }
 

@@ -33,12 +33,18 @@ namespace guipi {
     using namespace sdlgui;
 
     class Dialog : public Window {
+    protected:
+        sdlgui::ref<Widget> mTrigger;
+
+        void disposeDialog();
+
     public:
         ~Dialog() override = default;
 
         Dialog() = delete;
 
-        Dialog(Widget *parent, const std::string &title, const Vector2i &position);
+        Dialog(Widget *parent, Widget *trigger, const std::string &title, const Vector2i &position,
+               bool buttonBar = true);
     };
 
     class SettingsDialog : public Dialog {
@@ -47,7 +53,7 @@ namespace guipi {
 
         SettingsDialog() = delete;
 
-        SettingsDialog(Widget *parent, const std::string &title, const Vector2i &position,
+        SettingsDialog(Widget *parent, Widget *trigger, const std::string &title, const Vector2i &position,
                        const Vector2i &fixedSize);
 
         void initialize();
@@ -68,8 +74,8 @@ namespace guipi {
 
         ControlsDialog() = delete;
 
-        ControlsDialog(Widget *parent, const std::string &title, const Vector2i &position,
-        const Vector2i &fixedSize);
+        ControlsDialog(Widget *parent, Widget *trigger, const std::string &title, const Vector2i &position,
+                       const Vector2i &fixedSize);
 
         void initialize();
 
