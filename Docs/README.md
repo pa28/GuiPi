@@ -1,5 +1,10 @@
 # HamChrono
 
+## See Also:
+1. My [Debian Repository](Repository.md) for information on installing.
+
+1. How to [auto start](AutoStart.md) on a Pi.
+
 This will give you a brief introduction to HamChrono and how to use it.
 The primary development target for the program is a Raspberry Pi with
 the official 7-inch touch screen running without the desktop software.
