@@ -400,8 +400,6 @@ namespace guipi {
             ImageRepository::ImageStoreIndex trackIdx{ 0, 1};
             mGeoChrono = mapArea->add<GeoChrono>()
                     ->withImageRepository(mIconRepository, satIdx, orbBgnd, trackIdx)
-                    ->withObserver(mObserver)
-                    ->withStationCoordinates(qthLatLon)
                     ->withBackgroundFile(string(map_path) + string(night_map.first) + string(EARTH_BIG_S) + string(night_map.second))
                     ->withForegroundFile(string(map_path) + string(day_map.first) + string(EARTH_BIG_S) + string(day_map.second))
                     ->withBackdropFile(string(background_path) + string(backdrop))
@@ -410,9 +408,6 @@ namespace guipi {
             mGeoChrono->setSatelliteDisplay(mSettings->mSatelliteTracking);
             mGeoChrono->setSunMoonDisplay(mSettings->mCelestialTracking);
             mGeoChrono->setAzmuthalDisplay(mSettings->mAzimuthalDisplay);
-
-            mGeoChrono->setGeoData(vector<GeoChrono::PositionData>{ {qthLatLon.y, qthLatLon.x, true, ImageRepository::ImageStoreIndex{ 0, 0}},
-                                                          {aQthLatLon.y, aQthLatLon.x, true, ImageRepository::ImageStoreIndex{0, 1} }});
 
             auto switches = topArea->add<Widget>()
                     ->withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 0, 0);

@@ -579,7 +579,40 @@ namespace guipi {
     GeoChrono::GeoChrono(Widget *parent) : Widget(parent), mTimer(*this, &GeoChrono::timerCallback, 60000),
                                            mDayMap{}, mNightMap{}, mTransparentMap{},
                                            mStationLocation{0} {
-        mPassTracker = add<PassTracker>(Vector2i(330,0), Vector2i(330,330));
+        mPassTracker = add<PassTracker>(Vector2i(EARTH_BIG_H, 0), Vector2i(EARTH_BIG_H, EARTH_BIG_H));
         mPassTracker->setVisible(false);
+        mStationLocation.y = deg2rad(mSettings->mLatitude);
+        mStationLocation.x = deg2rad(mSettings->mLongitude);
+        auto stationAntipode = antipode(mStationLocation);
+
+        setGeoData(vector<GeoChrono::PositionData>{
+            {mStationLocation.y, mStationLocation.x, true, ImageRepository::ImageStoreIndex{0, 0}},
+            {stationAntipode.y,  stationAntipode.x,  true, ImageRepository::ImageStoreIndex{0, 1}}});
+
+
+        mSettings->addCallback([this](guipi::Settings::Parameter parameter) {
+            bool location_changed = false;
+            switch (parameter) {
+                case Settings::Parameter::Latitude:
+                    mStationLocation.y = deg2rad(mSettings->mLatitude);
+                    location_changed = true;
+                    break;
+                case Settings::Parameter::Longitude:
+                    mStationLocation.x = deg2rad(mSettings->mLongitude);
+                    location_changed = true;
+                    break;
+                default:
+                    break;
+            }
+            if (location_changed) {
+                auto stationAntipode = antipode(mStationLocation);
+
+                setGeoData(vector<GeoChrono::PositionData>{
+                        {mStationLocation.y, mStationLocation.x, true, ImageRepository::ImageStoreIndex{0, 0}},
+                        {stationAntipode.y,  stationAntipode.x,  true, ImageRepository::ImageStoreIndex{0, 1}}});
+                mMapsDirty = true;
+                mTextureDirty = true;
+            }
+        });
     }
 }
