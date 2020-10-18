@@ -254,8 +254,8 @@ namespace guipi {
         return setSatellitesOfInterestImpl(satelliteNameList);
     }
 
-    EphemerisModel::EphemerisModel() : mPredictionTimer(*this, &EphemerisModel::timerCallback, 5000),
-                                       mObserver() {
+    EphemerisModel::EphemerisModel()
+        : mPredictionTimer(*this, &EphemerisModel::timerCallback, 5000) {
         mDivider = 0;
         mInitialize = true;
     }
@@ -282,6 +282,7 @@ namespace guipi {
 
         mDivider += interval;
 
+        Observer observer{mSettings->mLatitude, mSettings->mLongitude, mSettings->mElevation};
         DateTime now{true};
         if (mInitialize || mDivider >= 60000) {
             mSatellitePassData.clear();
@@ -289,7 +290,7 @@ namespace guipi {
                 sat.second.predict(now);
                 if (fmod(sat.second.period(), 1.0) < 0.9) {
                     Earthsat earthsat{};
-                    earthsat.FindNextPass(sat.second, mObserver);
+                    earthsat.FindNextPass(sat.second, observer);
                     earthsat.roundPassTimes();
                     if (earthsat.isEverUp())
                         mSatellitePassData.emplace_back(sat.first, earthsat.riseTime(), earthsat.setTime());
@@ -340,7 +341,7 @@ namespace guipi {
                 if (abs(now - sat.mPrediction) > 5. / 86400.)
                     sat.predict(now);
                 if ((std::get<1>(track) - now) * 86400. < 60. && (std::get<2>(track) - now) * 86400. > -60.) {
-                    auto[el, az, range, rate] = sat.topo(mObserver);
+                    auto[el, az, range, rate] = sat.topo(observer);
                     mSatelliteTrackData.emplace_back(std::get<0>(track), el, az, range, rate);
                 }
             }
@@ -354,7 +355,4 @@ namespace guipi {
         return interval;
     }
 
-    void EphemerisModel::setObserver(const Observer &observer) {
-        mObserver = observer;
-    }
 }

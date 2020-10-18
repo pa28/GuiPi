@@ -137,7 +137,8 @@ namespace guipi {
         bool mInitialize;
         std::string mSatelliteNameList;
 
-        Observer mObserver;
+        sdlgui::ref<Settings> mSettings;
+
         SatelliteEphemerisMap mSatelliteEphemerisMap{};
         SatelliteEphemerisMap mNewSatelliteEphemerisMap{};
         std::map<std::string,Satellite> mSatellitesOfInterest{};
@@ -164,11 +165,11 @@ namespace guipi {
     public:
         EphemerisModel();
 
+        void setSettings(sdlgui::ref<Settings> settings) { mSettings = std::move(settings); }
+
         void loadEphemerisLibrary(int source = 0);
 
         void loadEphemerisLibraryWait(int source = 0);
-
-        void setObserver(const Observer &observer);
 
         int setSatellitesOfInterest(const std::string &satelliteNameList = "");
 

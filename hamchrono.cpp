@@ -56,7 +56,7 @@ namespace guipi {
         ref<ImageRepository> mIconRepository;       //!< The image repository for icons
         ref<SatelliteDataDisplay> mSatelliteDataDisplay;        //!< Satellite data display widget
 
-        EphemerisModel mEphemerisModel{};       //!< The epheris model, includes the current library
+        EphemerisModel mEphemerisModel;       //!< The epheris model, includes the current library
 
     public:
         ~HamChrono() override = default;
@@ -243,6 +243,8 @@ namespace guipi {
             mSettings = new Settings{homedir + "/.hamchrono/settings.sqlite"};
             mSettings->mHomeDir = homedir;
             mSettings->initializeSettingsDatabase();
+
+            mEphemerisModel.setSettings(mSettings);
 
             if (!callsign.empty()) {
                 mSettings->mCallSign = callsign;
@@ -519,7 +521,6 @@ namespace guipi {
                 mGeoChrono->setCelestialTrackingData(data);
             });
 
-            mEphemerisModel.setObserver(mObserver);
             mEphemerisModel.loadEphemerisLibraryWait(mSettings->mEphemerisSource);
             mEphemerisModel.setSatellitesOfInterest(mSettings->mSatellitesOfInterest); //"ISS,AO-92,FO-99,IO-26,DIWATA-2,FOX-1B,AO-7,AO-27,AO-73,SO-50");
             mEphemerisModel.timerCallback(0);
