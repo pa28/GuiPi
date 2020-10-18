@@ -246,6 +246,10 @@ Window *Widget::window()
     }
 }
 
+Screen *Widget::screen() {
+    return dynamic_cast<Screen*>(window()->parent());
+}
+
 int Widget::getAbsoluteLeft() const
 {
   return mParent

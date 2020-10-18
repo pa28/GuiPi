@@ -31,8 +31,7 @@ void guipi::Dialog::disposeDialog() {
 }
 
 guipi::SettingsDialog::SettingsDialog(Widget *parent, Widget *trigger, const std::string &title,
-                                      const Vector2i &position,
-                                      const Vector2i &fixedSize)
+                                      const Vector2i &position)
         : Dialog(parent, trigger, "Settings Ver " XSTR(VERSION), position, true) {
     initialize();
 }
@@ -74,8 +73,6 @@ void guipi::SettingsDialog::initialize() {
                                     Alignment::Middle,
                                     0, 10);
 
-    panel00->add<Label>("Version ")->withFontSize(15);
-    panel00->add<Label>(XSTR(VERSION))->withFontSize(15);
     panel00->add<Label>("Callsign")->withFontSize(20);
     auto callsign = panel00->add<TextBox>();
     callsign->setAlignment(TextBox::Alignment::Left);
@@ -93,10 +90,38 @@ void guipi::SettingsDialog::initialize() {
     REAL_TEXT_BOX_SET(panel00,Latitude,Deg, 8, 4, "[-]?[0-9]{0,2}\\.?[0-9]{1,4}",90.)
     REAL_TEXT_BOX_SET(panel00,Longitude,Deg, 9, 4, "[-]?[0-9]{0,3}\\.?[0-9]{1,4}",180.)
     REAL_TEXT_BOX_SET(panel00,Elevation,m, 5, 1, "[+-]?[0-9]{0,4}\\.?[0-9]{0,1}",4000.)
+
+    auto panel1 = add<Widget>();
+    panel1->withLayout<GroupLayout>(10);
+
+    panel1->add<Label>("System Management")
+            ->withFontSize(20);
+    auto panel10 = panel1->add<Widget>()
+                    ->withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Middle, 5, 5);
+    mStopButton = panel10->add<ToolButton>(ENTYPO_ICON_LOGOUT, Button::Flags::ToggleButton);
+    mRebootButton = panel10->add<ToolButton>(ENTYPO_ICON_CW, Button::Flags::ToggleButton);
+    mUpgradeButton = panel10->add<ToolButton>(ENTYPO_ICON_INSTALL, Button::Flags::ToggleButton);
+    mHaltButton = panel10->add<ToolButton>(ENTYPO_ICON_STOP, Button::Flags::ToggleButton)
+            ->withChangeCallback([this](bool state) {
+                if (state) systemButtonCallback(mHaltButton, SystemCmd::HALT);
+            })
+            ->withTextColor(Color{255, 0, 0, 255});
 }
 
-guipi::ControlsDialog::ControlsDialog(Widget *parent, const string &title, const Vector2i &position,
-                                      const Vector2i &fixedSize) : Dialog(parent, title, position) {
+void
+guipi::SettingsDialog::systemButtonCallback(sdlgui::ref<ToolButton> &button, SystemCmd cmd) {
+    switch (cmd) {
+        case SystemCmd::HALT:
+            button->screen()->add<ResponseDialog>(button.get(), Question, "Halt?",
+                          "Shut down the system?", "Yes", "No");
+        default:
+            break;
+    }
+}
+
+guipi::ControlsDialog::ControlsDialog(Widget *parent, Widget *trigger, const std::string &title,
+                                      const Vector2i &position)
+          : Dialog(parent, trigger, title, position, true) {
     initialize();
 }
 
@@ -123,4 +148,42 @@ void guipi::ControlsDialog::ephemerisSelectButton(sdlgui::ref<Widget> &parent, s
                 mSettings->setEphemerisSource(value);
             })
             ->withFontSize(15);
+}
+
+guipi::ResponseDialog::ResponseDialog(Widget *parent, Widget *trigger, ResponseType responseType,
+                                      const std::string &title, const string &message, const string &buttonText,
+                                      const string &altButtonText)
+    : Dialog(parent, trigger, title, Vector2i::Zero(), false) {
+    setLayout(new BoxLayout(Orientation::Vertical,
+                            Alignment::Middle, 10, 10));
+    auto panel1 = add<Widget>()
+            ->withLayout<BoxLayout>(Orientation::Horizontal,
+                                    Alignment::Middle, 10, 15);
+    int icon = 0;
+    switch (responseType)
+    {
+        case Information: icon = ENTYPO_ICON_CIRCLED_INFO; break;
+        case Question: icon = ENTYPO_ICON_CIRCLED_HELP; break;
+        case Warning: icon = ENTYPO_ICON_WARNING; break;
+    }
+
+    auto iconLabel = panel1->add<Label>(std::string(utf8(icon).data()), "icons")
+            ->withIconFontSize(50)
+            ->withFontSize(50);
+
+    panel1->add<Label>(message);
+
+    auto panel2 = add<Widget>()
+            ->withLayout<BoxLayout>(Orientation::Horizontal,
+                                    Alignment::Middle, 0, 15);
+
+    if (!altButtonText.empty())
+    {
+        panel2->add<Button>(altButtonText, ENTYPO_ICON_CIRCLED_CROSS)
+                ->withCallback([&] { if (mCallback) mCallback(1); disposeDialog(); });
+    }
+
+    panel2->add<Button>(buttonText, ENTYPO_ICON_CHECK)
+            ->withCallback([&] { if (mCallback) mCallback(0); disposeDialog(); });
+    center();
 }

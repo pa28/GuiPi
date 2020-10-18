@@ -32,6 +32,12 @@
 namespace guipi {
     using namespace sdlgui;
 
+    enum ResponseType {
+        Information,
+        Question,
+        Warning,
+    };
+
     class Dialog : public Window {
     protected:
         sdlgui::ref<Widget> mTrigger;
@@ -53,8 +59,7 @@ namespace guipi {
 
         SettingsDialog() = delete;
 
-        SettingsDialog(Widget *parent, Widget *trigger, const std::string &title, const Vector2i &position,
-                       const Vector2i &fixedSize);
+        SettingsDialog(Widget *parent, Widget *trigger, const std::string &title, const Vector2i &position);
 
         void initialize();
 
@@ -66,6 +71,17 @@ namespace guipi {
             strm << std::fixed << std::setprecision( precision ) << value;
             return strm.str();
         }
+
+        sdlgui::ref<ToolButton> mStopButton;
+        sdlgui::ref<ToolButton> mRebootButton;
+        sdlgui::ref<ToolButton> mUpgradeButton;
+        sdlgui::ref<ToolButton> mHaltButton;
+
+        enum SystemCmd {
+            HALT,
+        };
+
+        void systemButtonCallback(sdlgui::ref<ToolButton> &button, SystemCmd cmd);
     };
 
     class ControlsDialog : public Dialog {
@@ -74,14 +90,27 @@ namespace guipi {
 
         ControlsDialog() = delete;
 
-        ControlsDialog(Widget *parent, Widget *trigger, const std::string &title, const Vector2i &position,
-                       const Vector2i &fixedSize);
+        ControlsDialog(Widget *parent, Widget *trigger, const std::string &title, const Vector2i &position);
 
         void initialize();
 
     protected:
 
         void ephemerisSelectButton(sdlgui::ref<Widget> &parent, std::string_view label, int value);
+    };
+
+    class ResponseDialog : public Dialog {
+    public:
+
+        ResponseDialog() = delete;
+
+        ResponseDialog(Widget *parent, Widget *trigger, ResponseType responseType,
+                       const std::string &title, const std::string &message, const std::string &buttonText,
+                       const std::string &altButtonText);
+
+    protected:
+        std::function<void(int)> mCallback;
+
     };
 }
 

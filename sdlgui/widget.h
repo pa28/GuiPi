@@ -19,6 +19,7 @@
 NAMESPACE_BEGIN(sdlgui)
 
 class Window;
+class Screen;
 class Label;
 class ToolButton;
 class MessageDialog;
@@ -192,6 +193,8 @@ public:
 
     /// Walk up the hierarchy and return the parent window
     Window *window();
+
+    Screen *screen();
 
     /// Associate this widget with an ID value (optional)
     void setId(const std::string &id) { mId = id; }
