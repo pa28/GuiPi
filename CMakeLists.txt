@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.10.0)
 
-project("GuiPi" VERSION 0.4.4.11)
+project("GuiPi" VERSION 0.4.5.12)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

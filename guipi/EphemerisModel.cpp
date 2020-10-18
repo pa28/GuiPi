@@ -260,6 +260,21 @@ namespace guipi {
         mInitialize = true;
     }
 
+    void EphemerisModel::setSettings(sdlgui::ref<Settings> settings) {
+        mSettings = std::move(settings);
+        mSettings->addCallback([this](guipi::Settings::Parameter parameter) {
+            switch (parameter) {
+                case Settings::Parameter::Latitude:
+                case Settings::Parameter::Longitude:
+                case Settings::Parameter::Elevation:
+                    mDivider = 0;
+                    mInitialize = true;
+                default:
+                    break;
+            }
+        });
+    }
+
     Uint32 EphemerisModel::timerCallback(Uint32 interval) {
         // If model is locked return.
         if (!mEphemerisLibraryMutex.try_lock()) {

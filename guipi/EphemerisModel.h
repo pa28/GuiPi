@@ -137,7 +137,7 @@ namespace guipi {
     public:
         EphemerisModel();
 
-        void setSettings(sdlgui::ref<Settings> settings) { mSettings = std::move(settings); }
+        void setSettings(sdlgui::ref<Settings> settings);
 
         void loadEphemerisLibrary(int source = 0);
 
