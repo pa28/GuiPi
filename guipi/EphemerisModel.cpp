@@ -1,5 +1,5 @@
 //
-// Created by richard on 2020-10-11.
+// Created baggressive on 2020-10-11.
 //
 
 #include <vector>
@@ -269,9 +269,7 @@ namespace guipi {
                 case Settings::Parameter::Elevation:
                     mDivider = 0;
                     mInitialize = true;
-                    mSatelliteTrackData.clear();
-                    if (mPassTrackingCallback)
-                        mPassTrackingCallback(PassTrackingData{mSatelliteTrackData});
+                    timerCallback(0);
                 default:
                     break;
             }
