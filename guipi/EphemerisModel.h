@@ -87,35 +87,6 @@ namespace guipi {
 
     typedef std::map<std::string, SatelliteEphemeris> SatelliteEphemerisMap;
 
-//    class EphmerisLibrary {
-//    protected:
-//        friend class EphemerisModel;
-//        SatelliteEphemerisMap satelliteEphemerisMap;
-//        SatelliteEphemerisMap newSatelliteEphemerisMap;
-//
-//    public:
-//        void setNewEphemeris() {
-//            satelliteEphemerisMap = std::move(newSatelliteEphemerisMap);
-//        }
-//
-//        auto begin() noexcept { return satelliteEphemerisMap.begin(); }
-//
-//        auto end() noexcept { return satelliteEphemerisMap.end(); }
-//
-//        [[nodiscard]] bool empty() const noexcept { return satelliteEphemerisMap.empty(); }
-//
-//        [[nodiscard]] bool haveEphemeris(const std::string &name) const {
-//            return satelliteEphemerisMap.find(name) != satelliteEphemerisMap.cend();
-//        }
-//
-//        [[nodiscard]] std::optional<Satellite> satellite(const std::string &name) const {
-//            if (haveEphemeris(name)) {
-//                return Satellite{satelliteEphemerisMap.at(name)};
-//            }
-//            return std::nullopt;
-//        }
-//    };
-
     class EphemerisModel {
     public:
         typedef std::tuple<std::string, DateTime, DateTime> PassData;
