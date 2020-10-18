@@ -19,13 +19,17 @@ guipi::Dialog::Dialog(Widget *parent, Widget *trigger, const std::string &title,
     if (buttonPanel() && buttonBar)
         buttonPanel()->add<ToolButton>(ENTYPO_ICON_SQUARED_CROSS, Button::Flags::NormalButton)
                 ->withCallback([&]() {
-                    dispose();
+                    disposeDialog();
                 });
     setModal(true);
     dynamic_cast<Screen *>(window()->parent())->moveWindowToFront(window());
 }
 
-guipi::SettingsDialog::SettingsDialog(Widget *parent, const string &title, const Vector2i &position,
+void guipi::Dialog::disposeDialog() {
+    mTrigger->setEnabled(true);
+    dispose();
+}
+
 guipi::SettingsDialog::SettingsDialog(Widget *parent, Widget *trigger, const std::string &title,
                                       const Vector2i &position,
                                       const Vector2i &fixedSize)
