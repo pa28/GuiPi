@@ -229,7 +229,7 @@ namespace guipi {
          */
         HamChrono(SDL_Window *pwindow, int rwidth, int rheight, const string &homedir, const string &callsign,
                   const Observer &observer)
-                : GuiPiApplication(pwindow, rwidth, rheight, "HamChrono"),
+                : GuiPiApplication(pwindow, rwidth, rheight, "HamChrono " XSTR(VERSION)),
                   mTimer{*this, &HamChrono::timerCallback, 3600000} {
             mSettings = new Settings{homedir + "/.hamchrono/settings.sqlite"};
             mSettings->mHomeDir = homedir;

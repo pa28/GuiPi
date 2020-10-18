@@ -66,6 +66,8 @@ void guipi::SettingsDialog::initialize() {
                                     Alignment::Middle,
                                     0, 10);
 
+    panel00->add<Label>("Version ")->withFontSize(15);
+    panel00->add<Label>(XSTR(VERSION))->withFontSize(15);
     panel00->add<Label>("Callsign")->withFontSize(20);
     auto callsign = panel00->add<TextBox>();
     callsign->setAlignment(TextBox::Alignment::Left);
