@@ -72,15 +72,6 @@ namespace guipi {
         static constexpr string_view backdrop = "NASA_Nebula.png";  //! The current background.
 
         /**
-         * Compute an antipode
-         * @param location y -> latitude, x-> longitude in radians
-         * @return the antipode
-         */
-        static Vector2f antipode(const Vector2f &location) {
-            return Vector2f{(location.x < 0 ? 1.f : -1.f) * ((float) M_PI - abs(location.x)), -location.y};
-        }
-
-        /**
          * @struct IconRepositoryData
          * Structure to hold initialization data for icons
          */
