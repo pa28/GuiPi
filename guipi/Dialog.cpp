@@ -5,6 +5,7 @@
 #include "Dialog.h"
 #include <sdlgui/screen.h>
 #include <sdlgui/label.h>
+#include <sdlgui/slider.h>
 #include <sdlgui/textbox.h>
 #include <sdlgui/toolbutton.h>
 #include <sdlgui/entypo.h>
@@ -184,6 +185,26 @@ void guipi::ControlsDialog::initialize() {
     ephemerisSelectButton(panel1, "CelesTrack - Amateur Radio", 1);
     ephemerisSelectButton(panel1, "CelesTrack - Brightest", 2);
     ephemerisSelectButton(panel1, "CelesTrack - Cubesats", 3);
+
+    auto elevationToString = [](float elevation) {
+        return string("Min Elev. ") + to_string(roundToInt(elevation, 0.2f));
+    };
+
+    auto panel2 = add<Widget>()->withLayout<GroupLayout>(8);
+    panel2->add<Label>("Satellite Pass Filters")->withFontSize(20);
+    panel2->add<Button>("Select Satellites", ENTYPO_ICON_ROCKET);
+    panel2->add<TextBox>(elevationToString(mSettings->getPassMinElevation()),"Deg")
+            ->withAlignment(TextBox::Alignment::Left)
+            ->withId("min-pass-elevation");
+    panel2->add<Slider>(mSettings->getPassMinElevation() / 90.f,
+    [&](Slider *s, float v){
+        if (auto textBox = dynamic_cast<TextBox*>(s->parent()->find("min-pass-elevation")); textBox != nullptr) {
+            textBox->setValue(elevationToString(v * 90.f));
+        }
+    },
+    [&](float v){
+        mSettings->setPassMinElevation(roundToFloat(v * 90.f, 0.2f));
+    });
 }
 
 void guipi::ControlsDialog::ephemerisSelectButton(sdlgui::ref<Widget> &parent, std::string_view label, int value) {
