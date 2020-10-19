@@ -3,11 +3,14 @@
 //
 
 #include "Dialog.h"
+#include <guipi/hamchrono.h>
+#include <sdlgui/checkbox.h>
 #include <sdlgui/screen.h>
 #include <sdlgui/label.h>
 #include <sdlgui/slider.h>
 #include <sdlgui/textbox.h>
 #include <sdlgui/toolbutton.h>
+#include <sdlgui/tabwidget.h>
 #include <sdlgui/entypo.h>
 #include <guipi/GuiPiApplication.h>
 
@@ -94,7 +97,7 @@ void guipi::SettingsDialog::initialize() {
         return true;
     });
 
-    REAL_TEXT_BOX_SET(panel00,Latitude,Deg, 8, 4, "[-]?[0-9]{0,2}\\.?[0-9]{1,4}",90.)
+    REAL_TEXT_BOX_SET(panel00, Latitude, Deg, 8, 4, "[-]?[0-9]{0,2}\\.?[0-9]{1,4}", 90.)
     REAL_TEXT_BOX_SET(panel00, Longitude, Deg, 9, 4, "[-]?[0-9]{0,3}\\.?[0-9]{1,4}", 180.)
     REAL_TEXT_BOX_SET(panel00, Elevation, m, 5, 1, "[+-]?[0-9]{0,4}\\.?[0-9]{0,1}", 4000.)
 
@@ -131,15 +134,15 @@ guipi::SettingsDialog::systemButtonCallback(sdlgui::ref<ToolButton> &button, Sys
         case SystemCmd::STOP:
             screen()->add<ResponseDialog>(button.get(), Question, "Exit?",
                                           "Exit the program?", "Yes", "No")
-                  ->withCallback([&](ResponseButton button){
-                      if (button == ResponseButton::StandardButton)
-                          dynamic_cast<guipi::GuiPiApplication*>(screen())->exitApplication();
-                  });
+                    ->withCallback([&](ResponseButton button) {
+                        if (button == ResponseButton::StandardButton)
+                            dynamic_cast<guipi::GuiPiApplication *>(screen())->exitApplication();
+                    });
             break;
         case SystemCmd::REBOOT:
             screen()->add<ResponseDialog>(button.get(), Question, "Reboot?",
                                           "Reboot the system?", "Yes", "No")
-                    ->withCallback([&](ResponseButton button){
+                    ->withCallback([&](ResponseButton button) {
                         if (button == ResponseButton::StandardButton)
                             auto res = system("sudo reboot");
                     });
@@ -147,7 +150,7 @@ guipi::SettingsDialog::systemButtonCallback(sdlgui::ref<ToolButton> &button, Sys
         case SystemCmd::UPGRADE:
             screen()->add<ResponseDialog>(button.get(), Question, "Upgrade?",
                                           "Upgrade system software?", "Yes", "No")
-                    ->withCallback([&](ResponseButton button){
+                    ->withCallback([&](ResponseButton button) {
                         if (button == ResponseButton::StandardButton)
                             auto res = system("sudo bash -c 'apt update && apt upgrade --assume-yes'");
                     });
@@ -155,7 +158,7 @@ guipi::SettingsDialog::systemButtonCallback(sdlgui::ref<ToolButton> &button, Sys
         case SystemCmd::HALT:
             screen()->add<ResponseDialog>(button.get(), Question, "Halt?",
                                           "Shut down the system?", "Yes", "No")
-                    ->withCallback([&](ResponseButton button){
+                    ->withCallback([&](ResponseButton button) {
                         if (button == ResponseButton::StandardButton)
                             auto res = system("sudo halt");
                     });
@@ -167,7 +170,7 @@ guipi::SettingsDialog::systemButtonCallback(sdlgui::ref<ToolButton> &button, Sys
 
 guipi::ControlsDialog::ControlsDialog(Widget *parent, Widget *trigger, const std::string &title,
                                       const Vector2i &position)
-          : Dialog(parent, trigger, title, position, true) {
+        : Dialog(parent, trigger, title, position, true) {
     initialize();
     dialogPerformLayout();
 }
@@ -192,26 +195,30 @@ void guipi::ControlsDialog::initialize() {
 
     auto panel2 = add<Widget>()->withLayout<GroupLayout>(8);
     panel2->add<Label>("Satellite Pass Filters")->withFontSize(20);
-    panel2->add<Button>("Select Satellites", ENTYPO_ICON_ROCKET);
-    panel2->add<TextBox>(elevationToString(mSettings->getPassMinElevation()),"Deg")
+    mButton = panel2->add<Button>("Select Satellites", ENTYPO_ICON_ROCKET)
+            ->withCallback([&]() {
+                screen()->add<SatelliteSelector>(mButton.get(), "Satellites of Interest");
+            })->withId("select-satellites");
+    panel2->add<TextBox>(elevationToString(mSettings->getPassMinElevation()), "Deg")
             ->withAlignment(TextBox::Alignment::Left)
             ->withId("min-pass-elevation");
     panel2->add<Slider>(mSettings->getPassMinElevation() / 90.f,
-    [&](Slider *s, float v){
-        if (auto textBox = dynamic_cast<TextBox*>(s->parent()->find("min-pass-elevation")); textBox != nullptr) {
-            textBox->setValue(elevationToString(v * 90.f));
-        }
-    },
-    [&](float v){
-        mSettings->setPassMinElevation(roundToFloat(v * 90.f, 0.2f));
-    });
+                        [&](Slider *s, float v) {
+                            if (auto textBox = dynamic_cast<TextBox *>(s->parent()->find("min-pass-elevation"));
+                                    textBox != nullptr) {
+                                textBox->setValue(elevationToString(v * 90.f));
+                            }
+                        },
+                        [&](float v) {
+                            mSettings->setPassMinElevation(roundToFloat(v * 90.f, 0.2f));
+                        });
 }
 
 void guipi::ControlsDialog::ephemerisSelectButton(sdlgui::ref<Widget> &parent, std::string_view label, int value) {
     parent->add<Button>(std::string{label})
             ->withFlags(Button::RadioButton)
             ->withPushed(mSettings->mEphemerisSource == value)
-            ->withCallback([this,value](){
+            ->withCallback([this, value]() {
                 mSettings->setEphemerisSource(value);
             })
             ->withFontSize(15);
@@ -265,4 +272,39 @@ guipi::ResponseDialog::ResponseDialog(Widget *parent, Widget *trigger, ResponseT
 void guipi::Dialog::dialogPerformLayout() {
     requestFocus();
     screen()->performLayout();
+}
+
+guipi::SatelliteSelector::SatelliteSelector(Widget *parent, Widget *trigger, const std::string title)
+        : Dialog(parent, trigger, title, Vector2i::Zero()) {
+//    setFixedSize(Vector2i{DISPLAY_WIDTH - 20,DISPLAY_HEIGHT - 30});
+//    auto base = add<Widget>()
+    withFixedHeight(DISPLAY_HEIGHT - 35);
+    withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 10, 10);
+    auto tab = add<TabWidget>();
+    tab->withPosition(Vector2i{10, 40});
+
+    auto app = dynamic_cast<HamChrono *>(screen());
+    auto satMap = app->mEphemerisModel.getSatelliteEphemerisMap();
+    auto passData = app->mEphemerisModel.getPassMonitorData();
+
+    DateTime now{true};
+    auto sat = satMap.begin();
+    while (sat != satMap.end()) {
+        Widget *layer = tab->createTab(sat->first + "...", 0);
+        layer->withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Minimum, 10, 10);
+
+        for (size_t panel0 = 0; panel0 < 4 && sat != satMap.end(); ++panel0) {
+            auto p = layer->add<Widget>()->withLayout<GridLayout>(Orientation::Horizontal, 1, Alignment::Minimum, 0, 5);
+            auto grid = dynamic_cast<GridLayout *>(p->layout().get());
+            grid->setSpacing(0, 10);
+            grid->setSpacing(1, 5);
+            for (size_t panel1 = 0; panel1 < 15 && sat != satMap.end(); ++panel1, ++sat) {
+                p->add<CheckBox>(sat->first)->withFontSize(15);
+            }
+        }
+    }
+
+    tab->setActiveTab(0);
+    setFixedHeight(DISPLAY_HEIGHT);
+    dialogPerformLayout();
 }

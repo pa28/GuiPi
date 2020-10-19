@@ -105,8 +105,17 @@ namespace guipi {
         void initialize();
 
     protected:
+        sdlgui::ref<Button> mButton;
 
         void ephemerisSelectButton(sdlgui::ref<Widget> &parent, std::string_view label, int value);
+    };
+
+    class SatelliteSelector : public Dialog {
+    public:
+
+        SatelliteSelector() = delete;
+
+        SatelliteSelector(Widget *parent, Widget *trigger, const std::string title);
     };
 
     class ResponseDialog : public Dialog {
