@@ -270,6 +270,7 @@ namespace guipi {
                 case Settings::Parameter::Latitude:
                 case Settings::Parameter::Longitude:
                 case Settings::Parameter::Elevation:
+                case Settings::Parameter::PassMinElevation:
                     mDivider = 0;
                     mInitialize = true;
                     timerCallback(0);
@@ -311,8 +312,9 @@ namespace guipi {
                     Earthsat earthsat{};
                     earthsat.FindNextPass(sat.second, observer);
                     earthsat.roundPassTimes();
-                    if (earthsat.isEverUp())
+                    if (earthsat.isEverUp() && earthsat.maxElevation() >= mSettings->getPassMinElevation()) {
                         mSatellitePassData.emplace_back(sat.first, earthsat.riseTime(), earthsat.setTime());
+                    }
                 }
             }
 
