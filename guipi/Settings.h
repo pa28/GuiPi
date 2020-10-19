@@ -39,7 +39,8 @@
 #define SETTING_FLOAT_VALUES  \
     X(Latitude, float, 0.f)      \
     X(Longitude, float, 0.f)     \
-    X(Elevation, float, 0.f)
+    X(Elevation, float, 0.f)     \
+    X(PassMinElevation, float, 0.f)
 
 #define SETTING_INT_VALUES   \
     X(SideBarActiveTab, int, 0)  \
