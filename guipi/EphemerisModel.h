@@ -156,6 +156,10 @@ namespace guipi {
         void setOrbitTrackingCallback(OrbitTrackingCallback callback) { mOrbitTrackingCallback = move(callback); }
 
         void setCelestialTrackingCallback(CelestialTrackingCallback callback) { mCelestialTrackingCallback = move(callback); }
+
+        [[nodiscard]] PassMonitorData getPassMonitorData() const { return mSatellitePassData; }
+
+        [[nodiscard]] SatelliteEphemerisMap getSatelliteEphemerisMap() const { return mSatelliteEphemerisMap; }
     };
 }
 
