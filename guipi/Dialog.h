@@ -38,6 +38,11 @@ namespace guipi {
         Warning,
     };
 
+    enum ResponseButton {
+        StandardButton,
+        AlternateButton,
+    };
+
     class Dialog : public Window {
     protected:
         sdlgui::ref<Widget> mTrigger;
@@ -45,6 +50,7 @@ namespace guipi {
         void disposeDialog();
 
         void dialogPerformLayout();
+
     public:
         ~Dialog() override = default;
 
@@ -79,6 +85,9 @@ namespace guipi {
         sdlgui::ref<ToolButton> mHaltButton;
 
         enum SystemCmd {
+            STOP,
+            REBOOT,
+            UPGRADE,
             HALT,
         };
 
@@ -109,8 +118,13 @@ namespace guipi {
                        const std::string &title, const std::string &message, const std::string &buttonText,
                        const std::string &altButtonText);
 
+        sdlgui::ref<ResponseDialog> withCallback(std::function<void(ResponseButton)> callback) {
+            mCallback = std::move(callback);
+            return sdlgui::ref<ResponseDialog>{this};
+        }
+
     protected:
-        std::function<void(int)> mCallback;
+        std::function<void(ResponseButton)> mCallback{};
 
     };
 }
