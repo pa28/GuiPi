@@ -9,6 +9,7 @@
 #include <curlpp/Easy.hpp>
 #include <curlpp/Options.hpp>
 #include <curlpp/Exception.hpp>
+#include <algorithm>
 #include "EphemerisModel.h"
 
 namespace guipi {
@@ -42,6 +43,7 @@ namespace guipi {
         DateTime t_now{};
         Satellite localSat{satellite};
         Observer localObs{observer};
+        max_elevation = 0.;
 
         t_now.userNow();
 
@@ -59,6 +61,7 @@ namespace guipi {
             // find circumstances at time t_srch
             localSat.predict(t_srch);
             auto[tel, taz, trange, trate] = localSat.topo(observer);
+            max_elevation = std::max(max_elevation, tel);
 
             // check for rising or setting events
             if (tel >= SAT_MIN_EL) {

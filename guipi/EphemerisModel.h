@@ -46,7 +46,7 @@ namespace guipi {
     private:
         bool set_ok = false, rise_ok = false, ever_up = false, ever_down = false;
         DateTime set_time, rise_time;
-        double set_az, rise_az;
+        double set_az, rise_az, max_elevation;
 
     public:
         constexpr static double SAT_MIN_EL = 1.0;   // minimum sat elevation for event
@@ -68,6 +68,8 @@ namespace guipi {
         operator bool() const { return rise_ok && set_ok && ever_down && ever_up; }
 
         bool isEverUp() const { return ever_up; }
+
+        double maxElevation() const { return max_elevation; }
 
         void roundPassTimes();
     };
