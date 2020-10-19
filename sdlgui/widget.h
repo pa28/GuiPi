@@ -344,7 +344,7 @@ protected:
     bool mFocused, mMouseFocus;
     std::string mTooltip;
     int mFontSize;
-    int mIconFontSize;
+    int mIconFontSize{};
     Cursor mCursor;
 };
 
