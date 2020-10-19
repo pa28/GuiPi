@@ -50,6 +50,7 @@ namespace guipi {
             void draw(SDL_Renderer* renderer) override;
 
         private:
+            bool mActive{false};
             ref<Widget> mIcon;
             ref<Label> mName;
             ref<Label> mInfo;

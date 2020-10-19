@@ -6,6 +6,7 @@
 #include <sstream>
 #include <iomanip>
 #include <sdlgui/layout.h>
+#include <sdlgui/screen.h>
 
 using namespace sdlgui;
 
@@ -32,6 +33,7 @@ void guipi::SatelliteDataDisplay::updateSatelliteData(const EphemerisModel::Pass
         auto sat = dynamic_cast<Satellite*>(child);
         sat->mName->setCaption("");
         sat->mInfo->setCaption("");
+        sat->mActive = false;
     }
     for (auto &pass : passMonitorData) {
         if (child != mChildren.end()) {
@@ -41,6 +43,8 @@ void guipi::SatelliteDataDisplay::updateSatelliteData(const EphemerisModel::Pass
         } else
             break;
     }
+
+    performLayout(screen()->renderer());
 }
 
 Uint32 guipi::SatelliteDataDisplay::timerCallback(Uint32 interval) {
@@ -77,21 +81,25 @@ guipi::SatelliteDataDisplay::Satellite::Satellite(Widget *parent, const ref<Imag
 
 void guipi::SatelliteDataDisplay::Satellite::update(const EphemerisModel::PassData &passData) {
     mName->setCaption(std::get<0>(passData));
+    mActive = true;
     riseTime = std::get<1>(passData);
     setTime = std::get<2>(passData);
     update();
 }
 
 void guipi::SatelliteDataDisplay::Satellite::update() {
-    DateTime now{true};
-    stringstream info;
-    auto dt = riseTime - now;
-    if (dt < 0)
-        info << timeToString(setTime, now);
-    else
-        info << timeToString(riseTime, now) << " - "
-             << timeToString(setTime, riseTime);
-    mInfo->setCaption(info.str());
+    if (mActive) {
+        DateTime now{true};
+        stringstream info;
+        auto dt = riseTime - now;
+        if (dt < 0)
+            info << timeToString(setTime, now);
+        else
+            info << timeToString(riseTime, now) << " - "
+                 << timeToString(setTime, riseTime);
+        mInfo->setCaption(info.str());
+    } else
+        mInfo->setCaption("");
 }
 
 string guipi::SatelliteDataDisplay::Satellite::timeToString(const DateTime &time, const DateTime &now) {
