@@ -75,9 +75,9 @@ namespace sdlgui {
 #endif
 
     template<typename T>
-    int roundToInt(T value) {
+    int roundToInt(T value, T multiplier = 1.) {
         static_assert(std::is_floating_point<T>::value, "value must be floating point.");
-        return (int) round(value);
+        return (int) (round(value*multiplier)/multiplier);
     }
 
     template<typename T>
