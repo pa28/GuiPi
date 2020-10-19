@@ -89,6 +89,10 @@ namespace guipi {
             }
         }
 
+        void exitApplication() {
+            mRunEventLoop = false;
+        }
+
         void eventLoop() {
             try {
                 SDL_Event e;

@@ -8,6 +8,7 @@
 #include <sdlgui/textbox.h>
 #include <sdlgui/toolbutton.h>
 #include <sdlgui/entypo.h>
+#include <guipi/GuiPiApplication.h>
 
 using namespace sdlgui;
 using namespace std;
@@ -115,6 +116,7 @@ void guipi::SettingsDialog::initialize() {
 void
 guipi::SettingsDialog::systemButtonCallback(sdlgui::ref<ToolButton> &button, SystemCmd cmd) {
     switch (cmd) {
+                          dynamic_cast<guipi::GuiPiApplication*>(screen())->exitApplication();
         case SystemCmd::HALT:
             button->screen()->add<ResponseDialog>(button.get(), Question, "Halt?",
                           "Shut down the system?", "Yes", "No");
