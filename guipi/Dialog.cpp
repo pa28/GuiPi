@@ -137,15 +137,27 @@ guipi::SettingsDialog::systemButtonCallback(sdlgui::ref<ToolButton> &button, Sys
             break;
         case SystemCmd::REBOOT:
             screen()->add<ResponseDialog>(button.get(), Question, "Reboot?",
-                                          "Reboot the system?", "Yes", "No");
+                                          "Reboot the system?", "Yes", "No")
+                    ->withCallback([&](ResponseButton button){
+                        if (button == ResponseButton::StandardButton)
+                            auto res = system("sudo reboot");
+                    });
             break;
         case SystemCmd::UPGRADE:
             screen()->add<ResponseDialog>(button.get(), Question, "Upgrade?",
-                                          "Upgrade system software?", "Yes", "No");
+                                          "Upgrade system software?", "Yes", "No")
+                    ->withCallback([&](ResponseButton button){
+                        if (button == ResponseButton::StandardButton)
+                            auto res = system("sudo bash -c 'apt update && apt upgrade --assume-yes'");
+                    });
             break;
         case SystemCmd::HALT:
             screen()->add<ResponseDialog>(button.get(), Question, "Halt?",
-                                          "Shut down the system?", "Yes", "No");
+                                          "Shut down the system?", "Yes", "No")
+                    ->withCallback([&](ResponseButton button){
+                        if (button == ResponseButton::StandardButton)
+                            auto res = system("sudo halt");
+                    });
             break;
         default:
             break;
