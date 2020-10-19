@@ -15,7 +15,8 @@ using namespace std;
 guipi::Dialog::Dialog(Widget *parent, Widget *trigger, const std::string &title, const Vector2i &position,
                       bool buttonBar)
         : Window(parent, title, position), mTrigger(trigger) {
-    mTrigger->setEnabled(false);
+    if (mTrigger)
+        mTrigger->setEnabled(false);
     if (buttonPanel() && buttonBar)
         buttonPanel()->add<ToolButton>(ENTYPO_ICON_SQUARED_CROSS, Button::Flags::NormalButton)
                 ->withCallback([&]() {
@@ -26,7 +27,10 @@ guipi::Dialog::Dialog(Widget *parent, Widget *trigger, const std::string &title,
 }
 
 void guipi::Dialog::disposeDialog() {
-    mTrigger->setEnabled(true);
+    if (mTrigger) {
+        mTrigger->requestFocus();
+        mTrigger->setEnabled(true);
+    }
     dispose();
 }
 
