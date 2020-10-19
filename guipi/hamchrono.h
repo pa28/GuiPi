@@ -20,7 +20,7 @@ namespace guipi {
      * HamChrono is the main class of the application by the same name.
      */
     class HamChrono : public GuiPiApplication {
-    protected:
+    public:
 
         Vector2f qthLatLon;     //!< The station location (Latitude Longitude) in radians
         Vector2f aQthLatLon;    //!< The station antipode.
