@@ -44,6 +44,7 @@ namespace guipi {
 
         void disposeDialog();
 
+        void dialogPerformLayout();
     public:
         ~Dialog() override = default;
 

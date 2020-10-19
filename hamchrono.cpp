@@ -350,7 +350,7 @@ namespace guipi {
                     ->withCallback([this](){
                         add<SettingsDialog>( find("qthButton", true), "Settings",
                                              Vector2i{40,40});
-                        this->performLayout();
+//                        this->performLayout();
                     })
                     ->withIconFontSize(50)
                     ->withFixedWidth(210)
@@ -465,7 +465,7 @@ namespace guipi {
                     ->withCallback([this](){
                         add<ControlsDialog>( find("switches_controls", true), "Controls",
                                              Vector2i{40,40});
-                        this->performLayout();
+//                        this->performLayout();
                     })
                     ->withId("switches_controls")->_and()
                     ->add<ToolButton>(ENTYPO_ICON_LIGHT_DOWN, Button::Flags::ToggleButton)->_and()

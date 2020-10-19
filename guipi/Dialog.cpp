@@ -39,6 +39,7 @@ guipi::SettingsDialog::SettingsDialog(Widget *parent, Widget *trigger, const std
                                       const Vector2i &position)
         : Dialog(parent, trigger, "Settings Ver " XSTR(VERSION), position, true) {
     initialize();
+    dialogPerformLayout();
 }
 
 #define REAL_TEXT_BOX_SET(parent, value, units, length, precision, format, range)  \
@@ -129,6 +130,7 @@ guipi::ControlsDialog::ControlsDialog(Widget *parent, Widget *trigger, const std
                                       const Vector2i &position)
           : Dialog(parent, trigger, title, position, true) {
     initialize();
+    dialogPerformLayout();
 }
 
 void guipi::ControlsDialog::initialize() {
@@ -191,5 +193,11 @@ guipi::ResponseDialog::ResponseDialog(Widget *parent, Widget *trigger, ResponseT
 
     panel2->add<Button>(buttonText, ENTYPO_ICON_CHECK)
             ->withCallback([&] { if (mCallback) mCallback(0); disposeDialog(); });
+    dialogPerformLayout();
     center();
+}
+
+void guipi::Dialog::dialogPerformLayout() {
+    requestFocus();
+    screen()->performLayout();
 }
