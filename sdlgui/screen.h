@@ -54,6 +54,8 @@ public:
     /// Set window size
     void setSize(const Vector2i& size);
 
+    SDL_Renderer *renderer() { return mSDL_Renderer; }
+
     /// Return the ratio between pixel and device coordinates (e.g. >= 2 on Mac Retina displays)
     float pixelRatio() const { return mPixelRatio; }
 
