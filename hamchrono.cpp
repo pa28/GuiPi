@@ -210,6 +210,7 @@ namespace guipi {
         mIconRepository = new ImageRepository{};
         buildIconRepository();
 
+        using namespace std::chrono_literals;
         // Create the image repository for images and fill it with the initialization data
         mImageRepository = new ImageRepository();
         for (auto &image : NasaSolarImages) {
@@ -218,20 +219,33 @@ namespace guipi {
             imageData.name = image.second;
 
             // If there is already an image in cache, load it to display while waiting on new images.
-            string fileName = mSettings->mHomeDir + string{image_path} + imageData.name + ".jpg";
-            std::filesystem::path imagePath = fileName;
+            std::filesystem::path imagePath{mSettings->mHomeDir};
+            imagePath.append(image_path).append(imageData.name).append(".jpg");
+
             std::error_code ec;
             if (std::filesystem::exists(imagePath, ec)) {
-                auto surface = IMG_Load(fileName.c_str());
+                using namespace std::chrono;
+
+                auto surface = IMG_Load(imagePath.c_str());
                 imageData.set(SDL_CreateTextureFromSurface(mSDL_Renderer, surface));
                 SDL_FreeSurface(surface);
+                // Determine the write time of the image cache, convert to system time.
+                auto writeTime = std::filesystem::last_write_time(imagePath, ec);
+                auto sysWriteTime = time_point_cast<system_clock::duration>(writeTime - decltype(writeTime)::clock::now() +
+                        system_clock::now());
+                imageData.loaded = sysWriteTime;
             }
             mImageRepository->push_back(0, move(imageData));
         }
 
         // Create the std::future / std::async to fetch the images.
         for (ImageRepository::ImageStoreIndex idx{0, 0}; idx.second < mImageRepository->size(idx.first); ++idx.second) {
-            mImageRepository->mFutureStore[idx] = async(curlFetchImage,
+            using namespace std::chrono;
+
+            // if the age of the caching file is more than 30 minutes fetch the image asynchronously.
+            auto age = duration_cast<minutes>(system_clock::now() - mImageRepository->image(idx).loaded);
+            if (age.count() > 30)
+                mImageRepository->mFutureStore[idx] = async(curlFetchImage,
                                                         mImageRepository->image(idx).path,
                                                         mSettings->mHomeDir, mImageRepository->image(idx).name);
         }
