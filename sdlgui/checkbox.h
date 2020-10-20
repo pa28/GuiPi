@@ -19,8 +19,8 @@ NAMESPACE_BEGIN(sdlgui)
 class  CheckBox : public Widget
 {
 public:
-    explicit CheckBox(Widget *parent, const std::string &caption = "Untitled",
-             const std::function<void(bool)> &callback = std::function<void(bool)>());
+    explicit CheckBox(Widget *parent, std::string caption = "Untitled",
+             std::function<void(CheckBox*,bool)> callback = std::function<void(CheckBox*,bool)>());
 
     const std::string &caption() const { return mCaption; }
     void setCaption(const std::string &caption) { mCaption = caption; }
@@ -33,8 +33,8 @@ public:
     const bool &pushed() const { return mPushed; }
     void setPushed(const bool &pushed) { mPushed = pushed; }
 
-    std::function<void(bool)> callback() const { return mCallback; }
-    void setCallback(const std::function<void(bool)> &callback) { mCallback = callback; }
+    std::function<void(CheckBox*,bool)> callback() const { return mCallback; }
+    void setCallback(const std::function<void(CheckBox*,bool)> &callback) { mCallback = callback; }
 
     virtual bool mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers);
     Vector2i preferredSize(SDL_Renderer *ctx) const override;
@@ -48,7 +48,7 @@ protected:
     Texture _captionTex;
     Texture _pointTex;
 
-    std::function<void(bool)> mCallback;
+    std::function<void(CheckBox*,bool)> mCallback;
 
     struct AsyncTexture;
     typedef std::shared_ptr<AsyncTexture> AsyncTexturePtr;

@@ -18,6 +18,7 @@
 #include <sdlgui/entypo.h>
 #include <array>
 #include <thread>
+#include <utility>
 
 #include "nanovg.h"
 #define NANOVG_RT_IMPLEMENTATION
@@ -88,10 +89,10 @@ struct CheckBox::AsyncTexture
 
 };
 
-CheckBox::CheckBox(Widget *parent, const std::string &caption,
-                   const std::function<void(bool) > &callback)
-    : Widget(parent), mCaption(caption), mPushed(false), mChecked(false),
-      mCallback(callback) 
+CheckBox::CheckBox(Widget *parent, std::string caption,
+                   std::function<void(CheckBox*,bool) > callback)
+    : Widget(parent), mCaption(std::move(caption)), mPushed(false), mChecked(false),
+      mCallback(std::move(callback))
 {
   _captionTex.dirty = true;
   _pointTex.dirty = true;
@@ -116,7 +117,7 @@ bool CheckBox::mouseButtonEvent(const Vector2i &p, int button, bool down,
             {
                 mChecked = !mChecked;
                 if (mCallback)
-                    mCallback(mChecked);
+                    mCallback(this,mChecked);
             }
             mPushed = false;
         }
