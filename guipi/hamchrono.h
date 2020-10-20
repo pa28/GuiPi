@@ -6,6 +6,7 @@
 
 #include <sdlgui/common.h>
 #include <sdlgui/entypo.h>
+#include <sdlgui/Image.h>
 #include <guipi/EphemerisModel.h>
 #include <guipi/GuiPiApplication.h>
 #include <guipi/GeoChrono.h>
@@ -42,11 +43,14 @@ namespace guipi {
         Timer<HamChrono> mTimer;        //!< An interval timer, computing satellite predictions
 
         // Path names to installed resources
-        static constexpr string_view map_path = "/var/lib/hamchrono/maps/";     //!< Maps directory
-        static constexpr string_view image_path = "/.hamchrono/images/";        //!< Image cache directory
-        static constexpr string_view background_path = "/var/lib/hamchrono/backgrounds/";       //!< Backgrounds
-        static constexpr pair<string_view, string_view> day_map = {"day_earth_", ".png"};    //!< Day map
-        static constexpr pair<string_view, string_view> night_map = {"night_earth_", ".png"};    //!< Night map
+        static constexpr string_view static_directory = "/var/lib/hamchrono/";  //!< Root of the static program data
+        static constexpr string_view user_directory = ".hamchrono/";           //!< Path from ~ to user data storage
+        static constexpr string_view map_path = "maps/";                        //!< Maps directory
+        static constexpr string_view image_path = "images/";                    //!< Image cache directory
+        static constexpr string_view ephem_path = "ephemeris/";                 //!< Ephemeris cache
+        static constexpr string_view background_path = "backgrounds/";          //!< Backgrounds
+        static constexpr pair<string_view, string_view> day_map = {"day_earth_" XSTR(EARTH_BIG_S), ".png"};    //!< Day map
+        static constexpr pair<string_view, string_view> night_map = {"night_earth_" XSTR(EARTH_BIG_S), ".png"};    //!< Night map
         static constexpr string_view backdrop = "NASA_Nebula.png";  //! The current background.
 
         /**

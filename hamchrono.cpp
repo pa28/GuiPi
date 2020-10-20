@@ -95,8 +95,9 @@ namespace guipi {
             curlpp::options::Url myUrl(url);
             curlpp::Easy myRequest;
 
+            std::filesystem::path fileName{homedir};
+            fileName.append(user_directory).append(image_path).append(name).replace_extension(".jpg");
             ofstream response;
-            string fileName = homedir + string{image_path} + name + ".jpg";
             response.open(fileName, fstream::out | fstream::trunc);
             if (response) {
                 myRequest.setOpt(new curlpp::options::Url(url));
@@ -220,7 +221,7 @@ namespace guipi {
 
             // If there is already an image in cache, load it to display while waiting on new images.
             std::filesystem::path imagePath{mSettings->mHomeDir};
-            imagePath.append(image_path).append(imageData.name).append(".jpg");
+            imagePath.append(user_directory).append(image_path).append(imageData.name).replace_extension(".jpg");
 
             std::error_code ec;
             if (std::filesystem::exists(imagePath, ec)) {
@@ -288,7 +289,6 @@ namespace guipi {
                 ->withCallback([this]() {
                     add<SettingsDialog>(find("qthButton", true), "Settings",
                                         Vector2i{40, 40});
-//                        this->performLayout();
                 })
                 ->withIconFontSize(50)
                 ->withFixedWidth(210)
@@ -336,12 +336,16 @@ namespace guipi {
         ImageRepository::ImageStoreIndex satIdx{2, 0};
         ImageRepository::ImageStoreIndex orbBgnd{0, 2};
         ImageRepository::ImageStoreIndex trackIdx{0, 1};
+
+        std::filesystem::path night_map_path{static_directory};
+        night_map_path.append(map_path).append(night_map.first).replace_extension(night_map.second);
+        std::filesystem::path day_map_path{static_directory};
+        day_map_path.append(map_path).append(day_map.first).replace_extension(day_map.second);
+
         mGeoChrono = mapArea->add<GeoChrono>()
                 ->withImageRepository(mIconRepository, satIdx, orbBgnd, trackIdx)
-                ->withBackgroundFile(
-                        string(map_path) + string(night_map.first) + string(EARTH_BIG_S) + string(night_map.second))
-                ->withForegroundFile(
-                        string(map_path) + string(day_map.first) + string(EARTH_BIG_S) + string(day_map.second))
+                ->withBackgroundFile(night_map_path.string())
+                ->withForegroundFile(day_map_path.string())
                 ->withBackdropFile(string(background_path) + string(backdrop))
                 ->withFixedSize(Vector2i(EARTH_BIG_W, EARTH_BIG_H));
 
