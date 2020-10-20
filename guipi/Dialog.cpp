@@ -184,7 +184,7 @@ void guipi::ControlsDialog::initialize() {
     panel1->withLayout<GroupLayout>(8);
     panel1->add<Label>("Ephemeris Source")
             ->withFontSize(20);
-    ephemerisSelectButton(panel1, "Clear Sky Institude", 0);
+    ephemerisSelectButton(panel1, "Clear Sky Institute", 0);
     ephemerisSelectButton(panel1, "CelesTrack - Amateur Radio", 1);
     ephemerisSelectButton(panel1, "CelesTrack - Brightest", 2);
     ephemerisSelectButton(panel1, "CelesTrack - Cubesats", 3);
