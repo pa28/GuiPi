@@ -40,15 +40,6 @@ using namespace sdlgui;
 namespace guipi {
     using namespace std;
 
-    std::chrono::system_clock::time_point fileClockToSystemClock(std::filesystem::__file_clock::time_point fileTimePoint) {
-        using namespace std::chrono_literals;
-        using namespace std::chrono;
-
-        auto sysWriteTime = time_point_cast<system_clock::duration>(fileTimePoint - decltype(fileTimePoint)::clock ::now() +
-                                                                    system_clock::now());
-        return sysWriteTime;
-    }
-
     /**
      * @brief build the icon repository
      */

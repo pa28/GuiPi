@@ -17,7 +17,15 @@
 
 namespace guipi {
 
-    extern std::chrono::system_clock::time_point fileClockToSystemClock(std::filesystem::__file_clock::time_point fileTimePoint);
+    template<typename T>
+    extern std::chrono::system_clock::time_point fileClockToSystemClock(T fileTimePoint) {
+        using namespace std::chrono_literals;
+        using namespace std::chrono;
+
+        auto sysWriteTime = time_point_cast<system_clock::duration>(fileTimePoint - decltype(fileTimePoint)::clock ::now() +
+                                                                    system_clock::now());
+        return sysWriteTime;
+    }
 
     template<typename Duration>
     auto timePointDiff(std::chrono::system_clock::time_point epoch, std::chrono::system_clock::time_point timePoint) {
