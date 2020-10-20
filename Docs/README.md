@@ -34,6 +34,20 @@ and start the program once setting this information on the command line:
 
 `hamchrono -cs VE3YSH -lat 44.0 -lon -75.0 -el 121.0`
 
+The System Management area has buttons to:
+
+1. Exit the program.
+
+1. Reboot the computer.
+
+1. Upgrade the software using `sudo apt update; sudo apt --assume-yes upgrade`.
+
+1. Shutdown the computer.
+
+These are only inteded for use on systems where the program runs directly on
+the frame buffer and require that the account running the program has NOPASSWORD
+`sudu` privileges. Each action requires a Yes answer in a confirming dialog.
+
 ![SettingsDialog](SettingsDialog.png)
 
 ## GMT/UTC Time Display
@@ -139,8 +153,55 @@ display to the current working directory `screenshot.bmp`.
 
 ![MoreControls](MoreControls.png)
 
-This button will bring up a dialog with more, less frequently used controls.
-At present the only control is a set of radio buttons that allow selection
-of ephemeris from several on-line sources.
+This button will bring up a dialog with more, less frequently used controls;
+These include Ephemeis Source selection and Satellite Pass Filters.
+
+##### Ephemeris Source
 
 ![MoreControlsDialog](MoreControlsDialog.png)
+
+A set of radio buttons allow for the selection of one from a number of
+sources.
+
+1. Clear Sky Institute: load ephemeris from the original Ham Clock source.
+
+1. CelesTrack Amateur Radio: Load ephemeris from CelesTrack amateur radio list.
+
+1. CelesTrack Brightest: Load ephemeris from CelesTrack 100 (or so) brightest objects list.
+
+1. CelesTrack Cubesats: Load Ephemeris from CelesTrack Cubesat list.
+
+##### Satellite Pass Filters
+
+There are two pass filters: Selected Satellites, and Minimum Pass Elevation. 
+
+1. Minimum Pass Elevation will screen satellite passes which will not reach the specified
+minimum elevation during that pass. Satellites will be considered for each subsequent pass.
+The value is set in increments of 5 degrees using the slider, and displayed in the text
+box.
+
+1. The Selected Satellite List will restrict orbital and pass prediction to satellites on
+the list. Satellites with a check mark are on the list, others are not. If the list is
+empty **all satellites are on the list**. Minimum Pass Elevation filtering is applied
+after the Selected Satellite filtering. Use this feature when you are truly only interested
+in some of the satellites contained in an ephemeris set. Since the Clear Sky Institute
+and CelesTrack use slightly different naming conventions using this feature and switching
+between ephemeris sets from these two sources may give unexpected results.
+
+![SatellitesOfInterest](SatellitesOfInterest.png)
+
+## Data Caching
+
+Resources downloaded from the Internet: NASA Solar Imagery; and Ephemeris Sets; are now 
+cached in the users' home directory (under `.hamchrono/images` and `.hamchrono/ephmeris`
+respectively). The cache strategy varries slightly by data type.
+
+1. Solar Imagery in the cache is always loaded at start up. If an image is older than
+half the normal refresh period the program will try to fetch the current image.
+
+1. Ephemeris Sets in the cache are only loaded if they are less than half the normal
+replacement age. If they ae older than this the program will try to fetch the current
+ephemeris set.
+
+This caching strategy is intended to provide faster program startup and reduce unnecessar
+internet traffic while not negatively affecting program operation.
