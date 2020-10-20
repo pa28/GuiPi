@@ -159,7 +159,7 @@ struct SwitchBox::AsyncTexture
 };
 
 SwitchBox::SwitchBox(Widget *parent, Alignment align, const std::string &caption,
-                   const std::function<void(bool) > &callback)
+                   const std::function<void(CheckBox*,bool) > &callback)
     : CheckBox(parent, caption, callback), mAlign(align) 
 {
 }

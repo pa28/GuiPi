@@ -52,7 +52,7 @@ public:
      *     and "checked".
      */
     SwitchBox(Widget *parent, Alignment align = Alignment::Horizontal, const std::string &caption = "Untitled",
-             const std::function<void(bool)> &callback = std::function<void(bool)>());
+             const std::function<void(CheckBox*,bool)> &callback = std::function<void(CheckBox*,bool)>());
 
     /// The preferred size of this SwitchBox.
     virtual Vector2i preferredSize(SDL_Renderer *renderer) const override;
