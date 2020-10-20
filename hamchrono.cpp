@@ -416,13 +416,14 @@ namespace guipi {
                 });
 
         auto tab = sideBar->add<TabWidget>();
+        tab->withFixedSize(Vector2i {sideBarSize.x-10, 260});
 
         Widget *layer = tab->createTab("S", ENTYPO_ICON_ROCKET);
         layer->setLayout(new BoxLayout(Orientation::Vertical, Alignment::Minimum, 0, 0));
 
         // Use overloaded variadic add to fill the tab widget with Different tabs.
         mSatelliteDataDisplay = layer->add<SatelliteDataDisplay>(mIconRepository,
-                                                                 ImageRepository::ImageStoreIndex{2, 0})
+                         ImageRepository::ImageStoreIndex{2, 0})
                 ->withFixedWidth(sideBarSize.x - 20);
 
         layer = tab->createTab("D", ENTYPO_ICON_LOCATION);

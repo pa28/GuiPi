@@ -36,7 +36,9 @@ namespace guipi {
             friend class SatelliteDataDisplay;
         public:
             Satellite() = delete;
-            explicit Satellite(Widget *parent) : Widget(parent) {}
+            explicit Satellite(Widget *parent) : Widget(parent) {
+                setFixedHeight(42);
+            }
 
             Satellite(Widget *parent, const ref <ImageRepository> &imageRepository,
                       ImageRepository::ImageStoreIndex index);
@@ -49,7 +51,7 @@ namespace guipi {
 
             void draw(SDL_Renderer* renderer) override;
 
-        private:
+        protected:
             bool mActive{false};
             ref<Widget> mIcon;
             ref<Label> mName;
@@ -76,9 +78,6 @@ namespace guipi {
         void updateSatelliteData(const EphemerisModel::PassMonitorData &passMonitorData);
 
         Uint32 timerCallback(Uint32 interval);
-
-    private:
-        ref<GeoChrono> mGeoChrono;
     };
 }
 
