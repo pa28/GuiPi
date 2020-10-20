@@ -111,11 +111,16 @@ namespace guipi {
     };
 
     class SatelliteSelector : public Dialog {
+    protected:
+        std::vector<std::string> mSelectedList{};
+
     public:
 
         SatelliteSelector() = delete;
 
         SatelliteSelector(Widget *parent, Widget *trigger, const std::string title);
+
+        void setSelectedSatellite(const std::string& name, bool select);
     };
 
     class ResponseDialog : public Dialog {

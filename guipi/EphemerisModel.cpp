@@ -328,6 +328,7 @@ namespace guipi {
                 case Settings::Parameter::Longitude:
                 case Settings::Parameter::Elevation:
                 case Settings::Parameter::PassMinElevation:
+                case Settings::Parameter::SatellitesOfInterest:
                     mDivider = 0;
                     mInitialize = true;
                     timerCallback(0);

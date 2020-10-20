@@ -129,7 +129,6 @@ void guipi::SettingsDialog::initialize() {
 
 void
 guipi::SettingsDialog::systemButtonCallback(sdlgui::ref<ToolButton> &button, SystemCmd cmd) {
-    auto p = parent();
     switch (cmd) {
         case SystemCmd::STOP:
             screen()->add<ResponseDialog>(button.get(), Question, "Exit?",
@@ -275,9 +274,15 @@ void guipi::Dialog::dialogPerformLayout() {
 }
 
 guipi::SatelliteSelector::SatelliteSelector(Widget *parent, Widget *trigger, const std::string title)
-        : Dialog(parent, trigger, title, Vector2i::Zero()) {
-//    setFixedSize(Vector2i{DISPLAY_WIDTH - 20,DISPLAY_HEIGHT - 30});
-//    auto base = add<Widget>()
+        : Dialog(parent, trigger, title, Vector2i::Zero(), false) {
+    if (!mSettings->mSatellitesOfInterest.empty()) {
+        std::stringstream strm(mSettings->mSatellitesOfInterest);
+        std::string line;
+        while(getline(strm, line, ',')) {
+            mSelectedList.emplace_back(line);
+        }
+    }
+
     withFixedHeight(DISPLAY_HEIGHT - 35);
     withLayout<BoxLayout>(Orientation::Vertical, Alignment::Minimum, 10, 10);
     auto tab = add<TabWidget>();
@@ -298,13 +303,46 @@ guipi::SatelliteSelector::SatelliteSelector(Widget *parent, Widget *trigger, con
             auto grid = dynamic_cast<GridLayout *>(p->layout().get());
             grid->setSpacing(0, 10);
             grid->setSpacing(1, 5);
-            for (size_t panel1 = 0; panel1 < 15 && sat != satMap.end(); ++panel1, ++sat) {
-                p->add<CheckBox>(sat->first)->withFontSize(15);
+            for (size_t panel1 = 0; panel1 < 14 && sat != satMap.end(); ++panel1, ++sat) {
+                bool checked = std::find(mSelectedList.begin(), mSelectedList.end(), sat->first) != mSelectedList.end();
+                p->add<CheckBox>(sat->first,[&](CheckBox *cb, bool checked){
+                    setSelectedSatellite(cb->caption(), checked);
+                })->withChecked(checked)->withFontSize(15);
             }
         }
     }
 
+    auto panel2 = add<Widget>()->withLayout<BoxLayout>(Orientation::Horizontal, Alignment::Middle, 0, 15);
+    panel2->add<Button>("Cancel", ENTYPO_ICON_CIRCLED_CROSS)
+            ->withCallback([&]() {
+                disposeDialog();
+            });
+
+    panel2->add<Button>("Save", ENTYPO_ICON_CHECK)
+            ->withCallback([&]() {
+                std::stringstream strm;
+                bool start = true;
+                for(auto &sat : mSelectedList) {
+                    if (!start)
+                        strm << ',';
+                    else
+                        start = false;
+
+                    strm << sat;
+                }
+                mSettings->setSatellitesOfInterest(strm.str());
+                disposeDialog();
+            });
+
     tab->setActiveTab(0);
     setFixedHeight(DISPLAY_HEIGHT);
     dialogPerformLayout();
+}
+
+void guipi::SatelliteSelector::setSelectedSatellite(const std::string& name, bool selected) {
+    if (selected) {
+        mSelectedList.emplace_back(name);
+    } else {
+        mSelectedList.erase(std::remove(mSelectedList.begin(), mSelectedList.end(), name));
+    }
 }
