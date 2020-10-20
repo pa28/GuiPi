@@ -40,6 +40,15 @@ using namespace sdlgui;
 namespace guipi {
     using namespace std;
 
+    std::chrono::system_clock::time_point fileClockToSystemClock(std::filesystem::__file_clock::time_point fileTimePoint) {
+        using namespace std::chrono_literals;
+        using namespace std::chrono;
+
+        auto sysWriteTime = time_point_cast<system_clock::duration>(fileTimePoint - decltype(fileTimePoint)::clock ::now() +
+                                                                    system_clock::now());
+        return sysWriteTime;
+    }
+
     /**
      * @brief build the icon repository
      */
@@ -211,7 +220,6 @@ namespace guipi {
         mIconRepository = new ImageRepository{};
         buildIconRepository();
 
-        using namespace std::chrono_literals;
         // Create the image repository for images and fill it with the initialization data
         mImageRepository = new ImageRepository();
         for (auto &image : NasaSolarImages) {
@@ -225,7 +233,6 @@ namespace guipi {
 
             std::error_code ec;
             if (std::filesystem::exists(imagePath, ec)) {
-                using namespace std::chrono;
 
                 auto surface = IMG_Load(imagePath.c_str());
                 imageData.set(SDL_CreateTextureFromSurface(mSDL_Renderer, surface));
@@ -234,7 +241,7 @@ namespace guipi {
                 auto writeTime = std::filesystem::last_write_time(imagePath, ec);
                 auto sysWriteTime = time_point_cast<system_clock::duration>(writeTime - decltype(writeTime)::clock::now() +
                         system_clock::now());
-                imageData.loaded = sysWriteTime;
+                imageData.loaded = fileClockToSystemClock(writeTime);
             }
             mImageRepository->push_back(0, move(imageData));
         }
@@ -242,10 +249,8 @@ namespace guipi {
         // Create the std::future / std::async to fetch the images.
         for (ImageRepository::ImageStoreIndex idx{0, 0}; idx.second < mImageRepository->size(idx.first); ++idx.second) {
             using namespace std::chrono;
-
             // if the age of the caching file is more than 30 minutes fetch the image asynchronously.
-            auto age = duration_cast<minutes>(system_clock::now() - mImageRepository->image(idx).loaded);
-            if (age.count() > 30)
+            if (timePointDiff<minutes>(system_clock::now(), mImageRepository->image(idx).loaded) > 30)
                 mImageRepository->mFutureStore[idx] = async(curlFetchImage,
                                                         mImageRepository->image(idx).path,
                                                         mSettings->mHomeDir, mImageRepository->image(idx).name);
@@ -509,8 +514,9 @@ int main(int argc, char **argv) {
     }
 
     string homdir{getenv("HOME")};
-    if (system("mkdir -p ~/.hamchrono/images"))
-        std::cerr << "Could not make directory '~/.hamchrono/images'\n";
+    std::filesystem::path imageDir{homdir};
+    imageDir.append(HamChrono::user_directory).append(HamChrono::image_path);
+    std::filesystem::create_directory(imageDir);
 
     char rendername[256] = {0};
     SDL_RendererInfo info;

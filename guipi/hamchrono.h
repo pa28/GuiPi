@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <filesystem>
 #include <sdlgui/common.h>
 #include <sdlgui/entypo.h>
 #include <sdlgui/Image.h>
@@ -15,6 +16,13 @@
 
 
 namespace guipi {
+
+    extern std::chrono::system_clock::time_point fileClockToSystemClock(std::filesystem::__file_clock::time_point fileTimePoint);
+
+    template<typename Duration>
+    auto timePointDiff(std::chrono::system_clock::time_point epoch, std::chrono::system_clock::time_point timePoint) {
+        return duration_cast<Duration>(epoch - timePoint).count();
+    }
 
     /**
      * @class

@@ -160,6 +160,8 @@ namespace guipi {
         [[nodiscard]] PassMonitorData getPassMonitorData() const { return mSatellitePassData; }
 
         [[nodiscard]] SatelliteEphemerisMap getSatelliteEphemerisMap() const { return mSatelliteEphemerisMap; }
+
+        SatelliteEphemerisMap fetchAll(int source);
     };
 }
 

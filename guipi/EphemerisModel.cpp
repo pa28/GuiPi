@@ -4,11 +4,13 @@
 
 #include <vector>
 #include <iostream>
+#include <filesystem>
 #include <sstream>
 #include <curlpp/cURLpp.hpp>
 #include <curlpp/Easy.hpp>
 #include <curlpp/Options.hpp>
 #include <curlpp/Exception.hpp>
+#include <guipi/hamchrono.h>
 #include <algorithm>
 #include "EphemerisModel.h"
 
@@ -116,6 +118,42 @@ namespace guipi {
         set_time.TN = round(set_time.TN * 86400.) / 86400.;
     }
 
+    SatelliteEphemerisMap readFromStream(std::istream &strm) {
+        SatelliteEphemerisMap ephemerisMap;
+
+        std::vector<std::string> input;
+        std::string line;
+        while (getline(strm, line))
+            input.push_back(line);
+
+        if (input.size() % 3)
+            throw curlpp::LogicError("Input lines must be a multiple of 3");
+
+        SatelliteEphemeris ephemeris;
+        for (auto i = input.begin(); i != input.end(); ++i) {
+            ephemeris[0] = *i++;
+
+            // Normalize the satellite names
+            auto l = ephemeris[0].find_first_of('(') + 1;
+            auto r = ephemeris[0].find_last_of(')');
+            if (l != std::string::npos && r != std::string::npos && l < r) {
+                ephemeris[0] = ephemeris[0].substr(l, r);
+            }
+            r = ephemeris[0].find_last_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789") + 1;
+            if (r != std::string::npos)
+                ephemeris[0] = ephemeris[0].substr(0, r);
+
+            if (ephemeris[0] == "ZARYA")
+                ephemeris[0] = "ISS";
+
+            ephemeris[1] = *i++;
+            ephemeris[2] = *i;
+            ephemerisMap[ephemeris[0]] = ephemeris;
+        }
+
+        return std::move(ephemerisMap);
+    }
+
     SatelliteEphemerisMap curl_process(const std::string &url) {
         SatelliteEphemerisMap ephemerisMap;
 
@@ -132,35 +170,7 @@ namespace guipi {
             // Send request and get a result.
             myRequest.perform();
 
-            std::vector<std::string> input;
-            std::string line;
-            while (getline(response, line))
-                input.push_back(line);
-
-            if (input.size() % 3)
-                throw curlpp::LogicError("Input lines must be a multiple of 3");
-
-            SatelliteEphemeris ephemeris;
-            for (auto i = input.begin(); i != input.end(); ++i) {
-                ephemeris[0] = *i++;
-
-                // Normalize the satellite names
-                auto l = ephemeris[0].find_first_of('(') + 1;
-                auto r = ephemeris[0].find_last_of(')');
-                if (l != std::string::npos && r != std::string::npos && l < r) {
-                    ephemeris[0] = ephemeris[0].substr(l, r);
-                }
-                r = ephemeris[0].find_last_of("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789") + 1;
-                if (r != std::string::npos)
-                    ephemeris[0] = ephemeris[0].substr(0, r);
-
-                if (ephemeris[0] == "ZARYA")
-                    ephemeris[0] = "ISS";
-
-                ephemeris[1] = *i++;
-                ephemeris[2] = *i;
-                ephemerisMap[ephemeris[0]] = ephemeris;
-            }
+            ephemerisMap = std::move(readFromStream(response));
         }
 
         catch (curlpp::RuntimeError &e) {
@@ -174,37 +184,84 @@ namespace guipi {
         return std::move(ephemerisMap);
     }
 
-    SatelliteEphemerisMap fetchAll(int source) {
+    SatelliteEphemerisMap EphemerisModel::fetchAll(int source) {
         SatelliteEphemerisMap result;
         SatelliteEphemerisMap moon;
-        std::string url_fetch_moon = std::string{URL_FETCH_NAME} + "Moon";
+        std::filesystem::path ephemerisCache{mSettings->mHomeDir};
+        ephemerisCache.append(HamChrono::user_directory).append(HamChrono::ephem_path);
+        std::filesystem::create_directory(ephemerisCache);
+
         switch (source) {
             case 0:
-                result = std::move(curl_process((std::string) URL_FETCH_ALL));
+                ephemerisCache.append("HamClock.txt");
                 break;
             case 1:
-                result = std::move(curl_process((std::string) CT_AMATEUR));
-                moon = std::move(curl_process(url_fetch_moon));
-                result["Moon"] = moon.at("Moon");
+                ephemerisCache.append("celestrak_amateur.txt");
                 break;
             case 2:
-                result = std::move(curl_process((std::string) CT_BRIGHT));
-                moon = std::move(curl_process(url_fetch_moon));
-                result["Moon"] = moon.at("Moon");
+                ephemerisCache.append("celestrak_visual.txt");
                 break;
             case 3:
-                result = std::move(curl_process((std::string) CT_CUBESAT));
-                moon = std::move(curl_process(url_fetch_moon));
-                result["Moon"] = moon.at("Moon");
+                ephemerisCache.append("celestrak_cubesat.txt");
                 break;
             default:
-                throw std::logic_error("SatelliteEphemerisFetch, source not handled.");
+                throw std::logic_error("SatelliteEphemerisFetch, cache file not handled.");
+        }
+
+        if (std::filesystem::exists(ephemerisCache)) {
+            std::error_code ec;
+            auto cacheFiletime = fileClockToSystemClock(std::filesystem::last_write_time(ephemerisCache, ec));
+            auto now = std::chrono::system_clock::now();
+            if (timePointDiff<hours>( now, cacheFiletime ) < 24) {
+                ifstream strm;
+                strm.open(ephemerisCache, fstream::in);
+                if (strm) {
+                    result = std::move(readFromStream(strm));
+                    strm.close();
+                    return std::move(result);
+                } else {
+                    std::cerr << "Unable to open " << ephemerisCache.string() << '\n';
+                }
+            }
+        } else {
+            std::string url_fetch_moon = std::string{URL_FETCH_NAME} + "Moon";
+            switch (source) {
+                case 0:
+                    result = std::move(curl_process((std::string) URL_FETCH_ALL));
+                    break;
+                case 1:
+                    result = std::move(curl_process((std::string) CT_AMATEUR));
+                    moon = std::move(curl_process(url_fetch_moon));
+                    result["Moon"] = moon.at("Moon");
+                    break;
+                case 2:
+                    result = std::move(curl_process((std::string) CT_BRIGHT));
+                    moon = std::move(curl_process(url_fetch_moon));
+                    result["Moon"] = moon.at("Moon");
+                    break;
+                case 3:
+                    result = std::move(curl_process((std::string) CT_CUBESAT));
+                    moon = std::move(curl_process(url_fetch_moon));
+                    result["Moon"] = moon.at("Moon");
+                    break;
+                default:
+                    throw std::logic_error("SatelliteEphemerisFetch, source not handled.");
+            }
+        }
+        ofstream strm;
+        strm.open(ephemerisCache, fstream::out | fstream::trunc);
+        if (strm) {
+            for (auto & sat : result)
+                for (auto &line : sat.second)
+                    strm << line << '\n';
+        } else {
+            std::cerr << "Unable to open " << ephemerisCache.string() << " for writing\n";
         }
         return std::move(result);
     }
 
     bool EphemerisModel::asyncEphemerisFetch(EphemerisModel *self, int source) {
-        self->mNewSatelliteEphemerisMap = std::move(fetchAll(source));
+        self->mNewSatelliteEphemerisMap = std::move(self->fetchAll(source));
         self->mDivider = 0;
         self->mInitialize = true;
         return true;
