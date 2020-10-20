@@ -337,12 +337,14 @@ namespace guipi {
         night_map_path.append(map_path).append(night_map.first).replace_extension(night_map.second);
         std::filesystem::path day_map_path{static_directory};
         day_map_path.append(map_path).append(day_map.first).replace_extension(day_map.second);
+        std::filesystem::path backdrop_path{static_directory};
+        backdrop_path.append(background_path).append(backdrop);
 
         mGeoChrono = mapArea->add<GeoChrono>()
                 ->withImageRepository(mIconRepository, satIdx, orbBgnd, trackIdx)
                 ->withBackgroundFile(night_map_path.string())
                 ->withForegroundFile(day_map_path.string())
-                ->withBackdropFile(string(background_path) + string(backdrop))
+                ->withBackdropFile(backdrop_path.string())
                 ->withFixedSize(Vector2i(EARTH_BIG_W, EARTH_BIG_H));
 
         mGeoChrono->setSatelliteDisplay(mSettings->mSatelliteTracking);
