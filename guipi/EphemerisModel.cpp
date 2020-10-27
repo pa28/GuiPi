@@ -208,22 +208,22 @@ namespace guipi {
                 throw std::logic_error("SatelliteEphemerisFetch, cache file not handled.");
         }
 
-        if (std::filesystem::exists(ephemerisCache)) {
-            std::error_code ec;
-            auto cacheFiletime = fileClockToSystemClock(std::filesystem::last_write_time(ephemerisCache, ec));
-            auto now = std::chrono::system_clock::now();
-            if (timePointDiff<hours>( now, cacheFiletime ) < 24) {
-                ifstream strm;
-                strm.open(ephemerisCache, fstream::in);
-                if (strm) {
-                    result = std::move(readFromStream(strm));
-                    strm.close();
-                    return std::move(result);
-                } else {
-                    std::cerr << "Unable to open " << ephemerisCache.string() << '\n';
-                }
-            }
-        } else {
+//        if (std::filesystem::exists(ephemerisCache)) {
+//            std::error_code ec;
+//            auto cacheFiletime = fileClockToSystemClock(std::filesystem::last_write_time(ephemerisCache, ec));
+//            auto now = std::chrono::system_clock::now();
+//            if (timePointDiff<hours>( now, cacheFiletime ) < 24) {
+//                ifstream strm;
+//                strm.open(ephemerisCache, fstream::in);
+//                if (strm) {
+//                    result = std::move(readFromStream(strm));
+//                    strm.close();
+//                    return std::move(result);
+//                } else {
+//                    std::cerr << "Unable to open " << ephemerisCache.string() << '\n';
+//                }
+//            }
+//        } else {
             std::string url_fetch_moon = std::string{URL_FETCH_NAME} + "Moon";
             switch (source) {
                 case 0:
@@ -247,7 +247,7 @@ namespace guipi {
                 default:
                     throw std::logic_error("SatelliteEphemerisFetch, source not handled.");
             }
-        }
+//        }
         ofstream strm;
         strm.open(ephemerisCache, fstream::out | fstream::trunc);
         if (strm) {
