@@ -266,38 +266,4 @@ namespace sdlgui {
         mCpuCount /= 2;
 #endif
     }
-
-//    bool TimeBox::mouseButtonEvent(const Vector2i &p, int button, bool down, int modifiers) {
-//        if (button) {
-//            if (down) {
-//                if (!mButton) {
-//                    mMotion = false;
-//                }
-//                mButton = true;
-//            } else {
-//                if (mCallback) {
-//                    auto d = mMotionEnd - mMotionStart;
-//                    if (mMotion && d.x * d.x + d.y * d.y > 25) {
-//                        if (abs(d.y) >= abs(d.x)) {
-//                            if (d.y > 0)
-//                                mCallback(*this, DOWN_EVENT);
-//                            else
-//                                mCallback(*this, UP_EVENT);
-//                        } else {
-//                            if (d.x > 0)
-//                                mCallback(*this, RIGHT_EVENT);
-//                            else
-//                                mCallback(*this, LEFT_EVENT);
-//                        }
-//                        mMotionStart = mMotionEnd = Vector2i(0, 0);
-//                        mMotion = mButton = false;
-//                    } else {
-//                        mCallback(*this, CLICK_EVENT);
-//                    }
-//                }
-//            }
-//        }
-//        return Widget::mouseButtonEvent(p, button, down, modifiers);
-//    }
-
 }
