@@ -198,7 +198,7 @@ Unfortunately I found the following:
     have also become busy with other things. However, it is open source and I can fork 
     the repository and begin taking it in the direction I need. My port of NanoGUI-SDL
     is included in the project.
-    1. Install SDL2 on Debian derivatives: `sudo apt install libsdl2-dev libsdl2-ttf-def libsdl2-image-dev`
+    1. Install SDL2 on Debian derivatives: `sudo apt install libsdl2-dev libsdl2-ttf-dev libsdl2-image-dev`
     
 1. [SDL2_gfx](https://www.ferzkopp.net/Software/SDL2_gfx/Docs/html/index.html) a graphics
 primitive library that adds additional drawing capability to SDL2. Using the primitive drawing
