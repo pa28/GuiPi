@@ -510,7 +510,11 @@ int main(int argc, char **argv) {
     string homdir{getenv("HOME")};
     std::filesystem::path imageDir{homdir};
     imageDir.append(HamChrono::user_directory).append(HamChrono::image_path);
-    std::filesystem::create_directory(imageDir);
+    std::filesystem::create_directories(imageDir);
+
+    std::filesystem::path ephemerisDir{homdir};
+    ephemerisDir.append(HamChrono::user_directory).append(HamChrono::ephem_path);
+    std::filesystem::create_directories(ephemerisDir);
 
     char rendername[256] = {0};
     SDL_RendererInfo info;
